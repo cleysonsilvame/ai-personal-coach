@@ -1,7 +1,5 @@
-export default function Page() {
-  return (
-    <div className="p-6">
-      <p>PLACEHOLDER</p>
-    </div>
-  );
+import { redirect } from 'react-router';
+
+export async function loader() {
+  return redirect('/task/new');
 }

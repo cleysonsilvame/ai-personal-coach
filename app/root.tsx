@@ -1,5 +1,5 @@
-import "./app.css";
 import "@copilotkit/react-ui/styles.css";
+import "./app.css";
 
 import {
   Links,
@@ -8,12 +8,15 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLoaderData,
+  type LoaderFunctionArgs,
 } from "react-router";
 
-import { CopilotKit } from "@copilotkit/react-core";
-import { CopilotSidebar } from "@copilotkit/react-ui";
-import type { Route } from "./+types/root";
 import { Toaster } from "sonner";
+import type { Route } from "./+types/root";
+import clsx from "clsx"
+import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from "remix-themes"
+import { themeSessionResolver } from "./services/sessions.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -28,36 +31,54 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { getTheme } = await themeSessionResolver(request)
+  return {
+    theme: getTheme(),
+  }
+}
+
+function App() {
+  const data = useLoaderData<typeof loader>();
+  const [theme] = useTheme();
+
+
   return (
-    <html lang="en">
+    <html lang="en" className={clsx(theme)}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
+        <PreventFlashOnWrongTheme ssrTheme={!!data.theme} />
         <Links />
       </head>
-      <body>
-        <CopilotKit runtimeUrl="/copilotkit">
+      <body suppressHydrationWarning>
+        {/* <CopilotKit runtimeUrl="/copilotkit">
           <CopilotSidebar
             labels={{
               title: "Assitente de Tarefas",
               initial: "Faça uma pergunta sobre as tarefas",
             }}
-          >
-            {children}
-            <ScrollRestoration />
-            <Scripts />
-            <Toaster position="top-right" />
-          </CopilotSidebar>
-        </CopilotKit>
+          > */}
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <Toaster position="top-right" />
+        {/* </CopilotSidebar>
+        </CopilotKit> */}
       </body>
     </html>
-  );
+  )
 }
 
-export default function App() {
-  return <Outlet />;
+export default function AppWithProviders() {
+  const data = useLoaderData<typeof loader>()
+  return (
+    <ThemeProvider specifiedTheme={data.theme} themeAction="/action/set-theme">
+      <App />
+    </ThemeProvider>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
