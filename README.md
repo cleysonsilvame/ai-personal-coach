@@ -1,87 +1,87 @@
-# Welcome to React Router!
+# AI Task Manager
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Gerencie tarefas de forma inteligente com refinamento automático via IA! Este projeto permite que usuários descrevam tarefas de forma simples e contem com um chatbot para refinar, estruturar e detalhar cada tarefa, elevando o nível de clareza e organização para equipes de desenvolvimento.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## ✨ Funcionalidades Principais
 
-## Features
+- **Refinamento de Tarefas por Chatbot:** Usuários descrevem tarefas e recebem uma versão refinada, estruturada e pronta para desenvolvimento, com etapas, critérios de aceitação, testes sugeridos e sugestões de implementação.
+- **Histórico de Conversas:** Todas as interações com o chatbot são salvas e podem ser revisitadas.
+- **Gestão Completa de Tarefas:** Criação, edição, visualização, exclusão e detalhamento de tarefas.
+- **Painel de Análise:** Visualização de métricas e estatísticas das tarefas.
+- **Upload e Gerenciamento de Arquivos:** Permite anexar arquivos às tarefas.
+- **Controle de Acesso:** Apenas usuários autenticados podem acessar e manipular tarefas.
+- **Interface Moderna e Responsiva:** UI construída com React Router 7, Tailwind CSS e componentes Radix UI.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## 🧱 Tecnologias Utilizadas
 
-## Getting Started
+- **Frontend:** React Router 7 (modo framework), Tailwind CSS, Radix UI, ShadcnUI
+- **Backend:** Node.js, API da OpenAI (para refinamento de tarefas)
+- **Banco de Dados:** SQLite
+- **ORM:** Prisma ORM
+- **Armazenamento Vetorial:** Compatível com SQLite
+- **Outros:** Docker, Vite, TypeScript
 
-### Installation
+## 📁 Estrutura de Pastas
 
-Install the dependencies:
+- `app/` - Código principal da aplicação (componentes, features, rotas, serviços)
+- `prisma/` - Schema, seeds e migrações do banco de dados
+- `public/` - Arquivos estáticos
+- `local-docs/` - Documentação interna e PRDs
 
-```bash
-npm install
+## 🚀 Como Rodar Localmente
+
+1. **Clone o repositório:**
+   ```fish
+   git clone <url-do-repo>
+   cd ai-task-manager
+   ```
+
+2. **Instale as dependências:**
+   ```fish
+   npm install
+   ```
+
+3. **Configure o banco de dados:**
+   - Edite o arquivo `.env` com a variável `DATABASE_URL` (exemplo: `file:./dev.db`)
+   - Rode as migrações:
+     ```fish
+     npx prisma migrate deploy
+     ```
+
+4. **(Opcional) Popule o banco com dados de exemplo:**
+   ```fish
+   npx prisma db seed
+   ```
+
+5. **Inicie o servidor de desenvolvimento:**
+   ```fish
+   npm run dev
+   ```
+   Acesse em [http://localhost:5173](http://localhost:5173)
+
+## 🐳 Rodando com Docker
+
+```fish
+docker build -t ai-task-manager .
+docker run -p 3000:3000 ai-task-manager
 ```
 
-### Development
+## 🛠️ Principais Comandos
 
-Start the development server with HMR:
+- `npm run dev` — Inicia o servidor de desenvolvimento
+- `npm run build` — Gera o build de produção
+- `npm start` — Sobe o servidor em modo produção
+- `npx prisma studio` — Interface visual para o banco de dados
 
-```bash
-npm run dev
-```
+## 🤖 Como Contribuir
 
-Your application will be available at `http://localhost:5173`.
+1. Faça um fork do projeto
+2. Crie uma branch: `git checkout -b minha-feature`
+3. Faça suas alterações e commits
+4. Envie um PR detalhando sua contribuição
 
-## Building for Production
+## 📚 Documentação e PRD
 
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+- Veja o arquivo `local-docs/PRD_Refinamento_Tarefas.md` para detalhes do produto, objetivos, estrutura de dados e exemplos de uso.
 
 ---
-
-Built with ❤️ using React Router.
