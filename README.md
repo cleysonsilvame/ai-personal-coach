@@ -1,24 +1,24 @@
-# AI Task Manager
+# AI Personal Goals Coach
 
-Gerencie tarefas de forma inteligente com refinamento automático via IA! Este projeto permite que usuários descrevam tarefas de forma simples e contem com um chatbot para refinar, estruturar e detalhar cada tarefa, elevando o nível de clareza e organização para equipes de desenvolvimento.
+Transforme seus objetivos pessoais em planos estruturados com refinamento automático via IA! Este projeto permite que usuários descrevam objetivos pessoais de forma simples e contem com um chatbot especializado em coaching para refinar, estruturar e detalhar cada meta, elevando o nível de clareza e organização para o desenvolvimento pessoal.
 
 ## ✨ Funcionalidades Principais
 
-- **Refinamento de Tarefas por Chatbot:** Usuários descrevem tarefas e recebem uma versão refinada, estruturada e pronta para desenvolvimento, com etapas, critérios de aceitação, testes sugeridos e sugestões de implementação.
-- **Histórico de Conversas:** Todas as interações com o chatbot são salvas e podem ser revisitadas.
-- **Gestão Completa de Tarefas:** Criação, edição, visualização, exclusão e detalhamento de tarefas.
-- **Painel de Análise:** Visualização de métricas e estatísticas das tarefas.
-- **Upload e Gerenciamento de Arquivos:** Permite anexar arquivos às tarefas.
-- **Controle de Acesso:** Apenas usuários autenticados podem acessar e manipular tarefas.
+- **Refinamento de Objetivos por Coach IA:** Usuários descrevem objetivos pessoais e recebem uma versão refinada, estruturada e pronta para execução, com passos de ação, indicadores de progresso, hábitos sugeridos e estratégias de motivação.
+- **Histórico de Conversas:** Todas as interações com o chatbot coach são salvas e podem ser revisitadas.
+- **Gestão Completa de Objetivos:** Criação, edição, visualização, exclusão e detalhamento de metas pessoais.
+- **Painel de Análise:** Visualização de métricas e estatísticas dos objetivos e progresso.
+- **Acompanhamento de Progresso:** Ferramentas para monitorar o avanço em direção aos objetivos.
+- **Coach Pessoal Virtual:** IA especializada em desenvolvimento pessoal e estabelecimento de metas.
 - **Interface Moderna e Responsiva:** UI construída com React Router 7, Tailwind CSS e componentes Radix UI.
 
 ## 🧱 Tecnologias Utilizadas
 
 - **Frontend:** React Router 7 (modo framework), Tailwind CSS, Radix UI, ShadcnUI
-- **Backend:** Node.js, API da OpenAI (para refinamento de tarefas)
+- **Backend:** Node.js, API da OpenAI (para refinamento de objetivos pessoais)
 - **Banco de Dados:** SQLite
 - **ORM:** Prisma ORM
-- **Armazenamento Vetorial:** Compatível com SQLite
+- **Armazenamento Vetorial:** Compatível com SQLite (planejado)
 - **Outros:** Docker, Vite, TypeScript
 
 ## 📁 Estrutura de Pastas
@@ -26,14 +26,14 @@ Gerencie tarefas de forma inteligente com refinamento automático via IA! Este p
 - `app/` - Código principal da aplicação (componentes, features, rotas, serviços)
 - `prisma/` - Schema, seeds e migrações do banco de dados
 - `public/` - Arquivos estáticos
-- `local-docs/` - Documentação interna e PRDs
+- `.github/instructions/` - Documentação interna e PRDs
 
 ## 🚀 Como Rodar Localmente
 
 1. **Clone o repositório:**
    ```fish
    git clone <url-do-repo>
-   cd ai-task-manager
+   cd ai-personal-goals-coach
    ```
 
 2. **Instale as dependências:**
@@ -62,8 +62,8 @@ Gerencie tarefas de forma inteligente com refinamento automático via IA! Este p
 ## 🐳 Rodando com Docker
 
 ```fish
-docker build -t ai-task-manager .
-docker run -p 3000:3000 ai-task-manager
+docker build -t ai-personal-goals-coach .
+docker run -p 3000:3000 ai-personal-goals-coach
 ```
 
 ## 🛠️ Principais Comandos
@@ -82,6 +82,18 @@ docker run -p 3000:3000 ai-task-manager
 
 ## 📚 Documentação e PRD
 
-- Veja o arquivo `local-docs/PRD_Refinamento_Tarefas.md` para detalhes do produto, objetivos, estrutura de dados e exemplos de uso.
+- Veja o arquivo `.github/instructions/domain.instructions.md` para detalhes do produto, objetivos, estrutura de dados e exemplos de uso do sistema de refinamento de objetivos pessoais.
+
+## 🎯 Exemplos de Uso
+
+**Entrada do usuário:**
+"Quero aprender inglês fluente"
+
+**Saída refinada pelo Coach IA:**
+- **Título:** "Desenvolver Fluência em Inglês através de Prática Estruturada"
+- **Passos de Ação:** Avaliação de nível, rotina diária, curso estruturado...
+- **Indicadores de Progresso:** Conversação de 10 min, compreender filme sem legendas...
+- **Hábitos Sugeridos:** Estudar 30 min toda manhã, celular em inglês...
+- **Estratégias de Motivação:** Marcos mensais, parceiro de estudos, grupos de conversação...
 
 ---
