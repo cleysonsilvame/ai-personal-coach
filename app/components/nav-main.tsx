@@ -1,8 +1,7 @@
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react";
+import { type Icon, IconCirclePlusFilled } from "@tabler/icons-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router";
 
-import { Button } from "~/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -12,52 +11,50 @@ import {
 } from "~/components/ui/sidebar";
 
 export function NavMain({
-  items,
+	items,
 }: {
-  items: {
-    title: string;
-    url: string;
-    icon?: Icon | LucideIcon;
-  }[];
+	items: {
+		title: string;
+		url: string;
+		icon?: Icon | LucideIcon;
+	}[];
 }) {
-  return (
-    <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton
-              tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-              asChild
-            >
-              <NavLink to="/task/new">
-                <IconCirclePlusFilled />
-                <span>Quick Create</span>
-              </NavLink>
-            </SidebarMenuButton>
-            <Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
-            </Button>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <NavLink to={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
+	return (
+		<SidebarGroup>
+			<SidebarGroupContent className="flex flex-col gap-2">
+				<SidebarMenu>
+					<SidebarMenuItem className="flex items-center gap-2">
+						<SidebarMenuButton
+							tooltip="Quick Create"
+							asChild
+							className="bg-none"
+						>
+							<NavLink
+								to="/task/new"
+								className="[.active]:bg-primary [.active]:hover:bg-primary/90 transition-colors"
+							>
+								<IconCirclePlusFilled />
+								<span>Quick Create</span>
+							</NavLink>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+				<SidebarMenu>
+					{items.map((item) => (
+						<SidebarMenuItem key={item.title}>
+							<SidebarMenuButton tooltip={item.title} asChild>
+								<NavLink
+									to={item.url}
+									className="[.active]:bg-primary [.active]:hover:bg-primary/90 transition-colors"
+								>
+									{item.icon && <item.icon />}
+									<span>{item.title}</span>
+								</NavLink>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroupContent>
+		</SidebarGroup>
+	);
 }

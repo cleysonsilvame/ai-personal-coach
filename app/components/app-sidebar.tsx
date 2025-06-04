@@ -14,19 +14,15 @@ import {
 
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
+import { Link } from "react-router";
 
 const data = {
   user: {
-    name: "Vedovelli",
-    email: "fabio@vedovelli.com.br",
+    name: "Cleyson Silva",
+    email: "cleysonsilva@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
-    {
-      title: "Dashboard",
-      url: "/",
-      icon: IconDashboard,
-    },
     {
       title: "Tasks",
       url: "/tasks",
@@ -50,10 +46,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link to="/">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">RocketSeat</span>
-              </a>
+                <span className="text-base font-semibold">AI Personal Coach</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
