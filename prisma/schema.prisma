@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./database/dev.db"
 }
 
 enum ChatMessageRole {
@@ -36,25 +36,25 @@ model ChatMessage {
   chat_id String
   chat Chat @relation(fields: [chat_id], references: [id])
 
-  task      Task?
-  
+  goal      Goal?
+
   @@map("chat_messages")
 }
 
-model Task {
+model Goal {
   id                        String   @id @default(uuid())
   title                     String
   description               String
-  steps                     String?
   estimated_time            String
-  implementation_suggestion String?
-  acceptance_criteria       String?
-  suggested_tests           String?
+  action_steps              Json?    // Array de strings: ["passo 1", "passo 2", ...]
+  progress_indicators       Json?    // Array de strings: ["indicador 1", "indicador 2", ...]
+  suggested_habits          Json?    // Array de strings: ["hábito 1", "hábito 2", ...]
+  motivation_strategies     String?  // Texto livre (estratégias de motivação)
   created_at                DateTime @default(now())
   updated_at                DateTime @updatedAt
 
   chat_message                      ChatMessage?     @relation(fields: [chat_message_id], references: [id])
   chat_message_id                   String?      @unique
 
-  @@map("tasks")
+  @@map("goals")
 }

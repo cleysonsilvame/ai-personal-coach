@@ -7,3 +7,4 @@
 repomix-output.md
 .env
 /app/generated/
+*.db
