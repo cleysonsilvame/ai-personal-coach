@@ -1,10 +1,10 @@
-# React Router 7 Project Guidelines
+# Diretrizes do Projeto React Router 7
 
-## Project Overview
-This is a React Router 7 project with TypeScript, using Shadcn UI components and server-side data loading patterns.
+## Visão Geral do Projeto
+Este é um projeto React Router 7 com TypeScript, utilizando componentes Shadcn UI e padrões de carregamento de dados do lado do servidor.
 
-## Documentation Resources
-Refer to the following documentation pages for guidance:
+## Recursos de Documentação
+Consulte as seguintes páginas de documentação para orientação:
 - https://reactrouter.com/start/data/routing
 - https://reactrouter.com/start/framework/route-module
 - https://reactrouter.com/start/framework/rendering
@@ -12,128 +12,128 @@ Refer to the following documentation pages for guidance:
 - https://reactrouter.com/start/framework/actions
 - https://reactrouter.com/start/framework/navigating
 
-## Package Installation Rules
-- **NEVER** install Remix packages; they are incompatible with React Router 7
-- Always check compatibility before suggesting new packages
+## Regras de Instalação de Pacotes
+- **NUNCA** instale pacotes Remix; eles são incompatíveis com React Router 7
+- Sempre verifique a compatibilidade antes de sugerir novos pacotes
 
-## Routing Architecture
-- This project **does not** use file-based routing
-- All routes must be declared in `app/routes.ts`
-- Route modules should be stored in `~/routes`
-- Route modules must export a default React component
-- Optional exports: `loader`, `action`, `ErrorBoundary`
+## Arquitetura de Roteamento
+- Este projeto **não** usa roteamento baseado em arquivos
+- Todas as rotas devem ser declaradas em `app/routes.ts`
+- Módulos de rota devem ser armazenados em `~/routes`
+- Módulos de rota devem exportar um componente React padrão
+- Exportações opcionais: `loader`, `action`, `ErrorBoundary`
 
-## Data Loading Patterns
-- **ALWAYS** prefer server-side data loading over client-side unless explicitly required
-- Data loading should **ONLY** occur in route modules, never in feature components
-- Use loaders for GET operations and actions for POST/PUT/DELETE operations
+## Padrões de Carregamento de Dados
+- **SEMPRE** prefira carregamento de dados do lado do servidor em vez do lado do cliente, a menos que explicitamente necessário
+- O carregamento de dados deve ocorrer **APENAS** em módulos de rota, nunca em componentes de feature
+- Use loaders para operações GET e actions para operações POST/PUT/DELETE
 
-## Import Statement Rules
-- **ALWAYS** use `~` for internal imports instead of relative paths
-- **ALWAYS** use `'react-router'` for React Router tools, never `'react-router-dom'`
+## Regras de Declarações de Importação
+- **SEMPRE** use `~` para importações internas em vez de caminhos relativos
+- **SEMPRE** use `'react-router'` para ferramentas React Router, nunca `'react-router-dom'`
 
-Examples:
+Exemplos:
 ```typescript
-// ✅ Correct
+// ✅ Correto
 import { useLoaderData } from 'react-router';
 import { TasksList } from '~/features/tasks/tasks-list';
 
-// ❌ Wrong
+// ❌ Errado
 import { useLoaderData } from 'react-router-dom';
 import { TasksList } from '../features/tasks/tasks-list';
 ```
 
-## Component Organization
+## Organização de Componentes
 
-### Feature Components
-- Must be placed under `~/features`
-- React functions should **NOT** be exported as default
-- Use named exports only
+### Componentes de Feature
+- Devem ser colocados sob `~/features`
+- Funções React **NÃO** devem ser exportadas como padrão
+- Use apenas exportações nomeadas
 
-Example:
+Exemplo:
 ```typescript
-// ✅ Correct
+// ✅ Correto
 export function TasksList() {
-  // component logic
+  // lógica do componente
 }
 
-// ❌ Wrong
+// ❌ Errado
 export default function TasksList() {
-  // component logic
+  // lógica do componente
 }
 ```
 
-### UI Components
-- **EXCLUSIVELY** use Shadcn UI for building the UI
-- **EXCLUSIVELY** use icons from Lucide React
-- Installed Shadcn UI components are located in `~/components/ui`
-- If a component is missing, suggest installing it using Shadcn's CLI: `npx shadcn-ui@latest add [component-name]`
+### Componentes UI
+- Use **EXCLUSIVAMENTE** Shadcn UI para construir a interface
+- Use **EXCLUSIVAMENTE** ícones do Lucide React
+- Componentes Shadcn UI instalados estão localizados em `~/components/ui`
+- Se um componente estiver faltando, sugira instalá-lo usando o CLI do Shadcn: `npx shadcn-ui@latest add [component-name]`
 
-## Code Generation Guidelines
+## Diretrizes de Geração de Código
 
-### When creating route modules:
+### Ao criar módulos de rota:
 ```typescript
 import type { LoaderFunctionArgs } from 'react-router';
 import { useLoaderData } from 'react-router';
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  // Server-side data loading
+  // Carregamento de dados do lado do servidor
 }
 
 export default function ComponentName() {
   const data = useLoaderData<typeof loader>();
-  // Component logic
+  // Lógica do componente
 }
 ```
 
-### When creating feature components:
+### Ao criar componentes de feature:
 ```typescript
 interface ComponentNameProps {
-  // Props interface
+  // Interface de props
 }
 
 export function ComponentName({ ...props }: ComponentNameProps) {
-  // Component logic
+  // Lógica do componente
 }
 ```
 
-### When importing components:
+### Ao importar componentes:
 ```typescript
-// UI components
+// Componentes UI
 import { Button } from '~/components/ui/button';
 import { Card } from '~/components/ui/card';
 
-// Icons
+// Ícones
 import { Plus, Edit, Trash } from 'lucide-react';
 
-// Feature components
+// Componentes de feature
 import { TasksList } from '~/features/tasks/tasks-list';
 
 // React Router
 import { Form, redirect } from 'react-router';
 ```
 
-## File Structure Conventions
-- Route modules: `~/routes/[route-name].tsx`
-- Feature components: `~/features/[feature]/[component-name].tsx`
-- UI components: `~/components/ui/[component-name].tsx`
-- Services: `~/services/[service-name].server.ts`
-- Types: `~/features/[feature]/types.ts`
-- Utilities: `~/lib/utils.ts` or `~/features/[feature]/util.ts`
+## Convenções de Estrutura de Arquivos
+- Módulos de rota: `~/routes/[route-name].tsx`
+- Componentes de feature: `~/features/[feature]/[component-name].tsx`
+- Componentes UI: `~/components/ui/[component-name].tsx`
+- Serviços: `~/services/[service-name].server.ts`
+- Tipos: `~/features/[feature]/types.ts`
+- Utilitários: `~/lib/utils.ts` ou `~/features/[feature]/util.ts`
 
-## Error Handling
-- Always include ErrorBoundary exports in route modules when appropriate
-- Use server-side validation in actions
-- Handle loading states appropriately
+## Tratamento de Erros
+- Sempre inclua exportações ErrorBoundary em módulos de rota quando apropriado
+- Use validação do lado do servidor em actions
+- Trate estados de carregamento adequadamente
 
-## Performance Considerations
-- Leverage server-side rendering capabilities
-- Use React Router's built-in data loading patterns
-- Minimize client-side data fetching
+## Considerações de Performance
+- Aproveite as capacidades de renderização do lado do servidor
+- Use os padrões de carregamento de dados integrados do React Router
+- Minimize o carregamento de dados do lado do cliente
 
-## Code Quality Rules
-- Always use TypeScript with proper typing
-- Follow React hooks rules
-- Use proper error boundaries
-- Implement proper loading states
-- Follow accessibility best practices with Shadcn UI components
+## Regras de Qualidade de Código
+- Sempre use TypeScript com tipagem adequada
+- Siga as regras dos hooks do React
+- Use boundaries de erro apropriados
+- Implemente estados de carregamento adequados
+- Siga as melhores práticas de acessibilidade com componentes Shadcn UI
