@@ -8,31 +8,40 @@ datasource db {
   provider = "sqlite"
 }
 
+enum ChatMessageRole {
+  user
+  assistant
+  system
+}
+
 model Chat {
-  id         String        @id @default(uuid())
+  id         String   @id @default(uuid())
   title      String?
-  created_at DateTime      @default(now())
-  updated_at DateTime      @updatedAt
-  messages   ChatMessage[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  messages ChatMessage[]
 
   @@map("chats")
 }
 
 model ChatMessage {
-  id         String   @id @default(uuid())
+  id         String          @id @default(uuid())
   content    String
-  role       String   @default("user")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  chat_id    String
-  chat       Chat     @relation(fields: [chat_id], references: [id])
-  goal       Goal?
+  role       ChatMessageRole @default(user)
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
+
+  chat_id String
+  chat    Chat   @relation(fields: [chat_id], references: [id])
+
+  goal Goal?
 
   @@map("chat_messages")
 }
 
 model Goal {
-  id                    String       @id @default(uuid())
+  id                    String   @id @default(uuid())
   title                 String
   description           String
   estimated_time        String
@@ -40,10 +49,11 @@ model Goal {
   progress_indicators   Json?
   suggested_habits      Json?
   motivation_strategies String?
-  created_at            DateTime     @default(now())
-  updated_at            DateTime     @updatedAt
-  chat_message_id       String?      @unique
-  chat_message          ChatMessage? @relation(fields: [chat_message_id], references: [id])
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  chat_message    ChatMessage? @relation(fields: [chat_message_id], references: [id])
+  chat_message_id String?      @unique
 
   @@map("goals")
 }
