@@ -3,7 +3,7 @@ import { createChatMessages, getChatCompletions } from "~/services/chat.server";
 import prisma from "prisma/prisma";
 import { redirect } from "react-router";
 import { ChatMessageRole } from "~/generated/prisma";
-import type { Route } from "./+types/api.chat";
+import type { Route } from "./+types/new-goal-by-message";
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();

@@ -14,7 +14,7 @@ export default [
 		route("task/edit/:id", "routes/task-edit.tsx"),
 		route("task/view/:id", "routes/task-view.tsx"),
 	]),
-	route("api/chat", "routes/api.chat.ts"),
-	route("copilotkit", "routes/copilotkit.ts"),
-	route("action/set-theme", "routes/set-theme.ts"),
+	route("api/goals/new", "routes/api/new-goal-by-message.ts"),
+	route("api/copilotkit", "routes/api/copilotkit.ts"),
+	route("api/set-theme", "routes/api/set-theme.ts"),
 ] satisfies RouteConfig;
