@@ -8,10 +8,9 @@ import {
 export default [
 	layout("layouts/layout.tsx", [
 		index("routes/dashboard.tsx"),
-		route("tasks", "routes/tasks.tsx"),
+		route("goals/new", "routes/goals/new.tsx"),
+		route("goals", "routes/goals/list.tsx"),
 		route("chats", "routes/chats.tsx"),
-		route("race-cond", "routes/race-cond.tsx"),
-		route("task/new", "routes/task-new.tsx"),
 		route("task/edit/:id", "routes/task-edit.tsx"),
 		route("task/view/:id", "routes/task-view.tsx"),
 	]),
