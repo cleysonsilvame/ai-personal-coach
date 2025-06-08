@@ -4,7 +4,7 @@ import { ChatInterface } from "~/features/goals/chat-interface";
 import { GoalContent } from "~/features/goals/goal-content";
 import { GetChatMessagesUseCase } from "~/features/goals/use-cases/get-chat-messages.server";
 import { SendMessageUseCase } from "~/features/goals/use-cases/send-message.server";
-import { container } from "../_container";
+import { container } from "../../lib/container";
 import type { Route } from "./+types/new";
 
 const actionSchema = z.object({

@@ -1,4 +1,3 @@
-import { injectable } from "inversify";
 import prisma from "prisma/prisma";
 import { ChatRepository } from "~/features/goals/repositories/chat";
 import type { SelectSubset } from "~/generated/prisma/internal/prismaNamespace";
@@ -9,12 +8,6 @@ import type {
 } from "~/generated/prisma/models";
 
 export class PrismaChatRepository extends ChatRepository {
-	constructor() {
-		super();
-
-		console.log("PrismaChatRepository created");
-	}
-
 	async findById<T extends ChatDefaultArgs>(
 		id: string,
 		options?: SelectSubset<T, ChatDefaultArgs>,

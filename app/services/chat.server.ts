@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import prisma from "prisma/prisma";
 import { ChatMessageRole } from "~/generated/prisma";
-import { container } from "~/routes/_container";
+import { container } from "~/lib/container";
 import { ChatRepository } from "~/features/goals/repositories/chat";
 
 export const openRouterCliente = new OpenAI({
