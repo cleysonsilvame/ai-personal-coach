@@ -3,11 +3,11 @@ import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router";
 
 import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 } from "~/components/ui/sidebar";
 
 export function NavMain({
@@ -30,7 +30,7 @@ export function NavMain({
 							className="bg-none"
 						>
 							<NavLink
-								to="/task/new"
+								to="/goals/new"
 								className="[.active]:bg-primary [.active]:hover:bg-primary/90 transition-colors"
 							>
 								<IconCirclePlusFilled />
@@ -46,6 +46,7 @@ export function NavMain({
 								<NavLink
 									to={item.url}
 									className="[.active]:bg-primary [.active]:hover:bg-primary/90 transition-colors"
+									end
 								>
 									{item.icon && <item.icon />}
 									<span>{item.title}</span>
