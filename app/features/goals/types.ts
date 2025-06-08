@@ -1,4 +1,4 @@
-import type { ChatMessageGetPayload } from "~/generated/prisma/models";
+import type { ChatMessageGetPayload } from "generated/prisma/models";
 
 export interface GoalData {
 	assistant_message: string;

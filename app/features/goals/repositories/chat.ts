@@ -1,8 +1,5 @@
-import type { SelectSubset } from "~/generated/prisma/internal/prismaNamespace";
-import type {
-	ChatDefaultArgs,
-	ChatGetPayload,
-} from "~/generated/prisma/models";
+import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
+import type { ChatDefaultArgs, ChatGetPayload } from "generated/prisma/models";
 
 export abstract class ChatRepository {
 	abstract findById<T extends ChatDefaultArgs>(

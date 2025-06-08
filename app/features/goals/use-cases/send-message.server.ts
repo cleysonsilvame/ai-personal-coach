@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import type { SendMessageResult } from "~/features/goals/types";
-import { ChatMessageRole } from "~/generated/prisma";
+import { ChatMessageRole } from "generated/prisma";
 import { createChatMessages, getChatCompletions } from "~/services/chat.server";
 import { ChatRepository } from "../repositories/chat";
 

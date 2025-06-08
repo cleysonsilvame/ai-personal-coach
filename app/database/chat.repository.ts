@@ -1,11 +1,11 @@
 import { prisma } from "~/lib/prisma-client";
 import { ChatRepository } from "~/features/goals/repositories/chat";
-import type { SelectSubset } from "~/generated/prisma/internal/prismaNamespace";
+import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
 import type {
 	ChatCreateArgs,
 	ChatDefaultArgs,
 	ChatFindUniqueArgs,
-} from "~/generated/prisma/models";
+} from "generated/prisma/models";
 
 export class PrismaChatRepository extends ChatRepository {
 	async findById<T extends ChatDefaultArgs>(

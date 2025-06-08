@@ -1,5 +1,5 @@
 import { adapter } from "prisma.config";
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "generated/prisma";
 
 declare global {
 	var prismaClient: PrismaClient;
