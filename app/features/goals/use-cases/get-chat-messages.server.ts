@@ -3,8 +3,8 @@ import type {
 	GetChatMessagesResult,
 	MappedMessage,
 } from "~/features/goals/types";
-import { ChatMessageRole } from "~/generated/prisma";
 import { ChatRepository } from "../repositories/chat";
+import { ChatMessageRole } from "generated/prisma";
 
 @injectable()
 export class GetChatMessagesUseCase {
