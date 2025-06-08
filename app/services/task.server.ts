@@ -1,11 +1,11 @@
-import { type Document } from "langchain/document";
+import type { Document } from "langchain/document";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { z } from "zod";
-import { client } from "./chat.server";
 import prisma from "prisma/prisma";
-import { cache } from "./cache";
+import { z } from "zod";
 import type { SimilarTask } from "~/features/tasks/types";
 import { prepareListData } from "~/features/tasks/util";
+import { cache } from "./cache";
+import { geminiClient } from "./chat.server";
 
 export const TaskInputSchema = z.object({
   title: z.string().nullable().optional(),
@@ -21,8 +21,8 @@ export type TaskData = z.infer<typeof TaskInputSchema>;
 
 export async function findSimilarTasks(
   title: string,
-  limit: number = 3,
-  cutOff: number = 0.45
+  limit = 3,
+  cutOff = 0.45
 ) {
   const cachedSimilarTasks = await cache.get(title);
 
@@ -31,8 +31,8 @@ export async function findSimilarTasks(
   }
 
   try {
-    const response = await client.embeddings.create({
-      model: "text-embedding-3-large",
+    const response = await geminiClient.embeddings.create({
+      model: "models/text-embedding-004",
       input: title,
     });
     const queryEmbedding = response.data[0].embedding;
@@ -40,7 +40,7 @@ export async function findSimilarTasks(
     validateEmbedding(queryEmbedding);
 
     const similarTasks = await prisma.$queryRaw<SimilarTask[]>`
-        SELECT 
+        SELECT
           t.id,
           t.title,
           t.description,
@@ -175,8 +175,8 @@ async function createEmbeddingsFromDocuments(
 ) {
   return await Promise.all(
     chunks.map(async (chunk) => {
-      const response = await client.embeddings.create({
-        model: "text-embedding-3-large",
+      const response = await geminiClient.embeddings.create({
+        model: "models/text-embedding-004",
         input: chunk.pageContent,
       });
       return {
@@ -189,23 +189,23 @@ async function createEmbeddingsFromDocuments(
 }
 
 export async function deleteTask(formData: FormData) {
-  await prisma.task.delete({
+  await prisma.goal.delete({
     where: {
       id: formData.get("task_id") as string,
     },
   });
 }
 
-export async function getTasks() {
-  return await prisma.task.findMany({
+export async function getGoals() {
+  return await prisma.goal.findMany({
     include: {
       chat_message: true,
     },
   });
 }
 
-export async function getTask(taskId: string) {
-  return await prisma.task.findUnique({
+export async function getGoal(taskId: string) {
+  return await prisma.goal.findUnique({
     where: {
       id: taskId,
     },
@@ -228,7 +228,7 @@ export async function updateTask(task_id: string, formData: FormData) {
     ) as string,
   };
 
-  await prisma.task.update({
+  await prisma.goal.update({
     where: {
       id: task_id,
     },

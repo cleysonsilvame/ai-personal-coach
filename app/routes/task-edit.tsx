@@ -1,8 +1,8 @@
-import { getTask, updateTask } from "~/services/task.server";
+import { getGoal, updateTask } from "~/services/task.server";
 
-import type { Route } from "./+types/task-edit";
-import { TaskForm } from "~/features/tasks/tasks-form";
 import { redirect } from "react-router";
+import { TaskForm } from "~/features/tasks/tasks-form";
+import type { Route } from "./+types/task-edit";
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -22,7 +22,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const task = await getTask(params.id as string);
+  const task = await getGoal(params.id as string);
 
   if (!task) {
     return redirect("/tasks");

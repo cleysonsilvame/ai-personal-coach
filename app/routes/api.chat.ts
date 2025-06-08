@@ -1,53 +1,53 @@
 import { createChatMessages, getChatCompletions } from "~/services/chat.server";
 
-import { ChatMessageRole } from "~/generated/prisma";
-import type { Route } from "./+types/api.chat";
 import prisma from "prisma/prisma";
 import { redirect } from "react-router";
+import { ChatMessageRole } from "~/generated/prisma";
+import type { Route } from "./+types/api.chat";
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const userInput = formData.get("message") as string;
-  const chatId = formData.get("chatId") as string;
+	const formData = await request.formData();
+	console.log("Form Data:", formData);
+	// const message_id = formData.get("message_id") as string;
+	// const task_id = formData.get("task_id") as string;
 
-  const userMessage = {
-    content: userInput,
-    role: ChatMessageRole.user,
-  };
+	// const message = await prisma.chatMessage.findUnique({
+	// 	where: {
+	// 		id: message_id,
+	// 	},
+	// });
 
-  let chat;
+	// if (!message) {
+	// 	return { error: "Mensagem não encontrada" };
+	// }
 
-  if (chatId) {
-    chat = await prisma.chat.findUnique({
-      where: {
-        id: chatId,
-      },
-      include: {
-        messages: true,
-      },
-    });
+	// const content = JSON.parse(message.content);
 
-    if (chat) {
-      const assistantMessage = {
-        content:
-          (await getChatCompletions([...chat.messages, userMessage])) ?? "",
-        role: ChatMessageRole.assistant,
-      };
+	// const taskData = {
+	// 	title: content.title,
+	// 	description: content.description,
+	// 	steps: JSON.stringify(content.steps),
+	// 	acceptance_criteria: JSON.stringify(content.acceptance_criteria),
+	// 	suggested_tests: JSON.stringify(content.suggested_tests),
+	// 	estimated_time: content.estimated_time,
+	// 	implementation_suggestion: content.implementation_suggestion,
+	// 	chat_message_id: message_id,
+	// };
 
-      await createChatMessages(chat.id, userMessage, assistantMessage);
-    }
-  } else {
-    const assistantMessage = {
-      content: (await getChatCompletions([userMessage])) ?? "",
-      role: ChatMessageRole.assistant,
-    };
+	// if (task_id) {
+	// 	await prisma.task.update({
+	// 		where: {
+	// 			id: task_id,
+	// 		},
+	// 		data: taskData,
+	// 	});
 
-    chat = await prisma.chat.create({
-      data: {},
-    });
+	// 	await storeTaskAsEmbeddings(task_id, taskData);
+	// } else {
+	// 	const task = await prisma.task.create({
+	// 		data: taskData,
+	// 	});
 
-    await createChatMessages(chat.id, userMessage, assistantMessage);
-
-    return redirect(`/task/new?chat=${chat.id}`);
-  }
+	// 	await storeTaskAsEmbeddings(task.id, taskData);
+	// }
 }

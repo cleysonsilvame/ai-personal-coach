@@ -1,11 +1,11 @@
-import { findSimilarTasks, getTask } from "~/services/task.server";
+import { findSimilarTasks, getGoal } from "~/services/task.server";
 
-import type { Route } from "./+types/task-view";
-import { TaskView } from "~/features/tasks/task-view";
 import { redirect } from "react-router";
+import { TaskView } from "~/features/tasks/task-view";
+import type { Route } from "./+types/task-view";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const task = await getTask(params.id as string);
+  const task = await getGoal(params.id as string);
 
   if (!task) {
     return redirect("/tasks");
