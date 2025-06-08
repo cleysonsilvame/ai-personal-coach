@@ -1,60 +1,49 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
   previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./database/dev.db"
-}
-
-enum ChatMessageRole {
-  user
-  assistant
-  system
 }
 
 model Chat {
-  id       String   @id @default(uuid())
-  title     String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  messages ChatMessage[]
+  id         String        @id @default(uuid())
+  title      String?
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  messages   ChatMessage[]
 
   @@map("chats")
 }
 
 model ChatMessage {
-  id       String   @id @default(uuid())
-  content   String
-  role ChatMessageRole @default(user)
+  id         String   @id @default(uuid())
+  content    String
+  role       String   @default("user")
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
-  chat_id String
-  chat Chat @relation(fields: [chat_id], references: [id])
-
-  goal      Goal?
+  chat_id    String
+  chat       Chat     @relation(fields: [chat_id], references: [id])
+  goal       Goal?
 
   @@map("chat_messages")
 }
 
 model Goal {
-  id                        String   @id @default(uuid())
-  title                     String
-  description               String
-  estimated_time            String
-  action_steps              Json?    // Array de strings: ["passo 1", "passo 2", ...]
-  progress_indicators       Json?    // Array de strings: ["indicador 1", "indicador 2", ...]
-  suggested_habits          Json?    // Array de strings: ["hábito 1", "hábito 2", ...]
-  motivation_strategies     String?  // Texto livre (estratégias de motivação)
-  created_at                DateTime @default(now())
-  updated_at                DateTime @updatedAt
-
-  chat_message                      ChatMessage?     @relation(fields: [chat_message_id], references: [id])
-  chat_message_id                   String?      @unique
+  id                    String       @id @default(uuid())
+  title                 String
+  description           String
+  estimated_time        String
+  action_steps          Json?
+  progress_indicators   Json?
+  suggested_habits      Json?
+  motivation_strategies String?
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @updatedAt
+  chat_message_id       String?      @unique
+  chat_message          ChatMessage? @relation(fields: [chat_message_id], references: [id])
 
   @@map("goals")
 }

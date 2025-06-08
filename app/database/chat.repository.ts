@@ -1,4 +1,4 @@
-import prisma from "prisma/prisma";
+import { prisma } from "~/lib/prisma-client";
 import { ChatRepository } from "~/features/goals/repositories/chat";
 import type { SelectSubset } from "~/generated/prisma/internal/prismaNamespace";
 import type {

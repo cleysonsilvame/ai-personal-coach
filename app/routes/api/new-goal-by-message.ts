@@ -1,6 +1,6 @@
 import { createChatMessages, getChatCompletions } from "~/services/chat.server";
 
-import prisma from "prisma/prisma";
+import { prisma } from "~/lib/prisma-client";
 import { redirect } from "react-router";
 import { ChatMessageRole } from "~/generated/prisma";
 import type { Route } from "./+types/new-goal-by-message";

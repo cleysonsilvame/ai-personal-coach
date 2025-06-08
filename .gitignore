@@ -6,5 +6,5 @@
 /build/
 repomix-output.md
 .env
-/app/generated/
+**/generated
 *.db

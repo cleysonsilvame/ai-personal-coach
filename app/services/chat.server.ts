@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import prisma from "prisma/prisma";
+import { prisma } from "~/lib/prisma-client";
 import { ChatMessageRole } from "~/generated/prisma";
 import { container } from "~/lib/container";
 import { ChatRepository } from "~/features/goals/repositories/chat";
