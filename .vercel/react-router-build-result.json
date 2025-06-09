@@ -1,0 +1,208 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs_eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "root": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/dashboard": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/goals/new": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/goals/list": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/chats": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/task-edit": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/task-view": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api/new-goal-by-message": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api/copilotkit": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api/set-theme": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api/sidebar": "nodejs_eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "app/root.tsx",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "layouts/layout": {
+        "id": "layouts/layout",
+        "parentId": "root",
+        "file": "app/layouts/layout.tsx",
+        "config": {}
+      },
+      "routes/dashboard": {
+        "id": "routes/dashboard",
+        "parentId": "layouts/layout",
+        "file": "app/routes/dashboard.tsx",
+        "index": true,
+        "config": {}
+      },
+      "routes/goals/new": {
+        "id": "routes/goals/new",
+        "parentId": "layouts/layout",
+        "file": "app/routes/goals/new.tsx",
+        "path": "goals/new",
+        "config": {}
+      },
+      "routes/goals/list": {
+        "id": "routes/goals/list",
+        "parentId": "layouts/layout",
+        "file": "app/routes/goals/list.tsx",
+        "path": "goals",
+        "config": {}
+      },
+      "routes/chats": {
+        "id": "routes/chats",
+        "parentId": "layouts/layout",
+        "file": "app/routes/chats.tsx",
+        "path": "chats",
+        "config": {}
+      },
+      "routes/task-edit": {
+        "id": "routes/task-edit",
+        "parentId": "layouts/layout",
+        "file": "app/routes/task-edit.tsx",
+        "path": "task/edit/:id",
+        "config": {}
+      },
+      "routes/task-view": {
+        "id": "routes/task-view",
+        "parentId": "layouts/layout",
+        "file": "app/routes/task-view.tsx",
+        "path": "task/view/:id",
+        "config": {}
+      },
+      "routes/api/new-goal-by-message": {
+        "id": "routes/api/new-goal-by-message",
+        "parentId": "root",
+        "file": "app/routes/api/new-goal-by-message.ts",
+        "path": "api/goals/new",
+        "config": {}
+      },
+      "routes/api/copilotkit": {
+        "id": "routes/api/copilotkit",
+        "parentId": "root",
+        "file": "app/routes/api/copilotkit.ts",
+        "path": "api/copilotkit",
+        "config": {}
+      },
+      "routes/api/set-theme": {
+        "id": "routes/api/set-theme",
+        "parentId": "root",
+        "file": "app/routes/api/set-theme.ts",
+        "path": "api/set-theme",
+        "config": {}
+      },
+      "routes/api/sidebar": {
+        "id": "routes/api/sidebar",
+        "parentId": "root",
+        "file": "app/routes/api/sidebar.ts",
+        "path": "api/sidebar",
+        "config": {}
+      }
+    }
+  },
+  "reactRouterConfig": {
+    "appDirectory": "/home/cyn/www/ai-personal-coach/app",
+    "basename": "/",
+    "buildDirectory": "/home/cyn/www/ai-personal-coach/build",
+    "future": {
+      "unstable_middleware": false,
+      "unstable_optimizeDeps": false,
+      "unstable_splitRouteModules": false,
+      "unstable_subResourceIntegrity": false,
+      "unstable_viteEnvironmentApi": false
+    },
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "root.tsx"
+      },
+      "layouts/layout": {
+        "id": "layouts/layout",
+        "parentId": "root",
+        "file": "layouts/layout.tsx"
+      },
+      "routes/dashboard": {
+        "id": "routes/dashboard",
+        "parentId": "layouts/layout",
+        "file": "routes/dashboard.tsx",
+        "index": true
+      },
+      "routes/goals/new": {
+        "id": "routes/goals/new",
+        "parentId": "layouts/layout",
+        "file": "routes/goals/new.tsx",
+        "path": "goals/new"
+      },
+      "routes/goals/list": {
+        "id": "routes/goals/list",
+        "parentId": "layouts/layout",
+        "file": "routes/goals/list.tsx",
+        "path": "goals"
+      },
+      "routes/chats": {
+        "id": "routes/chats",
+        "parentId": "layouts/layout",
+        "file": "routes/chats.tsx",
+        "path": "chats"
+      },
+      "routes/task-edit": {
+        "id": "routes/task-edit",
+        "parentId": "layouts/layout",
+        "file": "routes/task-edit.tsx",
+        "path": "task/edit/:id"
+      },
+      "routes/task-view": {
+        "id": "routes/task-view",
+        "parentId": "layouts/layout",
+        "file": "routes/task-view.tsx",
+        "path": "task/view/:id"
+      },
+      "routes/api/new-goal-by-message": {
+        "id": "routes/api/new-goal-by-message",
+        "parentId": "root",
+        "file": "routes/api/new-goal-by-message.ts",
+        "path": "api/goals/new"
+      },
+      "routes/api/copilotkit": {
+        "id": "routes/api/copilotkit",
+        "parentId": "root",
+        "file": "routes/api/copilotkit.ts",
+        "path": "api/copilotkit"
+      },
+      "routes/api/set-theme": {
+        "id": "routes/api/set-theme",
+        "parentId": "root",
+        "file": "routes/api/set-theme.ts",
+        "path": "api/set-theme"
+      },
+      "routes/api/sidebar": {
+        "id": "routes/api/sidebar",
+        "parentId": "root",
+        "file": "routes/api/sidebar.ts",
+        "path": "api/sidebar"
+      }
+    },
+    "routeDiscovery": {
+      "mode": "lazy",
+      "manifestPath": "/__manifest"
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}

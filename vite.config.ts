@@ -4,13 +4,10 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
-  resolve: {
-    alias: {
-      '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
-    },
-  },
-  build: {
-    sourcemap: true,
-  }
+	plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+	resolve: {
+		alias: {
+			"@tabler/icons-react": "@tabler/icons-react/dist/esm/icons/index.mjs",
+		},
+	},
 });
