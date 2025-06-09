@@ -47,7 +47,7 @@ export function GoalsList() {
 										title="Chat"
 										disabled={!goal.chat_message}
 									>
-										<Link to={`/task/new?chat=${goal.chat_message?.chat_id}`}>
+										<Link to={`/goals/new?chat=${goal.chat_message?.chat_id}`}>
 											<MessageCircle className="h-4 w-4" />
 										</Link>
 									</Button>
