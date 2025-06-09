@@ -6,7 +6,7 @@ import { SiteHeader } from "~/components/site-header";
 
 export default function () {
 	return (
-		<SidebarProvider // TODO: save sidebar state on storage (cookies or local storage)
+		<SidebarProvider
 			style={
 				{
 					"--sidebar-width": "calc(var(--spacing) * 72)",

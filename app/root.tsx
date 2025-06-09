@@ -22,6 +22,7 @@ import {
 	useTheme,
 } from "remix-themes";
 import { themeSessionResolver } from "./services/sessions.server";
+import { userPrefs } from "./services/cookies.server";
 
 export const links: Route.LinksFunction = () => [
 	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -38,8 +39,14 @@ export const links: Route.LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { getTheme } = await themeSessionResolver(request);
+
+	// Get sidebar state from cookie
+	const cookieHeader = request.headers.get("Cookie");
+	const userPrefsState = await userPrefs.parse(cookieHeader);
+
 	return {
 		theme: getTheme(),
+		sidebarOpen: userPrefsState?.sidebarOpen,
 	};
 }
 
