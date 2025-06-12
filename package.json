@@ -5,7 +5,7 @@
 	"scripts": {
 		"build": "npx prisma generate && react-router build",
 		"dev": "react-router dev",
-		"start": "react-router-serve ./build/server/index.js",
+		"start": "react-router-serve ./build/server/**/index.js",
 		"typecheck": "react-router typegen && tsc",
 		"vercel-build": "prisma generate && prisma db push && npm run build"
 	},
