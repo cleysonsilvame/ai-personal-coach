@@ -3,7 +3,6 @@ description: Toda vez que for citado "domain", "domínio" do projeto, você deve
 globs:
 alwaysApply: false
 ---
-
 # 📌 PRD: Funcionalidade de Objetivos Pessoais com Refinamento por Chatbot
 
 ## Visão Geral
@@ -48,47 +47,80 @@ Usuários fornecem:
 
 O sistema envia a descrição do objetivo juntamente com o contexto de desenvolvimento pessoal para a **OpenAI**, instruindo o modelo a responder como um coach de vida experiente.
 
-### Exemplo de Prompt:
+### Prompt do Sistema (SYSTEM_PROMPT)
 
-```
-Você é um coach de vida experiente especializado em desenvolvimento pessoal e estabelecimento de metas.
-Por favor, refine o seguinte objetivo pessoal e retorne um objeto JSON com:
-título, descrição, passos_de_acao, tempo_estimado, indicadores_de_progresso, habitos_sugeridos e estrategias_de_motivacao.
-
-Objetivo original: "quero aprender inglês fluente"
-```
-
----
-
-## 📤 Saída JSON Esperada
+- Sempre responda em **português brasileiro (pt_BR)**.
+- Se uma conversa já possui resposta anterior do assistant com JSON válido, use-a como base para expansões ou modificações, realizando apenas alterações cirúrgicas e mantendo o restante intacto.
+- O chatbot deve responder **exclusivamente** com um **JSON válido**, sem qualquer texto adicional, formatação markdown ou explicações.
+- O JSON deve seguir o seguinte **schema obrigatório**:
 
 ```json
 {
-  "title": "Desenvolver Fluência em Inglês através de Prática Estruturada",
-  "description": "Estabelecer um plano estruturado para alcançar fluência em inglês através de prática diária, imersão cultural e uso de ferramentas variadas de aprendizado.",
-  "estimated_time": "12-18 meses",
-  "action_steps": [
-    "Avaliar nível atual através de teste de proficiência",
-    "Estabelecer rotina diária de 30 minutos de estudo",
-    "Inscrever-se em curso online estruturado",
-    "Praticar conversação semanal com falantes nativos",
-    "Consumir mídia em inglês (filmes, podcasts, livros)",
-    "Fazer avaliações mensais de progresso"
-  ],
-  "progress_indicators": [
-    "Conseguir manter conversação de 10 minutos sem pausas",
-    "Compreender 80% de um filme sem legendas",
-    "Ler um livro completo em inglês",
-    "Obter pontuação específica em teste oficial (ex: TOEFL 100+)"
-  ],
-  "suggested_habits": [
-    "Estudar inglês 30 minutos toda manhã",
-    "Mudar idioma do celular para inglês",
-    "Escrever diário pessoal em inglês",
-    "Assistir notícias em inglês durante café da manhã"
-  ],
-  "motivation_strategies": "Definir marcos mensais com recompensas, encontrar parceiro de estudos, participar de grupos de conversação, visualizar objetivos futuros que requerem inglês (viagens, trabalho internacional)."
+  "message": "string - mensagem amigável resumindo a resposta",
+  "data": {
+    "title": "string - título do objetivo refinado",
+    "description": "string - descrição detalhada do objetivo",
+    "estimated_time": "string - tempo estimado para conclusão",
+    "action_steps": ["array de strings - passos específicos para alcançar o objetivo"],
+    "progress_indicators": ["array de strings - indicadores mensuráveis de progresso"],
+    "suggested_habits": ["array de strings - hábitos diários/semanais recomendados"],
+    "motivation_strategies": "string - estratégias para manter motivação"
+  }
 }
+```
+
+- Para casos de erro ou quando não conseguir processar o objetivo, o chatbot deve responder apenas com:
+
+```json
+{
+  "message": "string - mensagem explicando o problema ou solicitando mais informações"
+}
+```
+
+#### Regras Críticas de Formatação
+1. Responda **apenas** com JSON válido - sem texto antes, depois ou ao redor.
+2. Use **aspas duplas** para strings, nunca aspas simples.
+3. Escape caracteres especiais corretamente (`\", \\, etc.`).
+4. Não use quebras de linha desnecessárias dentro de strings.
+5. Certifique-se de que todos os arrays e objetos estão corretamente fechados.
+6. O JSON deve ser parseável por `JSON.parse()`.
+
+#### Exemplo de Resposta Válida
+```json
+{
+  "message": "Refinei seu objetivo de aprender inglês com um plano estruturado. O que acha dessa abordagem?",
+  "data": {
+    "title": "Desenvolver Fluência em Inglês através de Prática Estruturada",
+    "description": "Estabelecer um plano estruturado para alcançar fluência em inglês através de prática diária, imersão cultural e uso de ferramentas variadas de aprendizado.",
+    "estimated_time": "12-18 meses",
+    "action_steps": [
+      "Avaliar nível atual através de teste de proficiência",
+      "Estabelecer rotina diária de 30 minutos de estudo",
+      "Inscrever-se em curso online estruturado",
+      "Praticar conversação semanal com falantes nativos",
+      "Consumir mídia em inglês (filmes, podcasts, livros)",
+      "Fazer avaliações mensais de progresso"
+    ],
+    "progress_indicators": [
+      "Conseguir manter conversação de 10 minutos sem pausas",
+      "Compreender 80% de um filme sem legendas",
+      "Ler um livro completo em inglês",
+      "Obter pontuação específica em teste oficial (ex: TOEFL 100+)",
+    ],
+    "suggested_habits": [
+      "Estudar inglês 30 minutos toda manhã",
+      "Mudar idioma do celular para inglês",
+      "Escrever diário pessoal em inglês",
+      "Assistir notícias em inglês durante café da manhã"
+    ],
+    "motivation_strategies": "Definir marcos mensais com recompensas, encontrar parceiro de estudos, participar de grupos de conversação, visualizar objetivos futuros que requerem inglês (viagens, trabalho internacional)."
+  }
+}
+```
+
+#### Exemplo de Resposta de Erro
+```json
+{"message":"Não consegui entender seu objetivo. Poderia fornecer mais detalhes sobre o que deseja alcançar?"}
 ```
 
 ---
