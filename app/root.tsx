@@ -37,6 +37,8 @@ export const links: Route.LinksFunction = () => [
 	},
 ];
 
+export const meta: Route.MetaFunction = () => [{ title: "AI Personal Coach" }];
+
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { getTheme } = await themeSessionResolver(request);
 
