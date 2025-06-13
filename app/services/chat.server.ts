@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
 	ChatService,
 	type ChatServiceMessage,
-} from "~/features/goals/services/chat";
+} from "~/features/chats/services/chat";
 
 export const openRouterClient = new OpenAI({
 	apiKey: process.env.OPEN_ROUTER_API_KEY,

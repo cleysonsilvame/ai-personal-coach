@@ -1,7 +1,7 @@
 import { Container } from "inversify";
 import { PrismaChatRepository } from "~/database/chat.repository";
-import { ChatRepository } from "~/features/goals/repositories/chat";
-import { ChatService } from "~/features/goals/services/chat";
+import { ChatRepository } from "~/features/chats/repositories/chat";
+import { ChatService } from "~/features/chats/services/chat";
 import { OpenRouterChatService } from "~/services/chat.server";
 
 const container = new Container({

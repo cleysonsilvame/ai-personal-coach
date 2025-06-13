@@ -1,5 +1,5 @@
 import type { ChatMessageGetPayload } from "generated/prisma/models";
-import type { ChatMessageContentData } from "./mappers/chat-messages";
+import type { ChatMessageContentData } from "../chats/mappers/chat-messages";
 
 interface Message
 	extends Omit<ChatMessageGetPayload<{ include: { goal: true } }>, "content"> {

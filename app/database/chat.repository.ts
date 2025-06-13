@@ -1,5 +1,5 @@
 import { prisma } from "~/lib/prisma-client";
-import { ChatRepository } from "~/features/goals/repositories/chat";
+import { ChatRepository } from "~/features/chats/repositories/chat";
 import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
 import type {
 	ChatCreateArgs,
@@ -58,13 +58,21 @@ export class PrismaChatRepository extends ChatRepository {
 	}
 
 	async deleteChat(chatId: string) {
+		await prisma.chatMessage.deleteMany({
+			where: {
+				chat_id: chatId,
+			},
+		});
+
 		await prisma.chat.delete({
 			where: {
 				id: chatId,
 			},
-			include: {
-				messages: true,
-			},
 		});
+	}
+
+	async findAll() {
+		const chats = await prisma.chat.findMany();
+		return chats;
 	}
 }

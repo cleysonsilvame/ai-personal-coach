@@ -1,6 +1,6 @@
 import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
 import type { ChatDefaultArgs, ChatGetPayload } from "generated/prisma/models";
-import type { ChatMessageRole } from "generated/prisma";
+import type { Chat, ChatMessageRole } from "generated/prisma";
 
 export abstract class ChatRepository {
 	abstract findById<T extends ChatDefaultArgs>(
@@ -21,4 +21,6 @@ export abstract class ChatRepository {
 	): Promise<void>;
 
 	abstract deleteChat(chatId: string): Promise<void>;
+
+	abstract findAll(): Promise<Chat[]>;
 }

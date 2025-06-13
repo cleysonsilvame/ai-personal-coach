@@ -1,8 +1,8 @@
 import { inject, injectable } from "inversify";
 import type { GetChatMessagesResult } from "~/features/goals/types";
-import { ChatRepository } from "../repositories/chat";
+import { ChatRepository } from "../../chats/repositories/chat";
 import { ChatMessageRole } from "generated/prisma";
-import { ChatMessagesMapper } from "../mappers/chat-messages";
+import { ChatMessagesMapper } from "../../chats/mappers/chat-messages";
 
 @injectable()
 export class GetChatMessagesUseCase {
