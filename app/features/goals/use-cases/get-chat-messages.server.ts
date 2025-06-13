@@ -1,10 +1,8 @@
 import { inject, injectable } from "inversify";
-import type {
-	GetChatMessagesResult,
-	MappedMessage,
-} from "~/features/goals/types";
+import type { GetChatMessagesResult } from "~/features/goals/types";
 import { ChatRepository } from "../repositories/chat";
 import { ChatMessageRole } from "generated/prisma";
+import { ChatMessagesMapper } from "../mappers/chat-messages";
 
 @injectable()
 export class GetChatMessagesUseCase {
@@ -26,18 +24,7 @@ export class GetChatMessagesUseCase {
 			return { messages: [] };
 		}
 
-		const messages: MappedMessage[] = chat.messages.map((message) => {
-			if (message.role === ChatMessageRole.assistant) {
-				const goal_content = JSON.parse(message.content);
-				return {
-					...message,
-					content: goal_content.assistant_message,
-					goal_content,
-				};
-			}
-
-			return message;
-		});
+		const messages = chat.messages.map(ChatMessagesMapper.toDomain);
 
 		const lastMessage = messages[messages.length - 1];
 
@@ -48,7 +35,7 @@ export class GetChatMessagesUseCase {
 			messages,
 			goal_id: lastMessage.goal?.id,
 			message_id: lastMessage.id,
-			goal_content: lastMessage.goal_content,
+			goal_content: lastMessage.content.data,
 		};
 	}
 }

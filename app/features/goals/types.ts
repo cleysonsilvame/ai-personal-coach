@@ -1,26 +1,16 @@
 import type { ChatMessageGetPayload } from "generated/prisma/models";
+import type { ChatMessageContentData } from "./mappers/chat-messages";
 
-export interface GoalData {
-	assistant_message: string;
-	title: string;
-	description: string;
-	estimated_time: string;
-	action_steps: string[];
-	progress_indicators: string[];
-	suggested_habits: string[];
-	motivation_strategies: string;
-}
-
-export interface MappedMessage
-	extends ChatMessageGetPayload<{ include: { goal: true } }> {
-	goal_content?: GoalData;
+interface Message
+	extends Omit<ChatMessageGetPayload<{ include: { goal: true } }>, "content"> {
+	content: ChatMessageContentData;
 }
 
 export interface GetChatMessagesResult {
-	messages: MappedMessage[];
+	messages: Message[];
 	goal_id?: string;
 	message_id?: string;
-	goal_content?: GoalData;
+	goal_content?: ChatMessageContentData["data"];
 }
 
 export interface SendMessageResult {

@@ -55,7 +55,7 @@ export function ChatInterface() {
 									data-role={message.role}
 									className="rounded-lg p-3 data-[role='user']:bg-primary data-[role='user']:text-primary-foreground data-[role='assistant']:bg-muted"
 								>
-									<p className="text-sm">{message.content}</p>
+									<p className="text-sm">{message.content.message}</p>
 									<p className="text-xs opacity-70 mt-1">
 										{new Date(message.created_at).toLocaleTimeString([], {
 											hour: "2-digit",
