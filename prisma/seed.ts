@@ -95,73 +95,77 @@ const personalGoals = [
 // Mensagens de assistente que seguem o formato JSON do sistema
 const assistantResponses = [
 	{
-		title: "Desenvolver Fluência em Inglês através de Prática Estruturada",
-		description:
-			"Estabelecer um plano estruturado para alcançar fluência em inglês através de prática diária, imersão cultural e uso de ferramentas variadas de aprendizado.",
-		estimated_time: "12-18 meses",
-		action_steps: [
-			"Avaliar nível atual através de teste de proficiência",
-			"Estabelecer rotina diária de 30 minutos de estudo",
-			"Inscrever-se em curso online estruturado",
-			"Praticar conversação semanal com falantes nativos",
-			"Consumir mídia em inglês (filmes, podcasts, livros)",
-		],
-		progress_indicators: [
-			"Conseguir manter conversação de 10 minutos sem pausas",
-			"Compreender 80% de um filme sem legendas",
-			"Ler um livro completo em inglês",
-			"Obter pontuação TOEFL 100+",
-		],
-		suggested_habits: [
-			"Estudar inglês 30 minutos toda manhã",
-			"Mudar idioma do celular para inglês",
-			"Escrever diário pessoal em inglês",
-			"Assistir notícias em inglês durante café",
-		],
-		motivation_strategies:
-			"Definir marcos mensais com recompensas, encontrar parceiro de estudos, participar de grupos de conversação, visualizar objetivos futuros que requerem inglês.",
-		assistant_message:
+		message:
 			"Entendi seu objetivo de aprender inglês! Refinei sua meta com alguns passos e sugestões. Que tal?",
+		data: {
+			title: "Desenvolver Fluência em Inglês através de Prática Estruturada",
+			description:
+				"Estabelecer um plano estruturado para alcançar fluência em inglês através de prática diária, imersão cultural e uso de ferramentas variadas de aprendizado.",
+			estimated_time: "12-18 meses",
+			action_steps: [
+				"Avaliar nível atual através de teste de proficiência",
+				"Estabelecer rotina diária de 30 minutos de estudo",
+				"Inscrever-se em curso online estruturado",
+				"Praticar conversação semanal com falantes nativos",
+				"Consumir mídia em inglês (filmes, podcasts, livros)",
+			],
+			progress_indicators: [
+				"Conseguir manter conversação de 10 minutos sem pausas",
+				"Compreender 80% de um filme sem legendas",
+				"Ler um livro completo em inglês",
+				"Obter pontuação TOEFL 100+",
+			],
+			suggested_habits: [
+				"Estudar inglês 30 minutos toda manhã",
+				"Mudar idioma do celular para inglês",
+				"Escrever diário pessoal em inglês",
+				"Assistir notícias em inglês durante café",
+			],
+			motivation_strategies:
+				"Definir marcos mensais com recompensas, encontrar parceiro de estudos, participar de grupos de conversação, visualizar objetivos futuros que requerem inglês.",
+		},
 	},
 	{
-		title: "Estabelecer Rotina de Exercícios e Alimentação Saudável",
-		description:
-			"Criar um estilo de vida ativo e nutritivo que promova saúde física e mental a longo prazo.",
-		estimated_time: "6-12 meses",
-		action_steps: [
-			"Fazer check-up médico completo",
-			"Definir metas específicas de condicionamento",
-			"Criar cronograma semanal de exercícios",
-			"Planejar cardápio semanal balanceado",
-			"Estabelecer rotina de acompanhamento",
-		],
-		progress_indicators: [
-			"Perder 8-12kg de forma saudável",
-			"Conseguir correr 5km continuamente",
-			"Melhorar exames laboratoriais",
-			"Sentir mais energia no dia a dia",
-		],
-		suggested_habits: [
-			"Treinar 4x por semana no mesmo horário",
-			"Preparar refeições saudáveis no domingo",
-			"Caminhar pelo menos 8.000 passos diários",
-			"Dormir 7-8 horas por noite",
-		],
-		motivation_strategies:
-			"Tirar fotos de progresso mensais, usar aplicativo de tracking, definir recompensas por metas, encontrar parceiro de treino.",
-		assistant_message:
+		message:
 			"Perfeito! Estruturei um plano completo de saúde e fitness. Vamos começar com uma avaliação médica e evoluir gradualmente!",
+		data: {
+			title: "Estabelecer Rotina de Exercícios e Alimentação Saudável",
+			description:
+				"Criar um estilo de vida ativo e nutritivo que promova saúde física e mental a longo prazo.",
+			estimated_time: "6-12 meses",
+			action_steps: [
+				"Fazer check-up médico completo",
+				"Definir metas específicas de condicionamento",
+				"Criar cronograma semanal de exercícios",
+				"Planejar cardápio semanal balanceado",
+				"Estabelecer rotina de acompanhamento",
+			],
+			progress_indicators: [
+				"Perder 8-12kg de forma saudável",
+				"Conseguir correr 5km continuamente",
+				"Melhorar exames laboratoriais",
+				"Sentir mais energia no dia a dia",
+			],
+			suggested_habits: [
+				"Treinar 4x por semana no mesmo horário",
+				"Preparar refeições saudáveis no domingo",
+				"Caminhar pelo menos 8.000 passos diários",
+				"Dormir 7-8 horas por noite",
+			],
+			motivation_strategies:
+				"Tirar fotos de progresso mensais, usar aplicativo de tracking, definir recompensas por metas, encontrar parceiro de treino.",
+		},
 	},
 	{
-		assistant_message:
+		message:
 			"Que legal seu interesse em programação! Poderia me contar mais sobre seu objetivo? Por exemplo, que tipo de desenvolvimento te interessa mais?",
 	},
 	{
-		assistant_message:
+		message:
 			"Entendi que você quer melhorar seus hábitos. Isso é ótimo! Poderia especificar quais áreas da sua vida você gostaria de focar?",
 	},
 	{
-		assistant_message:
+		message:
 			"Organizar objetivos de vida é muito importante! Que tal começarmos identificando suas principais áreas de interesse? Carreira, saúde, relacionamentos?",
 	},
 ];
@@ -199,13 +203,15 @@ async function main() {
 		// Mensagem inicial do usuário
 		const userMessage = await prisma.chatMessage.create({
 			data: {
-				content: faker.helpers.arrayElement([
-					"Quero aprender inglês fluente para conseguir um emprego melhor",
-					"Preciso melhorar minha saúde física, mas não sei por onde começar",
-					"Gostaria de aprender programação para mudar de carreira",
-					"Quero desenvolver melhor disciplina e hábitos saudáveis",
-					"Preciso organizar melhor meus objetivos de vida",
-				]),
+				content: {
+					message: faker.helpers.arrayElement([
+						"Quero aprender inglês fluente para conseguir um emprego melhor",
+						"Preciso melhorar minha saúde física, mas não sei por onde começar",
+						"Gostaria de aprender programação para mudar de carreira",
+						"Quero desenvolver melhor disciplina e hábitos saudáveis",
+						"Preciso organizar melhor meus objetivos de vida",
+					]),
+				},
 				role: "user",
 				chat_id: chat.id,
 			},
@@ -215,7 +221,7 @@ async function main() {
 		const assistantResponse = faker.helpers.arrayElement(assistantResponses);
 		await prisma.chatMessage.create({
 			data: {
-				content: JSON.stringify(assistantResponse),
+				content: assistantResponse,
 				role: "assistant",
 				chat_id: chat.id,
 			},
@@ -225,12 +231,14 @@ async function main() {
 		if (faker.datatype.boolean({ probability: 0.6 })) {
 			await prisma.chatMessage.create({
 				data: {
-					content: faker.helpers.arrayElement([
-						"Isso parece muito bom! Como posso começar hoje mesmo?",
-						"Quanto tempo você acha que vai levar para ver resultados?",
-						"Esses hábitos parecem desafiadores, tem alguma dica?",
-						"Gostei muito do plano, vou salvar esse objetivo!",
-					]),
+					content: {
+						message: faker.helpers.arrayElement([
+							"Isso parece muito bom! Como posso começar hoje mesmo?",
+							"Quanto tempo você acha que vai levar para ver resultados?",
+							"Esses hábitos parecem desafiadores, tem alguma dica?",
+							"Gostei muito do plano, vou salvar esse objetivo!",
+						]),
+					},
 					role: "user",
 					chat_id: chat.id,
 				},
@@ -239,15 +247,15 @@ async function main() {
 			// Sempre responder com uma mensagem do assistente para finalizar
 			await prisma.chatMessage.create({
 				data: {
-					content: JSON.stringify({
-						assistant_message: faker.helpers.arrayElement([
+					content: {
+						message: faker.helpers.arrayElement([
 							"Ótimo! Sugiro começar pelo primeiro passo hoje mesmo. Pequenas ações diárias fazem toda a diferença!",
 							"Os primeiros resultados geralmente aparecem em 2-4 semanas. O importante é manter a consistência!",
 							"Sim! Comece devagar e vá aumentando gradualmente. O segredo é criar o hábito primeiro, depois intensificar.",
 							"Perfeito! Lembre-se: você pode sempre voltar aqui para refinar ou ajustar seu objetivo conforme evolui.",
 							"Excelente atitude! Estarei aqui para te apoiar sempre que precisar. Vamos em frente!",
 						]),
-					}),
+					},
 					role: "assistant",
 					chat_id: chat.id,
 				},
@@ -265,6 +273,8 @@ async function main() {
 	// Criar apenas o número de goals que permite IDs únicos
 	const maxGoals = Math.min(15, allChatMessages.length + 5); // +5 para goals sem chat_message_id
 
+	const usedChatMessageIds = new Set<string>();
+
 	for (let i = 0; i < maxGoals; i++) {
 		const goalTemplate = faker.helpers.arrayElement(personalGoals);
 
@@ -272,9 +282,11 @@ async function main() {
 		let chatMessageId = null;
 		if (
 			i < allChatMessages.length &&
-			faker.datatype.boolean({ probability: 0.7 })
+			faker.datatype.boolean({ probability: 0.7 }) &&
+			!usedChatMessageIds.has(allChatMessages[i].id)
 		) {
 			chatMessageId = allChatMessages[i].id;
+			usedChatMessageIds.add(chatMessageId);
 		}
 
 		await prisma.goal.create({
