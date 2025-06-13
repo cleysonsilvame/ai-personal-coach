@@ -5,7 +5,7 @@ import { z } from "zod";
 import type { SimilarTask } from "~/features/tasks/types";
 import { prepareListData } from "~/features/tasks/util";
 import { cache } from "./cache";
-import { geminiClient } from "./chat.server";
+// import { geminiClient } from "./chat.server";
 
 export const TaskInputSchema = z.object({
 	title: z.string().nullable().optional(),
@@ -31,10 +31,11 @@ export async function findSimilarTasks(
 	}
 
 	try {
-		const response = await geminiClient.embeddings.create({
-			model: "models/text-embedding-004",
-			input: title,
-		});
+		const response: any = {};
+		// const response = await geminiClient.embeddings.create({
+		// 	model: "models/text-embedding-004",
+		// 	input: title,
+		// });
 		const queryEmbedding = response.data[0].embedding;
 
 		validateEmbedding(queryEmbedding);
