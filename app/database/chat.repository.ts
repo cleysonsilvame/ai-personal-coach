@@ -6,6 +6,7 @@ import type {
 	ChatDefaultArgs,
 	ChatFindUniqueArgs,
 } from "generated/prisma/models";
+import type { ChatMessageRole } from "generated/prisma";
 
 export class PrismaChatRepository extends ChatRepository {
 	async findById<T extends ChatDefaultArgs>(
@@ -37,6 +38,33 @@ export class PrismaChatRepository extends ChatRepository {
 		await prisma.chat.update({
 			where: { id },
 			data: { title },
+		});
+	}
+
+	async createChatMessages(
+		chatId: string,
+		chatMessage: { content: string; role: ChatMessageRole },
+		answer: { content: string; role: ChatMessageRole },
+	): Promise<void> {
+		await prisma.chatMessage.createMany({
+			data: [
+				{
+					chat_id: chatId,
+					...chatMessage,
+				},
+				{ chat_id: chatId, ...answer },
+			],
+		});
+	}
+
+	async deleteChat(chatId: string) {
+		await prisma.chat.delete({
+			where: {
+				id: chatId,
+			},
+			include: {
+				messages: true,
+			},
 		});
 	}
 }
