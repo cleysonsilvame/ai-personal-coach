@@ -4,10 +4,10 @@ import {
 	copilotRuntimeNodeHttpEndpoint,
 } from "@copilotkit/runtime";
 
-import { openRouterCliente } from "~/services/chat.server";
+import { openRouterClient } from "~/services/chat.server";
 import { findSimilarTasks } from "~/services/task.server";
 
-const serviceAdapter = new OpenAIAdapter({ openai: openRouterCliente });
+const serviceAdapter = new OpenAIAdapter({ openai: openRouterClient });
 
 const urlTemplate = `${process.env.VERCEL_URL}/task/view/<id>`;
 
