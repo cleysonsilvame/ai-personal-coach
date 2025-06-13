@@ -189,7 +189,6 @@ async function main() {
 					"Conversa sobre desenvolvimento de carreira",
 					"Objetivos de desenvolvimento pessoal",
 					"Refinamento de metas de vida",
-					null, // alguns chats sem título
 				]),
 			},
 		});
@@ -203,7 +202,7 @@ async function main() {
 		// Mensagem inicial do usuário
 		const userMessage = await prisma.chatMessage.create({
 			data: {
-				content: {
+				content: JSON.stringify({
 					message: faker.helpers.arrayElement([
 						"Quero aprender inglês fluente para conseguir um emprego melhor",
 						"Preciso melhorar minha saúde física, mas não sei por onde começar",
@@ -211,7 +210,7 @@ async function main() {
 						"Quero desenvolver melhor disciplina e hábitos saudáveis",
 						"Preciso organizar melhor meus objetivos de vida",
 					]),
-				},
+				}),
 				role: "user",
 				chat_id: chat.id,
 			},
@@ -221,7 +220,7 @@ async function main() {
 		const assistantResponse = faker.helpers.arrayElement(assistantResponses);
 		await prisma.chatMessage.create({
 			data: {
-				content: assistantResponse,
+				content: JSON.stringify(assistantResponse),
 				role: "assistant",
 				chat_id: chat.id,
 			},
@@ -231,14 +230,14 @@ async function main() {
 		if (faker.datatype.boolean({ probability: 0.6 })) {
 			await prisma.chatMessage.create({
 				data: {
-					content: {
+					content: JSON.stringify({
 						message: faker.helpers.arrayElement([
 							"Isso parece muito bom! Como posso começar hoje mesmo?",
 							"Quanto tempo você acha que vai levar para ver resultados?",
 							"Esses hábitos parecem desafiadores, tem alguma dica?",
 							"Gostei muito do plano, vou salvar esse objetivo!",
 						]),
-					},
+					}),
 					role: "user",
 					chat_id: chat.id,
 				},
@@ -247,7 +246,7 @@ async function main() {
 			// Sempre responder com uma mensagem do assistente para finalizar
 			await prisma.chatMessage.create({
 				data: {
-					content: {
+					content: JSON.stringify({
 						message: faker.helpers.arrayElement([
 							"Ótimo! Sugiro começar pelo primeiro passo hoje mesmo. Pequenas ações diárias fazem toda a diferença!",
 							"Os primeiros resultados geralmente aparecem em 2-4 semanas. O importante é manter a consistência!",
@@ -255,7 +254,7 @@ async function main() {
 							"Perfeito! Lembre-se: você pode sempre voltar aqui para refinar ou ajustar seu objetivo conforme evolui.",
 							"Excelente atitude! Estarei aqui para te apoiar sempre que precisar. Vamos em frente!",
 						]),
-					},
+					}),
 					role: "assistant",
 					chat_id: chat.id,
 				},
