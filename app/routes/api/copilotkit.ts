@@ -4,10 +4,9 @@ import {
 	copilotRuntimeNodeHttpEndpoint,
 } from "@copilotkit/runtime";
 
-import { openRouterClient } from "~/services/chat.server";
 import { findSimilarTasks } from "~/services/task.server";
 
-const serviceAdapter = new OpenAIAdapter({ openai: openRouterClient });
+// const serviceAdapter = new OpenAIAdapter({ openai: openRouterClient });
 
 const urlTemplate = `${process.env.VERCEL_URL}/task/view/<id>`;
 
@@ -41,11 +40,10 @@ const runtime = new CopilotRuntime({
 });
 
 export async function action({ request }: { request: Request }) {
-	const handler = copilotRuntimeNodeHttpEndpoint({
-		endpoint: "/copilotkit", // This can be ignored or used for logging
-		runtime,
-		serviceAdapter,
-	});
-
-	return handler(request);
+	// const handler = copilotRuntimeNodeHttpEndpoint({
+	// 	endpoint: "/copilotkit", // This can be ignored or used for logging
+	// 	runtime,
+	// 	// serviceAdapter,
+	// });
+	// return handler(request);
 }

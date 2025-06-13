@@ -1,25 +1,31 @@
+import { inject } from "inversify";
 import OpenAI from "openai";
 import { z } from "zod";
 import {
 	ChatService,
 	type ChatServiceMessage,
 } from "~/features/chats/services/chat";
-
-export const openRouterClient = new OpenAI({
-	apiKey: process.env.OPEN_ROUTER_API_KEY,
-	baseURL: process.env.OPEN_ROUTER_BASE_URL,
-});
+import { Config } from "~/lib/config";
 
 export class OpenRouterChatService extends ChatService {
 	private readonly DEFAULT_MESSAGE_CONTENT = {
 		message: "Não foi possível processar a mensagem. Tente novamente.",
 	};
-	private readonly MODEL = "deepseek/deepseek-r1-0528:free";
-	private readonly DEFAULT_TEMPERATURE = 0.7;
+
+	private readonly openRouterClient: OpenAI;
+
+	constructor(@inject(Config) private readonly config: Config) {
+		super();
+		console.log(this.config.env);
+		this.openRouterClient = new OpenAI({
+			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
+		});
+	}
 
 	async getCompletions(messages: ChatServiceMessage[]) {
-		const completion = await openRouterClient.chat.completions.create({
-			model: this.MODEL,
+		const completion = await this.openRouterClient.chat.completions.create({
+			model: this.config.env.OPEN_ROUTER_MODEL,
 			messages: [
 				this.SYSTEM_MESSAGE,
 				...messages.map((message) => ({
@@ -28,7 +34,7 @@ export class OpenRouterChatService extends ChatService {
 				})),
 			],
 			response_format: { type: "json_object" },
-			temperature: this.DEFAULT_TEMPERATURE,
+			temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
 		});
 
 		const choice = completion.choices[0];

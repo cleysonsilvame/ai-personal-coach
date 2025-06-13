@@ -1,4 +1,5 @@
 import { ChatMessageRole, type Prisma } from "generated/prisma";
+import { inject } from "inversify";
 
 export interface ChatServiceMessage {
 	role: ChatMessageRole;
