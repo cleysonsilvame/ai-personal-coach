@@ -1,5 +1,9 @@
 import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
-import type { ChatDefaultArgs, ChatGetPayload } from "generated/prisma/models";
+import type {
+	ChatCreateArgs,
+	ChatDefaultArgs,
+	ChatGetPayload,
+} from "generated/prisma/models";
 import type { Chat, ChatMessageRole } from "generated/prisma";
 
 export abstract class ChatRepository {
@@ -10,7 +14,7 @@ export abstract class ChatRepository {
 
 	abstract create<T extends ChatDefaultArgs>(
 		options?: SelectSubset<T, ChatDefaultArgs>,
-	): Promise<ChatGetPayload<T & { data: object }>>;
+	): Promise<ChatGetPayload<T & { data: ChatCreateArgs["data"] }>>;
 
 	abstract update(id: string, title: string): Promise<void>;
 

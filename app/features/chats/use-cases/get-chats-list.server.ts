@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { ChatRepository } from "../repositories/chat";
-import type { GetChatsListResult } from "~/features/goals/types";
+import type { GetChatsListResult } from "../types";
 
 @injectable()
 export class GetChatsListUseCase {

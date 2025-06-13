@@ -25,7 +25,7 @@ export class PrismaChatRepository extends ChatRepository {
 	async create<T extends ChatDefaultArgs>(
 		options?: SelectSubset<T, ChatDefaultArgs>,
 	) {
-		const args = { data: {} } satisfies ChatCreateArgs;
+		const args = { data: { title: "Sem título" } } satisfies ChatCreateArgs;
 
 		const chat = await prisma.chat.create<T & typeof args>(
 			Object.assign(args, options),

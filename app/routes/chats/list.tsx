@@ -2,21 +2,33 @@ import { ChatRepository } from "~/features/chats/repositories/chat";
 import { ChatsList } from "~/features/chats/chats-list";
 import { container } from "~/lib/container";
 import type { Route } from "./+types/list";
+import { z } from "zod";
+import { da } from "@faker-js/faker";
+
+const patchSchema = z.object({
+	chat_id: z.string().uuid(),
+	title: z.string().trim().min(1).max(255),
+});
+
+const deleteSchema = z.object({
+	chat_id: z.string().uuid(),
+});
 
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();
 	switch (request.method) {
 		case "PATCH": {
-			const chatId = formData.get("chat_id") as string;
-			const title = formData.get("title") as string;
+			const { success, data } = patchSchema.safeParse(
+				Object.fromEntries(formData.entries()),
+			);
 
-			if (!chatId) {
+			if (!success) {
 				return { success: false, error: "Dados inválidos" };
 			}
 
 			try {
 				const chatRepository = container.get(ChatRepository);
-				await chatRepository.update(chatId, title);
+				await chatRepository.update(data.chat_id, data.title);
 				return { success: true };
 			} catch (error) {
 				return { success: false, error: "Erro ao atualizar chat" };
@@ -24,13 +36,17 @@ export async function action({ request }: Route.ActionArgs) {
 		}
 
 		case "DELETE": {
-			const chatId = formData.get("chat_id") as string;
-			if (!chatId) {
+			const { success, data } = deleteSchema.safeParse(
+				Object.fromEntries(formData.entries()),
+			);
+
+			if (!success) {
 				return { success: false, error: "Dados inválidos" };
 			}
+
 			try {
 				const chatRepository = container.get(ChatRepository);
-				await chatRepository.deleteChat(chatId);
+				await chatRepository.deleteChat(data.chat_id);
 				return { success: true };
 			} catch (error) {
 				return { success: false, error: "Erro ao deletar chat" };

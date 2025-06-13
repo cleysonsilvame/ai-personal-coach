@@ -27,8 +27,8 @@ export function ChatsList() {
 	const { Form: DeleteChatForm, data: deleteChatData } =
 		useFetcher<typeof action>();
 
-	function handleTitleClick(chat: { id: string; title: string | null }) {
-		setCurrentChatEditing({ id: chat.id, title: chat.title ?? "" });
+	function handleTitleClick(chat: { id: string; title: string }) {
+		setCurrentChatEditing({ id: chat.id, title: chat.title });
 	}
 
 	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -119,17 +119,13 @@ export function ChatsList() {
 										/>
 									) : (
 										<>
-											<input
-												type="hidden"
-												name="title"
-												value={chat.title ?? ""}
-											/>
+											<input type="hidden" name="title" value={chat.title} />
 											<button
 												type="button"
 												className="cursor-pointer text-left hover:underline"
 												onClick={() => handleTitleClick(chat)}
 											>
-												{chat.title ?? "Sem título"}
+												{chat.title}
 											</button>
 										</>
 									)}
