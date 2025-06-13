@@ -36,6 +36,7 @@ export class GetChatMessagesUseCase {
 			goal_id: lastMessage.goal?.id,
 			message_id: lastMessage.id,
 			goal_content: lastMessage.content.data,
+			chat_title: chat.title,
 		};
 	}
 }

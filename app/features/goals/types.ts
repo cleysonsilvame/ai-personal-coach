@@ -11,6 +11,7 @@ export interface GetChatMessagesResult {
 	goal_id?: string;
 	message_id?: string;
 	goal_content?: ChatMessageContentData["data"];
+	chat_title?: string;
 }
 
 export interface SendMessageResult {
