@@ -16,7 +16,6 @@ export class OpenRouterChatService extends ChatService {
 
 	constructor(@inject(Config) private readonly config: Config) {
 		super();
-		console.log(this.config.env);
 		this.openRouterClient = new OpenAI({
 			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
 			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
@@ -64,9 +63,14 @@ export class OpenRouterChatService extends ChatService {
 			jsonContent = this.DEFAULT_MESSAGE_CONTENT;
 		}
 
-		const assistantMessage = AIResponseSchema.parse(jsonContent);
+		const assistantMessage = AIResponseSchema.safeParse(jsonContent);
 
-		return assistantMessage;
+		if (!assistantMessage.success) {
+			console.log(jsonContent);
+			throw assistantMessage.error;
+		}
+
+		return assistantMessage.data;
 	}
 }
 
@@ -90,5 +94,13 @@ const GoalDataSchema = z.object({
 
 const AIResponseSchema = z.object({
 	message: z.string().min(1, "Message cannot be empty"),
-	data: GoalDataSchema.optional(),
+	data: GoalDataSchema.optional()
+		.nullable()
+		.or(z.object({}))
+		.transform((data) => {
+			if (data === null) return undefined;
+			if (data && !("title" in data)) return undefined;
+
+			return data;
+		}),
 });

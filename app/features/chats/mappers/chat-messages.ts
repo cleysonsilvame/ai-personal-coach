@@ -1,4 +1,10 @@
 import type { ChatMessage } from "generated/prisma";
+import { marked } from "marked";
+import { JSDOM } from "jsdom";
+import createDOMPurify from "dompurify";
+
+const window = new JSDOM("").window;
+const purify = createDOMPurify(window);
 
 export interface ChatMessageContentData {
 	message: string;
@@ -15,11 +21,18 @@ export interface ChatMessageContentData {
 
 export const ChatMessagesMapper = {
 	toDomain<T extends ChatMessage>(chatMessage: T) {
+		const content = JSON.parse(
+			String(chatMessage.content),
+		) as ChatMessageContentData;
+
 		return {
 			...chatMessage,
-			content: JSON.parse(
-				String(chatMessage.content),
-			) as ChatMessageContentData,
+			content: {
+				...content,
+				message: purify.sanitize(
+					marked.parse(content.message, { async: false }),
+				),
+			},
 		};
 	},
 };
