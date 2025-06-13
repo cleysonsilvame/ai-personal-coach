@@ -8,3 +8,5 @@ repomix-output.md
 .env
 **/generated
 *.db
+# Vercel
+/.vercel/
