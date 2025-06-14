@@ -39,4 +39,10 @@ export class PrismaGoalRepository extends GoalRepository {
 
 		return goals;
 	}
+
+	async deleteById(id: string): Promise<void> {
+		await prisma.goal.delete({
+			where: { id },
+		});
+	}
 }

@@ -17,4 +17,6 @@ export abstract class GoalRepository {
 	abstract findAll(): Promise<
 		GoalGetPayload<{ include: { chat_message: true } }>[]
 	>;
+
+	abstract deleteById(id: string): Promise<void>;
 }

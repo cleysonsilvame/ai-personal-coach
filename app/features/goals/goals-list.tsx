@@ -11,10 +11,23 @@ import {
 
 import { Button } from "~/components/ui/button";
 import type { loader } from "~/routes/goals/list";
+import { useEffect, useState } from "react";
 
 export function GoalsList() {
-	const { goals } = useLoaderData<typeof loader>();
-	const { Form: DeleteGoalForm, ...deleteGoalFetcher } = useFetcher();
+	const { goals: initialGoals } = useLoaderData<typeof loader>();
+	const [goals, setGoals] = useState(initialGoals);
+	const { Form: DeleteGoalForm } = useFetcher();
+
+	const handleDelete = async (event: React.FormEvent<HTMLFormElement>) => {
+		const formData = new FormData(event.target as HTMLFormElement);
+		const goalId = formData.get("goal_id");
+
+		setGoals((prev) => prev.filter((goal) => goal.id !== goalId));
+	};
+
+	useEffect(() => {
+		setGoals(initialGoals);
+	}, [initialGoals]);
 
 	return (
 		<div className="p-6">
@@ -63,7 +76,7 @@ export function GoalsList() {
 											<Pencil className="h-4 w-4" />
 										</Link>
 									</Button>
-									<DeleteGoalForm method="DELETE">
+									<DeleteGoalForm method="DELETE" onSubmit={handleDelete}>
 										<Button
 											type="submit"
 											variant="ghost"
