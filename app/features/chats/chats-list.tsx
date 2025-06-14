@@ -1,5 +1,9 @@
-import { Link, useFetcher, useLoaderData } from "react-router";
 import { Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useFetcher, useLoaderData } from "react-router";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -8,26 +12,24 @@ import {
 	TableHeader,
 	TableRow,
 } from "~/components/ui/table";
-import { useEffect, useState } from "react";
-
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import type { action, loader } from "~/routes/chats/list";
-import { toast } from "sonner";
+
+interface CurrentChatEditing {
+	title: string;
+	id: string;
+}
 
 export function ChatsList() {
 	const { chats: initialChats } = useLoaderData<typeof loader>();
 	const [chats, setChats] = useState(initialChats);
-	const [currentChatEditing, setCurrentChatEditing] = useState<{
-		title: string;
-		id: string;
-	} | null>(null);
+	const [currentChatEditing, setCurrentChatEditing] =
+		useState<CurrentChatEditing | null>(null);
 	const { Form: UpdateChatForm, data: updateChatData } =
 		useFetcher<typeof action>();
 	const { Form: DeleteChatForm, data: deleteChatData } =
 		useFetcher<typeof action>();
 
-	function handleTitleClick(chat: { id: string; title: string }) {
+	function handleTitleClick(chat: CurrentChatEditing) {
 		setCurrentChatEditing({ id: chat.id, title: chat.title });
 	}
 

@@ -100,7 +100,11 @@ export function GoalContent() {
 					</Card>
 				</div>
 			</ScrollArea>
-			<fetcher.Form method="POST" className="flex justify-between">
+			<fetcher.Form
+				method="POST"
+				action="/api/goals/new"
+				className="flex justify-between"
+			>
 				<input type="hidden" name="message_id" value={message_id} />
 				<input type="hidden" name="goal_id" value={goal_id} />
 				{goal_id ? (

@@ -24,7 +24,7 @@ export class GetChatMessagesUseCase {
 			return { messages: [] };
 		}
 
-		const messages = chat.messages.map(ChatMessagesMapper.toDomain);
+		const messages = chat.messages.map(ChatMessagesMapper.toHtml);
 
 		const lastMessage = messages[messages.length - 1];
 

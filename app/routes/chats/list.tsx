@@ -3,7 +3,6 @@ import { ChatsList } from "~/features/chats/chats-list";
 import { container } from "~/lib/container";
 import type { Route } from "./+types/list";
 import { z } from "zod";
-import { da } from "@faker-js/faker";
 
 const patchSchema = z.object({
 	chat_id: z.string().uuid(),

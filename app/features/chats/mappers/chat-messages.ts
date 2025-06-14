@@ -20,7 +20,7 @@ export interface ChatMessageContentData {
 }
 
 export const ChatMessagesMapper = {
-	toDomain<T extends ChatMessage>(chatMessage: T) {
+	toHtml<T extends ChatMessage>(chatMessage: T) {
 		const content = JSON.parse(
 			String(chatMessage.content),
 		) as ChatMessageContentData;
@@ -34,5 +34,12 @@ export const ChatMessagesMapper = {
 				),
 			},
 		};
+	},
+	toDomain<T extends ChatMessage>(chatMessage: T) {
+		const content = JSON.parse(
+			String(chatMessage.content),
+		) as ChatMessageContentData;
+
+		return content;
 	},
 };
