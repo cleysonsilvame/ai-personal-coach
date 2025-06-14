@@ -16,6 +16,5 @@ export class Config {
 
 	constructor() {
 		this.env = envSchema.parse(process.env);
-		console.log(this.env);
 	}
 }
