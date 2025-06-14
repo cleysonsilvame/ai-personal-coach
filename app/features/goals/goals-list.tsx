@@ -45,10 +45,10 @@ export function GoalsList() {
 										size="icon"
 										className="h-8 w-8"
 										title="Chat"
-										disabled={!goal.chat_message_id}
+										disabled={!goal.chat_id}
 										asChild
 									>
-										<Link to={`/goals/new?chat=${goal.chat_message_id}`}>
+										<Link to={`/goals/new?chat=${goal.chat_id}`}>
 											<MessageCircle className="h-4 w-4" />
 										</Link>
 									</Button>

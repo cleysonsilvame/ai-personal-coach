@@ -33,7 +33,9 @@ export class PrismaGoalRepository extends GoalRepository {
 	}
 
 	async findAll() {
-		const goals = await prisma.goal.findMany();
+		const goals = await prisma.goal.findMany({
+			include: { chat_message: true },
+		});
 
 		return goals;
 	}

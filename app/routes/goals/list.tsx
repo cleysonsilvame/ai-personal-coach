@@ -1,4 +1,4 @@
-import { GoalsList } from "~/features/tasks/tasks-list";
+import { GoalsList } from "~/features/goals/goals-list";
 import type { Route } from "./+types/list";
 import { container } from "~/lib/container";
 import { GoalsMapper } from "~/features/goals/mappers/goals";

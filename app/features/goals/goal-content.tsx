@@ -109,7 +109,7 @@ export function GoalContent() {
 				<input type="hidden" name="goal_id" value={goal_id} />
 				{goal_id ? (
 					<Button type="button">
-						<Link to={`/goal/view/${goal_id}`}>Detalhes do Objetivo</Link>
+						<Link to={`/goals/view/${goal_id}`}>Detalhes do Objetivo</Link>
 					</Button>
 				) : (
 					<div>&nbsp;</div>

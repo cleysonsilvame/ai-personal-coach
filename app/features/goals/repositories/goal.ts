@@ -2,6 +2,7 @@ import type { Goal } from "generated/prisma";
 import type {
 	ChatMessageGetPayload,
 	GoalCreateInput,
+	GoalGetPayload,
 } from "generated/prisma/models";
 
 export abstract class GoalRepository {
@@ -13,5 +14,7 @@ export abstract class GoalRepository {
 
 	abstract findById(id: string): Promise<Goal | null>;
 
-	abstract findAll(): Promise<Goal[]>;
+	abstract findAll(): Promise<
+		GoalGetPayload<{ include: { chat_message: true } }>[]
+	>;
 }
