@@ -29,32 +29,35 @@ export function GoalView({ goal }: Props) {
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
 				<div>
-					<Label className="mb-1">Descrição</Label>
+					<Label className="mb-2">Descrição</Label>
 					<p className="text-base text-muted-foreground whitespace-pre-line bg-muted/40 rounded-md p-3 border mt-1">
 						{goal.description}
 					</p>
 				</div>
-				{goal.suggested_habits && (
-					<div>
-						<Label className="mb-1">Sugestão de Implementação</Label>
-						<p className="text-sm text-muted-foreground whitespace-pre-line bg-muted/30 rounded-md p-3 border mt-1">
-							{JSON.stringify(goal.suggested_habits)}
-						</p>
-					</div>
-				)}
+				<div>
+					<Label className="mb-2">Estratégias de Motivação</Label>
+					<p className="text-base text-muted-foreground whitespace-pre-line bg-muted/40 rounded-md p-3 border mt-1">
+						{goal.motivation_strategies}
+					</p>
+				</div>
+
 				<Separator />
-				<Tabs defaultValue="steps" className="w-full">
+				<Tabs defaultValue="action_steps" className="w-full">
 					<TabsList>
-						<TabsTrigger value="steps">Passos</TabsTrigger>
-						<TabsTrigger value="acceptance">Critérios de Aceite</TabsTrigger>
-						<TabsTrigger value="tests">Testes Sugeridos</TabsTrigger>
+						<TabsTrigger value="action_steps">Passos de Ação</TabsTrigger>
+						<TabsTrigger value="progress_indicators">
+							Indicadores de Progresso
+						</TabsTrigger>
+						<TabsTrigger value="suggested_habits">
+							Hábitos Sugeridos
+						</TabsTrigger>
 					</TabsList>
-					<TabsContent value="steps">
+					<TabsContent value="action_steps" className="ml-2">
 						<ul className="list-decimal list-inside space-y-2 mt-2">
 							{goal.action_steps.length > 0 ? (
-								goal.action_steps.map((step) => (
-									<li key={step} className="text-base text-foreground">
-										{step}
+								goal.action_steps.map((action_step) => (
+									<li key={action_step} className="text-base text-foreground">
+										{action_step}
 									</li>
 								))
 							) : (
@@ -64,30 +67,33 @@ export function GoalView({ goal }: Props) {
 							)}
 						</ul>
 					</TabsContent>
-					<TabsContent value="acceptance">
+					<TabsContent value="progress_indicators" className="ml-2">
 						<ul className="list-disc list-inside space-y-2 mt-2">
 							{goal.progress_indicators.length > 0 ? (
-								goal.progress_indicators.map((criteria) => (
-									<li key={criteria} className="text-base text-foreground">
-										{criteria}
+								goal.progress_indicators.map((progress_indicator) => (
+									<li
+										key={progress_indicator}
+										className="text-base text-foreground"
+									>
+										{progress_indicator}
 									</li>
 								))
 							) : (
 								<li className="text-muted-foreground">
-									Nenhum critério cadastrado.
+									Nenhum indicador cadastrado.
 								</li>
 							)}
 						</ul>
 					</TabsContent>
-					<TabsContent value="tests">
+					<TabsContent value="suggested_habits" className="ml-2">
 						<ul className="list-disc list-inside space-y-2 mt-2">
 							{goal.suggested_habits.length > 0 ? (
-								goal.suggested_habits.map((test) => (
+								goal.suggested_habits.map((suggested_habit) => (
 									<li
-										key={test}
-										className="text-base font-mono text-foreground"
+										key={suggested_habit}
+										className="text-base text-foreground"
 									>
-										{test}
+										{suggested_habit}
 									</li>
 								))
 							) : (
