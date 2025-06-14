@@ -43,10 +43,23 @@ export class PrismaGoalRepository extends GoalRepository {
 		});
 	}
 
-	async updateById(id: string, data: Omit<GoalUpdateInput, "id">) {
+	async updateById(
+		id: string,
+		data: Omit<GoalUpdateInput, "id">,
+		options?: {
+			removeMessageLink?: boolean;
+		},
+	) {
 		await prisma.goal.update({
 			where: { id },
-			data,
+			data: {
+				...data,
+				chat_message: options?.removeMessageLink
+					? {
+							disconnect: true,
+						}
+					: undefined,
+			},
 		});
 	}
 }

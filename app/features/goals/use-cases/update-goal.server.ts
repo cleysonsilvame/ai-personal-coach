@@ -13,6 +13,8 @@ export class UpdateGoalUseCase {
 		goalId: string,
 		data: T,
 	) {
-		return this.goalRepository.updateById(goalId, data);
+		return this.goalRepository.updateById(goalId, data, {
+			removeMessageLink: true,
+		});
 	}
 }

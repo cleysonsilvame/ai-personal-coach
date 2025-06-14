@@ -24,5 +24,8 @@ export abstract class GoalRepository {
 	abstract updateById(
 		id: string,
 		data: Omit<GoalUpdateInput, "id">,
+		options?: {
+			removeMessageLink?: boolean;
+		},
 	): Promise<void>;
 }

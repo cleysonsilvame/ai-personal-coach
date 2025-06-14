@@ -16,14 +16,20 @@ export function GoalForm() {
 	const arrayToString = (arr: string[]) => arr.join("\n");
 
 	useEffect(() => {
+		if (fetcher.state === "idle") return;
+
 		if (fetcher.data?.success) {
 			toast.success("Objetivo atualizado com sucesso");
-		} else {
+			return;
+		}
+
+		if (fetcher.data?.error) {
 			toast.error("Falha ao atualizar o objetivo", {
 				description: fetcher.data?.error,
 			});
+			return;
 		}
-	}, [fetcher.data]);
+	}, [fetcher.data, fetcher.state]);
 
 	return (
 		<GoalForm method="PUT" className="space-y-6 p-6">

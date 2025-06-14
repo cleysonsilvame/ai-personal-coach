@@ -57,9 +57,8 @@ export function GoalsList() {
 										variant="ghost"
 										size="icon"
 										className="h-8 w-8"
-										title="Chat"
+										title="Chat do objetivo"
 										disabled={!goal.chat_id}
-										asChild
 									>
 										<Link to={`/goals/new?chat=${goal.chat_id}`}>
 											<MessageCircle className="h-4 w-4" />
@@ -69,7 +68,7 @@ export function GoalsList() {
 										variant="ghost"
 										size="icon"
 										className="h-8 w-8"
-										title="Edit task"
+										title="Editar objetivo"
 										asChild
 									>
 										<Link to={`/goals/edit/${goal.id}`}>
@@ -82,7 +81,7 @@ export function GoalsList() {
 											variant="ghost"
 											size="icon"
 											className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
-											title="Delete task"
+											title="Deletar objetivo"
 										>
 											<input type="hidden" name="goal_id" value={goal.id} />
 											<Trash2 className="h-4 w-4" />
