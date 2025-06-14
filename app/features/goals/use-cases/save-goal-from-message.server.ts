@@ -2,9 +2,8 @@ import { injectable, inject } from "inversify";
 import { GoalRepository } from "../repositories/goal";
 import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
 
-interface CreateOrUpdateGoalFromMessageInput {
+interface SaveGoalFromMessageInput {
 	messageId: string;
-	goalId?: string;
 }
 
 @injectable()
@@ -14,7 +13,7 @@ export class SaveGoalFromMessageUseCase {
 		private readonly goalRepository: GoalRepository,
 	) {}
 
-	async execute({ messageId, goalId }: CreateOrUpdateGoalFromMessageInput) {
+	async execute({ messageId }: SaveGoalFromMessageInput) {
 		const message = await this.goalRepository.findGoalByMessageId(messageId);
 		if (!message) {
 			throw new Error("Mensagem não encontrada");
@@ -22,15 +21,12 @@ export class SaveGoalFromMessageUseCase {
 
 		const content = ChatMessagesMapper.toDomain(message);
 
-		if (message.goal) {
-			throw new Error("Objetivo já existe");
-		}
-
 		if (!content.data) {
 			throw new Error("Conteúdo da mensagem não encontrado");
 		}
 
-		this.goalRepository.createGoal({
+		this.goalRepository.saveGoal({
+			id: message.goal?.id,
 			title: content.data.title,
 			description: content.data.description,
 			estimated_time: content.data.estimated_time,

@@ -6,6 +6,7 @@ import {
 	Timer,
 	Target,
 	Heart,
+	Loader2,
 } from "lucide-react";
 import { Link, useFetcher, useLoaderData } from "react-router";
 
@@ -106,7 +107,6 @@ export function GoalContent() {
 				className="flex justify-between"
 			>
 				<input type="hidden" name="message_id" value={message_id} />
-				<input type="hidden" name="goal_id" value={goal_id} />
 				{goal_id ? (
 					<Button type="button">
 						<Link to={`/goals/view/${goal_id}`}>Detalhes do Objetivo</Link>
@@ -114,8 +114,16 @@ export function GoalContent() {
 				) : (
 					<div>&nbsp;</div>
 				)}
-				<Button type="submit" disabled={fetcher.state !== "idle"}>
-					Salvar Objetivo
+				<Button
+					type="submit"
+					disabled={fetcher.state !== "idle"}
+					className="cursor-pointer"
+				>
+					{fetcher.state === "submitting" ? (
+						<Loader2 className="animate-spin" />
+					) : (
+						"Salvar Objetivo"
+					)}
 				</Button>
 			</fetcher.Form>
 		</section>

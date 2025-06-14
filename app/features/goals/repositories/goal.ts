@@ -7,7 +7,7 @@ import type {
 } from "generated/prisma/models";
 
 export abstract class GoalRepository {
-	abstract createGoal(goalData: GoalCreateInput): Promise<{ id: string }>;
+	abstract saveGoal(goalData: GoalCreateInput): Promise<{ id: string }>;
 
 	abstract findGoalByMessageId(
 		messageId: string,
