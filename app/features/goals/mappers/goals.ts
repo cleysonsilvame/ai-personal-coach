@@ -2,7 +2,9 @@ import type { Goal } from "generated/prisma";
 import type { GoalGetPayload } from "generated/prisma/models";
 
 export const GoalsMapper = {
-	toHtml(goal: GoalGetPayload<{ include: { chat_message: true } }>) {
+	toHtml<T extends GoalGetPayload<{ include: { chat_message: true } }> | Goal>(
+		goal: T,
+	) {
 		return {
 			id: goal.id,
 			title: goal.title,
@@ -12,7 +14,7 @@ export const GoalsMapper = {
 			action_steps: goal.action_steps as string[],
 			progress_indicators: goal.progress_indicators as string[],
 			suggested_habits: goal.suggested_habits as string[],
-			chat_id: goal.chat_message?.chat_id,
+			chat_id: "chat_message" in goal ? goal.chat_message?.chat_id : null,
 			created_at: new Date(goal.created_at).toLocaleString("pt-BR"),
 			updated_at: goal.updated_at
 				? new Date(goal.updated_at).toLocaleString("pt-BR")

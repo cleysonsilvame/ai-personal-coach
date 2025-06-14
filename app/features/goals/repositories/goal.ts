@@ -3,6 +3,7 @@ import type {
 	ChatMessageGetPayload,
 	GoalCreateInput,
 	GoalGetPayload,
+	GoalUpdateInput,
 } from "generated/prisma/models";
 
 export abstract class GoalRepository {
@@ -19,4 +20,9 @@ export abstract class GoalRepository {
 	>;
 
 	abstract deleteById(id: string): Promise<void>;
+
+	abstract updateById(
+		id: string,
+		data: Omit<GoalUpdateInput, "id">,
+	): Promise<void>;
 }

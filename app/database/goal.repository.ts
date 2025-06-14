@@ -1,9 +1,6 @@
+import type { GoalCreateInput, GoalUpdateInput } from "generated/prisma/models";
 import { prisma } from "~/lib/prisma-client";
 import { GoalRepository } from "../features/goals/repositories/goal";
-import type {
-	ChatMessageGetPayload,
-	GoalCreateInput,
-} from "generated/prisma/models";
 
 export class PrismaGoalRepository extends GoalRepository {
 	async createGoal(data: GoalCreateInput): Promise<{ id: string }> {
@@ -43,6 +40,13 @@ export class PrismaGoalRepository extends GoalRepository {
 	async deleteById(id: string): Promise<void> {
 		await prisma.goal.delete({
 			where: { id },
+		});
+	}
+
+	async updateById(id: string, data: Omit<GoalUpdateInput, "id">) {
+		await prisma.goal.update({
+			where: { id },
+			data,
 		});
 	}
 }
