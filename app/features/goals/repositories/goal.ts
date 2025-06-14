@@ -10,4 +10,8 @@ export abstract class GoalRepository {
 	abstract findGoalByMessageId(
 		messageId: string,
 	): Promise<ChatMessageGetPayload<{ include: { goal: true } }> | null>;
+
+	abstract findById(id: string): Promise<Goal | null>;
+
+	abstract findAll(): Promise<Goal[]>;
 }

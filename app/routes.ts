@@ -10,9 +10,10 @@ export default [
 		index("routes/dashboard.tsx"),
 		route("goals/new", "routes/goals/new.tsx"),
 		route("goals", "routes/goals/list.tsx"),
+		route("goals/view/:id", "routes/goals/view.tsx"),
 		route("chats", "routes/chats/list.tsx"),
-		route("task/edit/:id", "routes/task-edit.tsx"),
-		route("task/view/:id", "routes/task-view.tsx"),
+
+		// route("task/edit/:id", "routes/tasks/task-edit.tsx"),
 	]),
 	route("api/goals/new", "routes/api/new-goal-by-message.ts"),
 	route("api/copilotkit", "routes/api/copilotkit.ts"),

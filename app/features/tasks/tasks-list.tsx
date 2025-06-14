@@ -14,10 +14,10 @@ import type { loader } from "~/routes/goals/list";
 
 export function GoalsList() {
 	const { goals } = useLoaderData<typeof loader>();
-	const fetcher = useFetcher();
+	const { Form: DeleteGoalForm, ...deleteGoalFetcher } = useFetcher();
 
 	return (
-		<fetcher.Form method="POST" className=" p-6">
+		<div className="p-6">
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -31,7 +31,7 @@ export function GoalsList() {
 						<TableRow key={goal.id}>
 							<TableCell className="font-medium">
 								<Link
-									to={`/task/view/${goal.id}`}
+									to={`/goals/view/${goal.id}`}
 									className="decoration-dotted underline underline-offset-4"
 								>
 									{goal.title}
@@ -45,9 +45,10 @@ export function GoalsList() {
 										size="icon"
 										className="h-8 w-8"
 										title="Chat"
-										disabled={!goal.chat_message}
+										disabled={!goal.chat_message_id}
+										asChild
 									>
-										<Link to={`/goals/new?chat=${goal.chat_message?.chat_id}`}>
+										<Link to={`/goals/new?chat=${goal.chat_message_id}`}>
 											<MessageCircle className="h-4 w-4" />
 										</Link>
 									</Button>
@@ -56,28 +57,30 @@ export function GoalsList() {
 										size="icon"
 										className="h-8 w-8"
 										title="Edit task"
+										asChild
 									>
-										<Link to={`/task/edit/${goal.id}`}>
+										<Link to={`/goals/edit/${goal.id}`}>
 											<Pencil className="h-4 w-4" />
 										</Link>
 									</Button>
-									<Button
-										type="submit"
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8 text-destructive hover:text-destructive pointer-events-auto"
-										title="Delete task"
-									>
-										<input type="hidden" name="task_id" value={goal.id} />
-										<Trash2 className="h-4 w-4" />
-										{/* TODO: resolve pointer events and invalid submit */}
-									</Button>
+									<DeleteGoalForm method="DELETE">
+										<Button
+											type="submit"
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
+											title="Delete task"
+										>
+											<input type="hidden" name="goal_id" value={goal.id} />
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</DeleteGoalForm>
 								</div>
 							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
 			</Table>
-		</fetcher.Form>
+		</div>
 	);
 }

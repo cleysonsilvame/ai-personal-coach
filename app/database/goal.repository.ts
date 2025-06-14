@@ -23,4 +23,18 @@ export class PrismaGoalRepository extends GoalRepository {
 
 		return message;
 	}
+
+	async findById(id: string) {
+		const goal = await prisma.goal.findUnique({
+			where: { id },
+		});
+
+		return goal;
+	}
+
+	async findAll() {
+		const goals = await prisma.goal.findMany();
+
+		return goals;
+	}
 }

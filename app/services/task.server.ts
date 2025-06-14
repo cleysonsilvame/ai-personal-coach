@@ -189,30 +189,6 @@ async function createEmbeddingsFromDocuments(
 	);
 }
 
-export async function deleteTask(formData: FormData) {
-	await prisma.goal.delete({
-		where: {
-			id: formData.get("task_id") as string,
-		},
-	});
-}
-
-export async function getGoals() {
-	return await prisma.goal.findMany({
-		include: {
-			chat_message: true,
-		},
-	});
-}
-
-export async function getGoal(taskId: string) {
-	return await prisma.goal.findUnique({
-		where: {
-			id: taskId,
-		},
-	});
-}
-
 export async function updateTask(task_id: string, formData: FormData) {
 	const taskData = {
 		chat_message_id: null,
