@@ -30,7 +30,7 @@ const data = {
 		},
 		{
 			title: "Objetivos",
-			url: "/goals/",
+			url: "/goals",
 			icon: ListCheckIcon,
 		},
 	],

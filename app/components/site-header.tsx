@@ -6,7 +6,7 @@ import type { loader } from "~/routes/goals/new";
 
 const ROUTE_TITLES: Record<string, string> = {
 	"/goals/new": "Novo objetivo",
-	"/goals/edit": "Editar objetivo",
+	"/goals": "Objetivos",
 	"/chats": "Chats",
 };
 
@@ -18,6 +18,10 @@ export function SiteHeader() {
 	const getPageTitle = () => {
 		if (location.pathname.startsWith("/goals/edit/")) {
 			return "Editar objetivo";
+		}
+
+		if (location.pathname.startsWith("/goals/view/")) {
+			return "Objetivo";
 		}
 
 		if (goalsNewLoaderData?.chat_title) {
