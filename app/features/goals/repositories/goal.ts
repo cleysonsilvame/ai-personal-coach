@@ -7,8 +7,6 @@ import type {
 } from "generated/prisma/models";
 
 export abstract class GoalRepository {
-	abstract saveGoal(goalData: GoalCreateInput): Promise<{ id: string }>;
-
 	abstract findGoalByMessageId(
 		messageId: string,
 	): Promise<ChatMessageGetPayload<{ include: { goal: true } }> | null>;
@@ -28,4 +26,6 @@ export abstract class GoalRepository {
 			removeMessageLink?: boolean;
 		},
 	): Promise<void>;
+
+	abstract createGoal(goalData: GoalCreateInput): Promise<{ id: string }>;
 }

@@ -3,14 +3,11 @@ import { prisma } from "~/lib/prisma-client";
 import { GoalRepository } from "../features/goals/repositories/goal";
 
 export class PrismaGoalRepository extends GoalRepository {
-	async saveGoal(data: GoalCreateInput): Promise<{ id: string }> {
-		const goal = await prisma.goal.upsert({
-			create: data,
-			update: data,
-			where: { id: data.id },
+	async createGoal(data: GoalCreateInput): Promise<{ id: string }> {
+		const goal = await prisma.goal.create({
+			data,
 			select: { id: true },
 		});
-
 		return goal;
 	}
 

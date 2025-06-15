@@ -14,7 +14,7 @@ export default [
 		route("goals/edit/:id", "routes/goals/edit.tsx"),
 		route("chats", "routes/chats/list.tsx"),
 	]),
-	route("api/goals/new", "routes/api/new-goal-by-message.ts"),
+	route("api/goals/new", "routes/api/create-goal-by-message.ts"),
 	route("api/copilotkit", "routes/api/copilotkit.ts"),
 	route("api/set-theme", "routes/api/set-theme.ts"),
 	route("api/sidebar", "routes/api/sidebar.ts"),
