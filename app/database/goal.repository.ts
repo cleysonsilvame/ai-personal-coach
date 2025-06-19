@@ -1,18 +1,24 @@
-import type { GoalCreateInput, GoalUpdateInput } from "generated/prisma/models";
-import { prisma } from "~/lib/prisma-client";
+import type { GoalUpdateInput } from "generated/prisma/models";
+import { inject } from "inversify";
+import type { Goal } from "~/features/goals/entities/goal";
+import { GoalsMapper } from "~/features/goals/mappers/goals";
+import { PrismaClient } from "~/lib/prisma-client";
 import { GoalRepository } from "../features/goals/repositories/goal";
 
 export class PrismaGoalRepository extends GoalRepository {
-	async createGoal(data: GoalCreateInput): Promise<{ id: string }> {
-		const goal = await prisma.goal.create({
-			data,
-			select: { id: true },
+	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
+		super();
+	}
+
+	async createGoal(goal: Goal): Promise<Goal> {
+		const goalData = await this.prisma.client.goal.create({
+			data: goal,
 		});
-		return goal;
+		return GoalsMapper.toDomain(goalData);
 	}
 
 	async findGoalByMessageId(messageId: string) {
-		const message = await prisma.chatMessage.findUnique({
+		const message = await this.prisma.client.chatMessage.findUnique({
 			where: { id: messageId },
 			include: { goal: true },
 		});
@@ -21,7 +27,7 @@ export class PrismaGoalRepository extends GoalRepository {
 	}
 
 	async findById(id: string) {
-		const goal = await prisma.goal.findUnique({
+		const goal = await this.prisma.client.goal.findUnique({
 			where: { id },
 		});
 
@@ -29,7 +35,7 @@ export class PrismaGoalRepository extends GoalRepository {
 	}
 
 	async findAll() {
-		const goals = await prisma.goal.findMany({
+		const goals = await this.prisma.client.goal.findMany({
 			include: { chat_message: true },
 		});
 
@@ -37,7 +43,7 @@ export class PrismaGoalRepository extends GoalRepository {
 	}
 
 	async deleteById(id: string): Promise<void> {
-		await prisma.goal.delete({
+		await this.prisma.client.goal.delete({
 			where: { id },
 		});
 	}
@@ -49,7 +55,7 @@ export class PrismaGoalRepository extends GoalRepository {
 			removeMessageLink?: boolean;
 		},
 	) {
-		await prisma.goal.update({
+		await this.prisma.client.goal.update({
 			where: { id },
 			data: {
 				...data,

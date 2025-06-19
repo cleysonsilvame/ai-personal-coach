@@ -1,6 +1,7 @@
 import { injectable, inject } from "inversify";
 import { GoalRepository } from "../repositories/goal";
 import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
+import { Goal } from "../entities/goal";
 
 interface CreateGoalFromMessageInput {
 	messageId: string;
@@ -25,7 +26,7 @@ export class CreateGoalFromMessageUseCase {
 			throw new Error("Conteúdo da mensagem não encontrado");
 		}
 
-		await this.goalRepository.createGoal({
+		const goal = Goal.create({
 			title: content.data.title,
 			description: content.data.description,
 			estimated_time: content.data.estimated_time,
@@ -33,7 +34,13 @@ export class CreateGoalFromMessageUseCase {
 			progress_indicators: content.data.progress_indicators,
 			suggested_habits: content.data.suggested_habits,
 			motivation_strategies: content.data.motivation_strategies,
-			chat_message: { connect: { id: messageId } },
+			chat_message_id: message.id,
 		});
+
+		const createdGoal = await this.goalRepository.createGoal(goal);
+
+		console.log(createdGoal);
+
+		// TODO: create markdown from goal data
 	}
 }
