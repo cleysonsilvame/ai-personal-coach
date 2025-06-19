@@ -8,7 +8,8 @@
 		"start": "react-router-serve ./build/server/**/index.js",
 		"typecheck": "react-router typegen && tsc",
 		"vercel-build": "prisma generate && prisma db push && npm run build",
-		"postvercel-build": "cp generated/prisma/*.node build/server/**/"
+		"postvercel-build": "cp generated/prisma/*.node build/server/**/",
+		"create-goals-embedding-index": "tsx prisma/create-goals-embedding-index.ts"
 	},
 	"prisma": {
 		"seed": "tsx prisma/seed.ts"

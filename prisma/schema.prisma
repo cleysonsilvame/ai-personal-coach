@@ -16,12 +16,11 @@ enum ChatMessageRole {
 }
 
 model Chat {
-  id         String   @id @default(uuid())
+  id         String        @id @default(uuid())
   title      String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  messages ChatMessage[]
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  messages   ChatMessage[]
 
   @@map("chats")
 }
@@ -32,17 +31,15 @@ model ChatMessage {
   role       ChatMessageRole @default(user)
   created_at DateTime        @default(now())
   updated_at DateTime        @updatedAt
-
-  chat_id String
-  chat    Chat   @relation(fields: [chat_id], references: [id])
-
-  goal Goal?
+  chat_id    String
+  chat       Chat            @relation(fields: [chat_id], references: [id])
+  goal       Goal?
 
   @@map("chat_messages")
 }
 
 model Goal {
-  id                    String   @id @default(uuid())
+  id                    String          @id @default(uuid())
   title                 String
   description           String
   estimated_time        String
@@ -50,11 +47,34 @@ model Goal {
   progress_indicators   Json
   suggested_habits      Json
   motivation_strategies String
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
-
-  chat_message    ChatMessage? @relation(fields: [chat_message_id], references: [id])
-  chat_message_id String?      @unique
+  created_at            DateTime        @default(now())
+  updated_at            DateTime        @updatedAt
+  chat_message_id       String?         @unique
+  goal_embeddings       GoalEmbedding[]
+  chat_message          ChatMessage?    @relation(fields: [chat_message_id], references: [id])
 
   @@map("goals")
+}
+
+model GoalEmbedding {
+  id         String                         @id @default(uuid())
+  embedding  Unsupported("f32_blob (2048)")
+  created_at DateTime                       @default(now())
+  updated_at DateTime                       @updatedAt
+  goal_id    String
+  goal       Goal                           @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("goal_embeddings")
+}
+
+model goal_embeddings_idx_shadow {
+  index_key Int    @id @default(autoincrement())
+  data      Bytes?
+
+  @@index([index_key], map: "goal_embeddings_idx_shadow_idx")
+}
+
+model libsql_vector_meta_shadow {
+  name     String @id
+  metadata Bytes?
 }
