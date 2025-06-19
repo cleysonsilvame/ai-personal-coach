@@ -1,10 +1,22 @@
+import { PrismaClient as PrismaClientType } from "generated/prisma";
+import { inject, injectable } from "inversify";
 import { adapter } from "prisma.config";
-import { PrismaClient } from "generated/prisma";
+import { Config } from "./config";
 
 declare global {
-	var prismaClient: PrismaClient;
+	var prismaClient: PrismaClientType;
 }
 
-globalThis.prismaClient ??= new PrismaClient({ adapter });
+@injectable("Singleton")
+export class PrismaClient {
+	client: PrismaClientType;
 
-export const prisma = globalThis.prismaClient;
+	constructor(@inject(Config) private readonly config: Config) {
+		globalThis.prismaClient ??= new PrismaClientType({
+			adapter,
+			log: this.config.env.PRISMA_LOG_LEVEL,
+		});
+
+		this.client = globalThis.prismaClient;
+	}
+}
