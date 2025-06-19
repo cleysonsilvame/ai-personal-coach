@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
-import { prisma } from "../app/lib/prisma-client";
+import { container } from "~/lib/container";
+import { PrismaClient } from "~/lib/prisma-client";
+
+const prisma = container.get(PrismaClient);
 
 // Objetivos pessoais realistas para o seed
 const personalGoals = [
@@ -172,16 +175,16 @@ const assistantResponses = [
 
 async function main() {
 	// Limpar dados existentes
-	await prisma.chatMessage.deleteMany();
-	await prisma.chat.deleteMany();
-	await prisma.goal.deleteMany();
+	await prisma.client.chatMessage.deleteMany();
+	await prisma.client.chat.deleteMany();
+	await prisma.client.goal.deleteMany();
 
 	console.log("🧹 Dados anteriores removidos...");
 
 	// Criar chats com conversas sobre objetivos pessoais
 	const chats = [];
 	for (let i = 0; i < 10; i++) {
-		const chat = await prisma.chat.create({
+		const chat = await prisma.client.chat.create({
 			data: {
 				title: faker.helpers.arrayElement([
 					"Discussão sobre aprendizado de idiomas",
@@ -200,7 +203,7 @@ async function main() {
 	// Criar mensagens de chat realistas
 	for (const chat of chats) {
 		// Mensagem inicial do usuário
-		const userMessage = await prisma.chatMessage.create({
+		const userMessage = await prisma.client.chatMessage.create({
 			data: {
 				content: JSON.stringify({
 					message: faker.helpers.arrayElement([
@@ -218,7 +221,7 @@ async function main() {
 
 		// Resposta do coach IA - agora em formato JSON
 		const assistantResponse = faker.helpers.arrayElement(assistantResponses);
-		await prisma.chatMessage.create({
+		await prisma.client.chatMessage.create({
 			data: {
 				content: JSON.stringify(assistantResponse),
 				role: "assistant",
@@ -228,7 +231,7 @@ async function main() {
 
 		// Possível mensagem de follow-up
 		if (faker.datatype.boolean({ probability: 0.6 })) {
-			await prisma.chatMessage.create({
+			await prisma.client.chatMessage.create({
 				data: {
 					content: JSON.stringify({
 						message: faker.helpers.arrayElement([
@@ -244,7 +247,7 @@ async function main() {
 			});
 
 			// Sempre responder com uma mensagem do assistente para finalizar
-			await prisma.chatMessage.create({
+			await prisma.client.chatMessage.create({
 				data: {
 					content: JSON.stringify({
 						message: faker.helpers.arrayElement([
@@ -265,7 +268,7 @@ async function main() {
 	console.log("📝 Mensagens de chat criadas...");
 
 	// Buscar todas as mensagens de chat para evitar repetição
-	const allChatMessages = await prisma.chatMessage.findMany({
+	const allChatMessages = await prisma.client.chatMessage.findMany({
 		where: { role: "assistant" },
 	});
 
@@ -288,7 +291,7 @@ async function main() {
 			usedChatMessageIds.add(chatMessageId);
 		}
 
-		await prisma.goal.create({
+		await prisma.client.goal.create({
 			data: {
 				title: goalTemplate.title + (i > 2 ? ` - Versão ${i - 2}` : ""),
 				description: goalTemplate.description,
@@ -313,10 +316,10 @@ async function main() {
 
 main()
 	.then(async () => {
-		await prisma.$disconnect();
+		await prisma.client.$disconnect();
 	})
 	.catch(async (e) => {
 		console.error(e);
-		await prisma.$disconnect();
+		await prisma.client.$disconnect();
 		process.exit(1);
 	});
