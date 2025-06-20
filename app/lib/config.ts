@@ -9,8 +9,8 @@ const envSchema = z.object({
 
 	PRISMA_LOG_LEVEL: z
 		.string()
-		.default("")
-		.transform((val) => val.split(","))
+		.optional()
+		.transform((val) => val?.split(",") ?? [])
 		.pipe(z.array(z.enum(["query", "info", "warn", "error"]))),
 });
 
