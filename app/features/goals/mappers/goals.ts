@@ -1,4 +1,4 @@
-import type { Goal as PrismaGoal } from "generated/prisma";
+import type { Prisma, Goal as PrismaGoal } from "generated/prisma";
 import type { GoalGetPayload } from "generated/prisma/models";
 import { Goal } from "../entities/goal";
 
@@ -22,7 +22,7 @@ export const GoalsMapper = {
 				: null,
 		};
 	},
-	toDomain(goal: PrismaGoal) {
+	toDomain(goal: PrismaGoal): Goal {
 		return new Goal({
 			id: goal.id,
 			title: goal.title,
@@ -34,5 +34,20 @@ export const GoalsMapper = {
 			motivation_strategies: goal.motivation_strategies,
 			chat_message_id: goal.chat_message_id,
 		});
+	},
+	toPrisma(goal: Goal): Prisma.GoalCreateInput {
+		return {
+			id: goal.id,
+			title: goal.title,
+			description: goal.description,
+			estimated_time: goal.estimated_time,
+			action_steps: goal.action_steps,
+			progress_indicators: goal.progress_indicators,
+			suggested_habits: goal.suggested_habits,
+			motivation_strategies: goal.motivation_strategies,
+			chat_message: goal.chat_message_id
+				? { connect: { id: goal.chat_message_id } }
+				: undefined,
+		};
 	},
 };

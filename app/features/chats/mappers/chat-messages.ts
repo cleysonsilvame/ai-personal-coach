@@ -1,29 +1,17 @@
-import type { ChatMessage } from "generated/prisma";
+import type { ChatMessage as PrismaChatMessage } from "generated/prisma";
 import { marked } from "marked";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
+import { ChatMessage, type ChatMessageContent } from "../entities/chat-message";
 
 const window = new JSDOM("").window;
 const purify = createDOMPurify(window);
 
-export interface ChatMessageContentData {
-	message: string;
-	data?: {
-		title: string;
-		description: string;
-		estimated_time: string;
-		action_steps: string[];
-		progress_indicators: string[];
-		suggested_habits: string[];
-		motivation_strategies: string;
-	};
-}
-
 export const ChatMessagesMapper = {
-	toHtml<T extends ChatMessage>(chatMessage: T) {
+	toHtml<T extends PrismaChatMessage>(chatMessage: T) {
 		const content = JSON.parse(
 			String(chatMessage.content),
-		) as ChatMessageContentData;
+		) as ChatMessageContent;
 
 		return {
 			...chatMessage,
@@ -35,11 +23,17 @@ export const ChatMessagesMapper = {
 			},
 		};
 	},
-	toDomain<T extends ChatMessage>(chatMessage: T) {
+	toDomain<T extends PrismaChatMessage>(chatMessage: T) {
 		const content = JSON.parse(
 			String(chatMessage.content),
-		) as ChatMessageContentData;
+		) as ChatMessageContent; // TODO: should be use a zod schema to parse the content
 
-		return content;
+		return new ChatMessage({
+			id: chatMessage.id,
+			content,
+			role: chatMessage.role,
+			createdAt: chatMessage.created_at,
+			updatedAt: chatMessage.updated_at,
+		});
 	},
 };

@@ -1,17 +1,9 @@
-import type {
-	ChatMessageGetPayload,
-	GoalGetPayload,
-	GoalUpdateInput,
-} from "generated/prisma/models";
 import type { Goal as PrismaGoal } from "generated/prisma";
+import type { GoalGetPayload, GoalUpdateInput } from "generated/prisma/models";
 import type { Goal } from "../entities/goal";
 
 export abstract class GoalRepository {
 	abstract createGoal(goal: Goal): Promise<Goal>;
-
-	abstract findGoalByMessageId(
-		messageId: string,
-	): Promise<ChatMessageGetPayload<{ include: { goal: true } }> | null>;
 
 	abstract findById(id: string): Promise<PrismaGoal | null>;
 

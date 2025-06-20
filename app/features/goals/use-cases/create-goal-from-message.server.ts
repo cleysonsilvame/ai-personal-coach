@@ -1,7 +1,7 @@
-import { injectable, inject } from "inversify";
-import { GoalRepository } from "../repositories/goal";
-import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
+import { inject, injectable } from "inversify";
+import { ChatMessageRepository } from "~/features/chats/repositories/chat-message";
 import { Goal } from "../entities/goal";
+import { GoalRepository } from "../repositories/goal";
 
 interface CreateGoalFromMessageInput {
 	messageId: string;
@@ -12,15 +12,17 @@ export class CreateGoalFromMessageUseCase {
 	constructor(
 		@inject(GoalRepository)
 		private readonly goalRepository: GoalRepository,
+		@inject(ChatMessageRepository)
+		private readonly chatMessageRepository: ChatMessageRepository,
 	) {}
 
 	async execute({ messageId }: CreateGoalFromMessageInput) {
-		const message = await this.goalRepository.findGoalByMessageId(messageId);
+		const message = await this.chatMessageRepository.findById(messageId);
 		if (!message) {
 			throw new Error("Mensagem não encontrada");
 		}
 
-		const content = ChatMessagesMapper.toDomain(message);
+		const content = message.content;
 
 		if (!content.data) {
 			throw new Error("Conteúdo da mensagem não encontrado");

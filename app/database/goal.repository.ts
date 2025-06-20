@@ -12,18 +12,9 @@ export class PrismaGoalRepository extends GoalRepository {
 
 	async createGoal(goal: Goal): Promise<Goal> {
 		const goalData = await this.prisma.client.goal.create({
-			data: goal,
+			data: GoalsMapper.toPrisma(goal),
 		});
 		return GoalsMapper.toDomain(goalData);
-	}
-
-	async findGoalByMessageId(messageId: string) {
-		const message = await this.prisma.client.chatMessage.findUnique({
-			where: { id: messageId },
-			include: { goal: true },
-		});
-
-		return message;
 	}
 
 	async findById(id: string) {
