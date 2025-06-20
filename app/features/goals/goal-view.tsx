@@ -44,11 +44,13 @@ export function GoalView({ goal }: Props) {
 				<Separator />
 				<Tabs defaultValue="action_steps" className="w-full">
 					<TabsList>
-						<TabsTrigger value="action_steps">Passos de Ação</TabsTrigger>
-						<TabsTrigger value="progress_indicators">
+						<TabsTrigger value="action_steps" className="cursor-pointer">
+							Passos de Ação
+						</TabsTrigger>
+						<TabsTrigger value="progress_indicators" className="cursor-pointer">
 							Indicadores de Progresso
 						</TabsTrigger>
-						<TabsTrigger value="suggested_habits">
+						<TabsTrigger value="suggested_habits" className="cursor-pointer">
 							Hábitos Sugeridos
 						</TabsTrigger>
 					</TabsList>
