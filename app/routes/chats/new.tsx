@@ -1,11 +1,11 @@
 import { redirect } from "react-router";
 import { z } from "zod";
-import { ChatInterface } from "~/features/goals/chat-interface";
-import { GoalContent } from "~/features/goals/goal-content";
-import { GetChatMessagesUseCase } from "~/features/goals/use-cases/get-chat-messages.server";
-import { SendMessageUseCase } from "~/features/goals/use-cases/send-message.server";
+import { ChatInterface } from "~/features/chats/views/chat-interface";
+import { GoalContent } from "~/features/chats/views/goal-content";
 import { container } from "../../lib/container";
 import type { Route } from "./+types/new";
+import { SendMessageUseCase } from "~/features/chats/use-cases/send-message.server";
+import { GetChatMessagesUseCase } from "~/features/chats/use-cases/get-chat-messages.server";
 
 const actionSchema = z.object({
 	message: z.string().trim().min(1),

@@ -60,7 +60,7 @@ export function GoalsList() {
 										title="Chat do objetivo"
 										disabled={!goal.chat_id}
 									>
-										<Link to={`/goals/new?chat=${goal.chat_id}`}>
+										<Link to={`/chats/new?chat=${goal.chat_id}`}>
 											<MessageCircle className="h-4 w-4" />
 										</Link>
 									</Button>

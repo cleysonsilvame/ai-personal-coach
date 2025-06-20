@@ -2,18 +2,18 @@ import { useLocation, useRouteLoaderData } from "react-router";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { Separator } from "~/components/ui/separator";
 import { SidebarTrigger } from "~/components/ui/sidebar";
-import type { loader } from "~/routes/goals/new";
+import type { loader } from "~/routes/chats/new";
 
 const ROUTE_TITLES: Record<string, string> = {
-	"/goals/new": "Novo objetivo",
-	"/goals": "Objetivos",
+	"/chats/new": "Novo objetivo",
 	"/chats": "Chats",
+	"/goals": "Objetivos",
 };
 
 export function SiteHeader() {
 	const location = useLocation();
-	const goalsNewLoaderData =
-		useRouteLoaderData<typeof loader>("routes/goals/new");
+	const chatsNewLoaderData =
+		useRouteLoaderData<typeof loader>("routes/chats/new");
 
 	const getPageTitle = () => {
 		if (location.pathname.startsWith("/goals/edit/")) {
@@ -24,8 +24,8 @@ export function SiteHeader() {
 			return "Objetivo";
 		}
 
-		if (goalsNewLoaderData?.chat_title) {
-			return goalsNewLoaderData.chat_title;
+		if (chatsNewLoaderData?.chat_title) {
+			return chatsNewLoaderData.chat_title;
 		}
 
 		return ROUTE_TITLES[location.pathname] || "Not Found";

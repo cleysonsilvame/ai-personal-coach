@@ -1,5 +1,5 @@
 import { ChatRepository } from "~/features/chats/repositories/chat";
-import { ChatsList } from "~/features/chats/chats-list";
+import { ChatsList } from "~/features/chats/views/chats-list";
 import { container } from "~/lib/container";
 import type { Route } from "./+types/list";
 import { z } from "zod";
@@ -56,7 +56,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export async function loader() {
 	const chatRepository = container.get(ChatRepository);
-	const chats = await chatRepository.findAll();
+	const chats = await chatRepository.findAll(); // TODO: add usecase
 	return { chats };
 }
 

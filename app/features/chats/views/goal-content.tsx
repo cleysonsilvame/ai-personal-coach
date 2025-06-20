@@ -12,7 +12,7 @@ import { Link, useFetcher, useLoaderData } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import type { loader } from "~/routes/goals/new";
+import type { loader } from "~/routes/chats/new";
 
 export function GoalContent() {
 	const fetcher = useFetcher();

@@ -98,7 +98,7 @@ export function ChatsList() {
 							<TableCell>
 								<Link
 									to={{
-										pathname: "/goals/new",
+										pathname: "/chats/new",
 										search: `?chat=${chat.id}`,
 									}}
 									className="decoration-dotted underline underline-offset-4"

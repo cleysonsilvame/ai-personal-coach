@@ -30,7 +30,7 @@ export function NavMain({
 							className="bg-none"
 						>
 							<NavLink
-								to="/goals/new"
+								to="/chats/new"
 								className="[.active]:bg-primary [.active]:hover:bg-primary/90 transition-colors"
 							>
 								<IconCirclePlusFilled />

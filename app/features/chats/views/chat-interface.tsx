@@ -7,7 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import type { loader } from "~/routes/goals/new";
+import type { loader } from "~/routes/chats/new";
 
 export function ChatInterface() {
 	const { messages } = useLoaderData<typeof loader>();

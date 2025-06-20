@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
 
 export async function loader() {
-	return redirect("/goals/new");
+	return redirect("/chats/new");
 }
