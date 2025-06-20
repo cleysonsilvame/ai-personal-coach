@@ -4,7 +4,8 @@ import type {
 	ChatDefaultArgs,
 	ChatGetPayload,
 } from "generated/prisma/models";
-import type { Chat, ChatMessageRole } from "generated/prisma";
+import type { ChatMessageRole } from "generated/prisma";
+import type { Chat } from "../entities/chat";
 
 export abstract class ChatRepository {
 	abstract findById<T extends ChatDefaultArgs>(

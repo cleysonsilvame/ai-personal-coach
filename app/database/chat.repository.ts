@@ -8,6 +8,7 @@ import type {
 import type { ChatMessageRole } from "generated/prisma";
 import { inject } from "inversify";
 import { PrismaClient } from "~/lib/prisma-client";
+import { ChatMapper } from "~/features/chats/mappers/chat";
 
 export class PrismaChatRepository extends ChatRepository {
 	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
@@ -78,6 +79,6 @@ export class PrismaChatRepository extends ChatRepository {
 
 	async findAll() {
 		const chats = await this.prisma.client.chat.findMany();
-		return chats;
+		return chats.map(ChatMapper.toDomain);
 	}
 }

@@ -1,14 +1,9 @@
 import { inject, injectable } from "inversify";
 import { ChatRepository } from "../repositories/chat";
-
-export interface ChatListItem {
-	id: string;
-	title: string | null;
-	created_at: Date;
-}
+import type { Chat } from "../entities/chat";
 
 export interface GetChatsListResult {
-	chats: ChatListItem[];
+	chats: Chat[];
 }
 
 @injectable()
