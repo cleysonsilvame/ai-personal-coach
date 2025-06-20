@@ -1,12 +1,15 @@
 import { ChatMessageRole } from "generated/prisma";
 import { inject, injectable } from "inversify";
-import type { SendMessageResult } from "~/features/goals/types";
 import { ChatRepository } from "../../chats/repositories/chat";
 import { ChatService } from "../../chats/services/chat";
 
 interface SendMessageInput {
 	message: string;
 	chatId: string | null;
+}
+
+export interface SendMessageResult {
+	chatId: string;
 }
 
 @injectable()

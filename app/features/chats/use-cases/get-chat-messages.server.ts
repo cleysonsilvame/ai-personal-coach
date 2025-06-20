@@ -1,8 +1,22 @@
-import { inject, injectable } from "inversify";
-import type { GetChatMessagesResult } from "~/features/goals/types";
-import { ChatRepository } from "../../chats/repositories/chat";
 import { ChatMessageRole } from "generated/prisma";
+import type { ChatMessageGetPayload } from "generated/prisma/models";
+import { inject, injectable } from "inversify";
 import { ChatMessagesMapper } from "../../chats/mappers/chat-messages";
+import { ChatRepository } from "../../chats/repositories/chat";
+import type { ChatMessageContent } from "../entities/chat-message";
+
+interface Message
+	extends Omit<ChatMessageGetPayload<{ include: { goal: true } }>, "content"> {
+	content: ChatMessageContent;
+}
+
+export interface GetChatMessagesResult {
+	messages: Message[];
+	goal_id?: string;
+	message_id?: string;
+	goal_content?: ChatMessageContent["data"];
+	chat_title?: string;
+}
 
 @injectable()
 export class GetChatMessagesUseCase {
