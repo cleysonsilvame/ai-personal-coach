@@ -8,6 +8,8 @@ interface GoalProps {
 	suggested_habits: string[];
 	motivation_strategies: string;
 	chat_message_id?: string | null;
+	created_at: Date;
+	updated_at: Date;
 }
 
 export class Goal {
@@ -19,7 +21,9 @@ export class Goal {
 	readonly progress_indicators: string[];
 	readonly suggested_habits: string[];
 	readonly motivation_strategies: string;
-	readonly chat_message_id?: string | null;
+	private _chat_message_id?: string | null;
+	readonly created_at: Date;
+	readonly updated_at: Date;
 
 	constructor(props: GoalProps) {
 		this.id = props.id;
@@ -30,13 +34,25 @@ export class Goal {
 		this.progress_indicators = props.progress_indicators;
 		this.suggested_habits = props.suggested_habits;
 		this.motivation_strategies = props.motivation_strategies;
-		this.chat_message_id = props.chat_message_id;
+		this._chat_message_id = props.chat_message_id;
+		this.created_at = props.created_at;
+		this.updated_at = props.updated_at;
 	}
 
-	static create(props: Omit<GoalProps, "id">) {
+	get chat_message_id() {
+		return this._chat_message_id;
+	}
+
+	removeMessageLink() {
+		this._chat_message_id = null;
+	}
+
+	static create(props: Omit<GoalProps, "id" | "created_at" | "updated_at">) {
 		return new Goal({
 			...props,
 			id: crypto.randomUUID(),
+			created_at: new Date(),
+			updated_at: new Date(),
 		});
 	}
 }

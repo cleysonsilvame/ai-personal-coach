@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
-import { GoalRepository } from "../repositories/goal";
-import type { GoalUpdateInput } from "generated/prisma/models/Goal";
+import type { Goal } from "../entities/goal";
+import { GoalRepository, type UpdateGoalInput } from "../repositories/goal";
 
 @injectable()
 export class UpdateGoalUseCase {
@@ -9,12 +9,10 @@ export class UpdateGoalUseCase {
 		private readonly goalRepository: GoalRepository,
 	) {}
 
-	async execute<T extends Omit<GoalUpdateInput, "id">>(
-		goalId: string,
-		data: T,
-	) {
-		return this.goalRepository.updateById(goalId, data, {
-			removeMessageLink: true,
+	async execute(goalId: string, goal: Omit<UpdateGoalInput, "updated_at">) {
+		return this.goalRepository.updateById(goalId, {
+			...goal,
+			updated_at: new Date(),
 		});
 	}
 }

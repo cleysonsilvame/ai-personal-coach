@@ -1,6 +1,6 @@
-import type { Goal } from "generated/prisma";
 import { inject, injectable } from "inversify";
 import { GoalRepository } from "../repositories/goal";
+import type { Goal } from "../entities/goal";
 
 @injectable()
 export class GetGoalByIdUseCase {

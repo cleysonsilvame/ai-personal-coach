@@ -1,9 +1,23 @@
-import type { GoalUpdateInput } from "generated/prisma/models";
 import { inject } from "inversify";
 import type { Goal } from "~/features/goals/entities/goal";
 import { GoalsMapper } from "~/features/goals/mappers/goals";
 import { PrismaClient } from "~/lib/prisma-client";
-import { GoalRepository } from "../features/goals/repositories/goal";
+import {
+	GoalRepository,
+	type FindAllInclude,
+	type UpdateGoalInput,
+} from "../features/goals/repositories/goal";
+import { GoalAggregate } from "~/features/goals/aggregates/goal-aggregate";
+import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
+import type { ChatMessage } from "~/features/chats/entities/chat-message";
+
+type PrismaFindManyInclude =
+	| {
+			include: { chat_message: true };
+	  }
+	| {
+			include: undefined;
+	  };
 
 export class PrismaGoalRepository extends GoalRepository {
 	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
@@ -22,15 +36,35 @@ export class PrismaGoalRepository extends GoalRepository {
 			where: { id },
 		});
 
-		return goal;
+		if (!goal) {
+			return null;
+		}
+
+		return GoalsMapper.toDomain(goal);
 	}
 
-	async findAll() {
-		const goals = await this.prisma.client.goal.findMany({
-			include: { chat_message: true },
-		});
+	async findAll<T extends FindAllInclude>(
+		include?: T,
+	): Promise<GoalAggregate<ChatMessage | null>[]> {
+		const prismaInclude: PrismaFindManyInclude["include"] = include?.chatMessage
+			? { chat_message: true }
+			: undefined;
 
-		return goals;
+		const goals = await this.prisma.client.goal.findMany<PrismaFindManyInclude>(
+			{ include: prismaInclude },
+		);
+
+		return goals.map((goal) => {
+			if ("chat_message" in goal) {
+				const chatMessage = goal.chat_message
+					? ChatMessagesMapper.toDomain(goal.chat_message)
+					: null;
+
+				return new GoalAggregate(GoalsMapper.toDomain(goal), chatMessage);
+			}
+
+			return new GoalAggregate(GoalsMapper.toDomain(goal));
+		});
 	}
 
 	async deleteById(id: string): Promise<void> {
@@ -39,23 +73,10 @@ export class PrismaGoalRepository extends GoalRepository {
 		});
 	}
 
-	async updateById(
-		id: string,
-		data: Omit<GoalUpdateInput, "id">,
-		options?: {
-			removeMessageLink?: boolean;
-		},
-	) {
+	async updateById(id: string, data: UpdateGoalInput) {
 		await this.prisma.client.goal.update({
 			where: { id },
-			data: {
-				...data,
-				chat_message: options?.removeMessageLink
-					? {
-							disconnect: true,
-						}
-					: undefined,
-			},
+			data: GoalsMapper.toUpdatePrisma(data),
 		});
 	}
 }

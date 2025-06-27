@@ -21,7 +21,7 @@ export class OpenRouterChatService extends ChatService {
 		});
 	}
 
-	async getCompletions(messages: ChatMessage[]) {
+	async getCompletions(messages: ChatMessage[]): Promise<ChatMessage> {
 		const completion = await this.openRouterClient.chat.completions.create({
 			model: this.config.env.OPEN_ROUTER_MODEL,
 			messages: [
@@ -72,6 +72,7 @@ export class OpenRouterChatService extends ChatService {
 		return ChatMessage.create({
 			content: assistantMessage.data,
 			role: ChatMessageRole.assistant,
+			chatId: messages[0].chatId,
 		});
 	}
 }

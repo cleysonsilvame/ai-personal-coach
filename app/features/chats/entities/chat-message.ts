@@ -19,6 +19,7 @@ interface ChatMessageProps {
 	role: ChatMessageRole;
 	createdAt: Date;
 	updatedAt: Date;
+	chatId: string;
 }
 
 export class ChatMessage {
@@ -27,6 +28,7 @@ export class ChatMessage {
 	readonly role: ChatMessageRole;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
+	readonly chatId: string;
 
 	constructor(props: ChatMessageProps) {
 		this.id = props.id;
@@ -34,6 +36,7 @@ export class ChatMessage {
 		this.role = props.role;
 		this.createdAt = props.createdAt;
 		this.updatedAt = props.updatedAt;
+		this.chatId = props.chatId;
 	}
 
 	static create(

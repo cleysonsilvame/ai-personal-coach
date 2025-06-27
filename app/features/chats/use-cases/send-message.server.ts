@@ -26,11 +26,6 @@ export class SendMessageUseCase {
 	async execute(data: SendMessageInput): Promise<SendMessageResult> {
 		const { message, chatId } = data;
 
-		const userMessage = ChatMessage.create({
-			content: { message },
-			role: ChatMessageRole.user,
-		});
-
 		let chat = null;
 
 		if (chatId) {
@@ -42,6 +37,12 @@ export class SendMessageUseCase {
 		if (!chat) {
 			chat = new ChatAggregate(await this.chatRepository.create(), []);
 		}
+
+		const userMessage = ChatMessage.create({
+			content: { message },
+			role: ChatMessageRole.user,
+			chatId: chat.id,
+		});
 
 		const assistantMessage = await this.chatService.getCompletions([
 			...chat.messages,

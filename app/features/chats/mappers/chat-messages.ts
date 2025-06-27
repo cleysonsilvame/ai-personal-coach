@@ -26,6 +26,7 @@ export const ChatMessagesMapper = {
 			role: chatMessage.role,
 			createdAt: chatMessage.created_at,
 			updatedAt: chatMessage.updated_at,
+			chatId: chatMessage.chat_id,
 		});
 	},
 };

@@ -41,10 +41,8 @@ export async function action({ request }: Route.ActionArgs) {
 		};
 	}
 
-	const { goal_id, ...rest } = data;
-
 	const updateGoalUseCase = container.get(UpdateGoalUseCase);
-	await updateGoalUseCase.execute(goal_id, rest);
+	await updateGoalUseCase.execute(data.goal_id, data);
 
 	return { success: true };
 }

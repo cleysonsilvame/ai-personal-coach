@@ -1,6 +1,8 @@
 import type { GoalGetPayload } from "generated/prisma/models";
 import { inject, injectable } from "inversify";
 import { GoalRepository } from "../repositories/goal";
+import type { GoalAggregate } from "../aggregates/goal-aggregate";
+import type { ChatMessage } from "~/features/chats/entities/chat-message";
 
 @injectable()
 export class GetGoalsUseCase {
@@ -9,10 +11,8 @@ export class GetGoalsUseCase {
 		private readonly goalRepository: GoalRepository,
 	) {}
 
-	async execute(): Promise<
-		GoalGetPayload<{ include: { chat_message: true } }>[]
-	> {
-		const goals = await this.goalRepository.findAll();
+	async execute(): Promise<GoalAggregate<ChatMessage | null>[]> {
+		const goals = await this.goalRepository.findAll({ chatMessage: true });
 
 		return goals;
 	}
