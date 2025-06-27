@@ -63,7 +63,7 @@ export function ChatInterface() {
 										}}
 									/>
 									<p className="text-xs opacity-70 mt-1">
-										{new Date(message.created_at).toLocaleTimeString([], {
+										{new Date(message.createdAt).toLocaleTimeString([], {
 											hour: "2-digit",
 											minute: "2-digit",
 										})}

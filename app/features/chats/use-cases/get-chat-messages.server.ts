@@ -1,17 +1,11 @@
 import { ChatMessageRole } from "generated/prisma";
-import type { ChatMessageGetPayload } from "generated/prisma/models";
 import { inject, injectable } from "inversify";
 import { ChatMessagesMapper } from "../../chats/mappers/chat-messages";
 import { ChatRepository } from "../../chats/repositories/chat";
-import type { ChatMessageContent } from "../entities/chat-message";
-
-interface Message
-	extends Omit<ChatMessageGetPayload<{ include: { goal: true } }>, "content"> {
-	content: ChatMessageContent;
-}
+import type { ChatMessage, ChatMessageContent } from "../entities/chat-message";
 
 export interface GetChatMessagesResult {
-	messages: Message[];
+	messages: ChatMessage[];
 	goal_id?: string;
 	message_id?: string;
 	goal_content?: ChatMessageContent["data"];
@@ -31,7 +25,7 @@ export class GetChatMessagesUseCase {
 		}
 
 		const chat = await this.chatRepository.findById(chatId, {
-			include: { messages: { include: { goal: true } } },
+			messages: { goal: true },
 		});
 
 		if (!chat) {
@@ -42,7 +36,7 @@ export class GetChatMessagesUseCase {
 
 		const lastMessage = messages[messages.length - 1];
 
-		if (lastMessage.role !== ChatMessageRole.assistant)
+		if (lastMessage?.role !== ChatMessageRole.assistant)
 			throw new Error("Last message is not an assistant message");
 
 		return {

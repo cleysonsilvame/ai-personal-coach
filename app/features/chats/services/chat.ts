@@ -1,23 +1,5 @@
-import { ChatMessageRole, type Prisma } from "generated/prisma";
-import { inject } from "inversify";
-
-export interface ChatServiceMessage {
-	role: ChatMessageRole;
-	content: Prisma.JsonValue;
-}
-
-export interface GetCompletionsResponse {
-	message: string;
-	data?: {
-		title: string;
-		description: string;
-		estimated_time: string;
-		action_steps: string[];
-		progress_indicators: string[];
-		suggested_habits: string[];
-		motivation_strategies: string;
-	};
-}
+import { ChatMessageRole } from "generated/prisma";
+import type { ChatMessage } from "../entities/chat-message";
 
 const SYSTEM_PROMPT = `
 Você é um coach de vida experiente especializado em desenvolvimento pessoal e estabelecimento de metas.
@@ -74,7 +56,5 @@ export abstract class ChatService {
 		content: SYSTEM_PROMPT,
 	};
 
-	abstract getCompletions(
-		messages: ChatServiceMessage[],
-	): Promise<GetCompletionsResponse>;
+	abstract getCompletions(messages: ChatMessage[]): Promise<ChatMessage>;
 }

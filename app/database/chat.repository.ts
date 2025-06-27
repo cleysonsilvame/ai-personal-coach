@@ -1,43 +1,89 @@
-import { ChatRepository } from "~/features/chats/repositories/chat";
-import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
-import type {
-	ChatCreateArgs,
-	ChatDefaultArgs,
-	ChatFindUniqueArgs,
-} from "generated/prisma/models";
-import type { ChatMessageRole } from "generated/prisma";
 import { inject } from "inversify";
-import { PrismaClient } from "~/lib/prisma-client";
+import { ChatAggregate } from "~/features/chats/aggregates/chat-aggregate";
+import { ChatMessageAggregate } from "~/features/chats/aggregates/chat-message-aggregate";
+import type { Chat } from "~/features/chats/entities/chat";
+import type { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatMapper } from "~/features/chats/mappers/chat";
+import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
+import {
+	type ChatPayload,
+	ChatRepository,
+	type FindByIdInclude,
+} from "~/features/chats/repositories/chat";
+import type { Goal } from "~/features/goals/entities/goal";
+import { GoalsMapper } from "~/features/goals/mappers/goals";
+import { PrismaClient } from "~/lib/prisma-client";
+
+type IncludeMessages = { include: { messages: boolean } };
+type IncludeMessagesWithGoal = {
+	include: { messages: { include: { goal: boolean } } };
+};
+
+type FindUniqueArgs = {
+	where: { id: string };
+} & (IncludeMessages | IncludeMessagesWithGoal);
 
 export class PrismaChatRepository extends ChatRepository {
 	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
 		super();
 	}
 
-	async findById<T extends ChatDefaultArgs>(
+	async findById<T extends FindByIdInclude>(
 		id: string,
-		options?: SelectSubset<T, ChatDefaultArgs>,
-	) {
-		const args = { where: { id } } satisfies ChatFindUniqueArgs;
+		include: T,
+	): Promise<
+		| ChatAggregate<ChatMessageAggregate<Goal>[]>
+		| ChatAggregate<ChatMessage[]>
+		| ChatAggregate
+		| null
+	> {
+		let prismaInclude: IncludeMessages | IncludeMessagesWithGoal;
+		if (typeof include.messages === "boolean") {
+			prismaInclude = {
+				include: { messages: include.messages },
+			} satisfies IncludeMessages;
+		} else {
+			prismaInclude = {
+				include: { messages: { include: include.messages } },
+			} satisfies IncludeMessagesWithGoal;
+		}
 
-		const chat = await this.prisma.client.chat.findUnique<T & typeof args>(
-			Object.assign(args, options),
+		const prismaChat = await this.prisma.client.chat.findUnique<FindUniqueArgs>(
+			Object.assign({ where: { id } }, prismaInclude),
 		);
 
-		return chat;
+		if (!prismaChat) {
+			return null;
+		}
+
+		const chat = ChatMapper.toDomain(prismaChat);
+
+		if (include.messages && "messages" in prismaChat) {
+			const messages = prismaChat.messages.map((message) => {
+				const goal =
+					"goal" in message && message.goal
+						? GoalsMapper.toDomain(message.goal)
+						: null;
+
+				const chatMessage = ChatMessagesMapper.toDomain(message);
+
+				return new ChatMessageAggregate(chatMessage, goal);
+			});
+
+			const chatAggregate = new ChatAggregate(chat, messages);
+			return chatAggregate;
+		}
+
+		const chatAggregate = new ChatAggregate(chat);
+		return chatAggregate;
 	}
 
-	async create<T extends ChatDefaultArgs>(
-		options?: SelectSubset<T, ChatDefaultArgs>,
-	) {
-		const args = { data: { title: "Sem título" } } satisfies ChatCreateArgs;
+	async create(): Promise<Chat> {
+		const chat = await this.prisma.client.chat.create({
+			data: { title: "Sem título" },
+		});
 
-		const chat = await this.prisma.client.chat.create<T & typeof args>(
-			Object.assign(args, options),
-		);
-
-		return chat;
+		return ChatMapper.toDomain(chat);
 	}
 
 	async update(id: string, title: string): Promise<void> {
@@ -49,16 +95,21 @@ export class PrismaChatRepository extends ChatRepository {
 
 	async createChatMessages(
 		chatId: string,
-		chatMessage: { content: string; role: ChatMessageRole },
-		answer: { content: string; role: ChatMessageRole },
+		chatMessage: ChatMessage,
+		answer: ChatMessage,
 	): Promise<void> {
 		await this.prisma.client.chatMessage.createMany({
 			data: [
 				{
 					chat_id: chatId,
-					...chatMessage,
+					content: JSON.stringify(chatMessage.content),
+					role: chatMessage.role,
 				},
-				{ chat_id: chatId, ...answer },
+				{
+					chat_id: chatId,
+					content: JSON.stringify(answer.content),
+					role: answer.role,
+				},
 			],
 		});
 	}
@@ -77,7 +128,7 @@ export class PrismaChatRepository extends ChatRepository {
 		});
 	}
 
-	async findAll() {
+	async findAll(): Promise<Chat[]> {
 		const chats = await this.prisma.client.chat.findMany();
 		return chats.map(ChatMapper.toDomain);
 	}

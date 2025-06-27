@@ -1,10 +1,9 @@
+import { ChatMessageRole } from "generated/prisma";
 import { inject } from "inversify";
 import OpenAI from "openai";
 import { z } from "zod";
-import {
-	ChatService,
-	type ChatServiceMessage,
-} from "~/features/chats/services/chat";
+import { ChatMessage } from "~/features/chats/entities/chat-message";
+import { ChatService } from "~/features/chats/services/chat";
 import { Config } from "~/lib/config";
 
 export class OpenRouterChatService extends ChatService {
@@ -22,14 +21,14 @@ export class OpenRouterChatService extends ChatService {
 		});
 	}
 
-	async getCompletions(messages: ChatServiceMessage[]) {
+	async getCompletions(messages: ChatMessage[]) {
 		const completion = await this.openRouterClient.chat.completions.create({
 			model: this.config.env.OPEN_ROUTER_MODEL,
 			messages: [
 				this.SYSTEM_MESSAGE,
 				...messages.map((message) => ({
 					role: message.role,
-					content: String(message.content),
+					content: message.content.message,
 				})),
 			],
 			response_format: { type: "json_object" },
@@ -70,7 +69,10 @@ export class OpenRouterChatService extends ChatService {
 			throw assistantMessage.error;
 		}
 
-		return assistantMessage.data;
+		return ChatMessage.create({
+			content: assistantMessage.data,
+			role: ChatMessageRole.assistant,
+		});
 	}
 }
 

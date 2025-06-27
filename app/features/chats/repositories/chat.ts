@@ -1,28 +1,44 @@
-import type { SelectSubset } from "generated/prisma/internal/prismaNamespace";
-import type {
-	ChatCreateArgs,
-	ChatDefaultArgs,
-	ChatGetPayload,
-} from "generated/prisma/models";
-import type { ChatMessageRole } from "generated/prisma";
+import type { Goal } from "~/features/goals/entities/goal";
+import type { ChatAggregate } from "../aggregates/chat-aggregate";
+import type { ChatMessageAggregate } from "../aggregates/chat-message-aggregate";
 import type { Chat } from "../entities/chat";
+import type { ChatMessage } from "../entities/chat-message";
+
+export type FindByIdInclude = {
+	messages: boolean | { goal: boolean };
+};
+
+export type ChatPayload<T extends FindByIdInclude> = T extends {
+	messages: true;
+}
+	? ChatAggregate<ChatMessage[]>
+	: T extends { messages: { goal: true } }
+		? ChatAggregate<ChatMessageAggregate<Goal>[]>
+		: ChatAggregate;
 
 export abstract class ChatRepository {
-	abstract findById<T extends ChatDefaultArgs>(
+	abstract findById<T extends FindByIdInclude>(
 		id: string,
-		options?: SelectSubset<T, ChatDefaultArgs>,
-	): Promise<ChatGetPayload<T & { where: { id: string } }> | null>;
+		include?: T,
+	): Promise<ChatPayload<T> | null>;
+	abstract findById<T extends FindByIdInclude>(
+		id: string,
+		include?: T,
+	): Promise<
+		| ChatAggregate
+		| ChatAggregate<ChatMessage[]>
+		| ChatAggregate<ChatMessageAggregate<Goal>[]>
+		| null
+	>;
 
-	abstract create<T extends ChatDefaultArgs>(
-		options?: SelectSubset<T, ChatDefaultArgs>,
-	): Promise<ChatGetPayload<T & { data: ChatCreateArgs["data"] }>>;
+	abstract create(): Promise<Chat>;
 
 	abstract update(id: string, title: string): Promise<void>;
 
 	abstract createChatMessages(
 		chatId: string,
-		chatMessage: { content: string; role: ChatMessageRole },
-		answer: { content: string; role: ChatMessageRole },
+		chatMessage: ChatMessage,
+		answer: ChatMessage,
 	): Promise<void>;
 
 	abstract deleteChat(chatId: string): Promise<void>;

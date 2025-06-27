@@ -8,20 +8,12 @@ const window = new JSDOM("").window;
 const purify = createDOMPurify(window);
 
 export const ChatMessagesMapper = {
-	toHtml<T extends PrismaChatMessage>(chatMessage: T) {
-		const content = JSON.parse(
-			String(chatMessage.content),
-		) as ChatMessageContent;
+	toHtml<T extends ChatMessage>(chatMessage: T) {
+		chatMessage.content.message = purify.sanitize(
+			marked.parse(chatMessage.content.message, { async: false }),
+		);
 
-		return {
-			...chatMessage,
-			content: {
-				...content,
-				message: purify.sanitize(
-					marked.parse(content.message, { async: false }),
-				),
-			},
-		};
+		return chatMessage;
 	},
 	toDomain<T extends PrismaChatMessage>(chatMessage: T) {
 		const content = JSON.parse(
