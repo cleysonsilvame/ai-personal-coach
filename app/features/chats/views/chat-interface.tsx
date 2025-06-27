@@ -115,6 +115,24 @@ export function ChatInterface() {
 				</div>
 			</ScrollArea>
 
+			{messages.length === 0 && (
+				<div className="min-h-[300px] mx-auto">
+					<p className="text-muted-foreground mb-2 font-medium text-center opacity-60">
+						Sugestões do que você pode perguntar ou pedir
+					</p>
+					<ul className="text-sm text-muted-foreground space-y-1 text-center opacity-60">
+						<li>Quero aprender um novo idioma, como posso começar?</li>
+						<li>Me ajude a criar um plano para melhorar minha saúde física.</li>
+						<li>Quero organizar melhor meu tempo para ser mais produtivo.</li>
+						<li> Como posso criar o hábito de ler todos os dias?</li>
+						<li>Me ajude a definir metas para minha carreira profissional.</li>
+						<li>
+							Quero melhorar meu equilíbrio entre vida pessoal e trabalho.
+						</li>
+					</ul>
+				</div>
+			)}
+
 			<div className="p-4 border-t mt-auto">
 				<fetcher.Form className="flex gap-2" method="POST">
 					<Input
