@@ -3,6 +3,7 @@ import { ChatsList } from "~/features/chats/views/chats-list";
 import { container } from "~/lib/container";
 import type { Route } from "./+types/list";
 import { z } from "zod";
+import { GetChatsListUseCase } from "~/features/chats/use-cases/get-chats-list.server";
 
 const patchSchema = z.object({
 	chat_id: z.string().uuid(),
@@ -55,8 +56,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export async function loader() {
-	const chatRepository = container.get(ChatRepository);
-	const chats = await chatRepository.findAll(); // TODO: add usecase
+	const getChatsListUseCase = container.get(GetChatsListUseCase);
+	const { chats } = await getChatsListUseCase.execute();
 	return { chats };
 }
 
