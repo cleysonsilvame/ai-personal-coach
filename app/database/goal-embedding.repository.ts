@@ -25,7 +25,7 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 	async findSimilar(
 		embedding: number[],
 		excludeGoalId: string,
-		limit = 5,
+		limit = 3,
 		cutOff = 0.7,
 	): Promise<SimilarGoal[]> {
 		const results = await this.prismaClient.client.$queryRaw<unknown[]>`
@@ -33,10 +33,10 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 				g.id,
 				g.title,
 				g.description,
-				(1 - vector_distance_cos(e.embedding, ${JSON.stringify(embedding)})) as similarity
+				(1 - vector_distance_cos(e.embedding, vector32(${JSON.stringify(embedding)}))) as similarity
 			FROM goal_embeddings e
 			JOIN goals g ON g.id = e.goal_id
-			WHERE g.id != ${excludeGoalId} AND (1 - vector_distance_cos(e.embedding, ${JSON.stringify(embedding)})) > ${cutOff}
+			WHERE g.id != ${excludeGoalId} AND similarity > ${cutOff}
 			ORDER BY similarity DESC
 			LIMIT ${limit}
 		`;
