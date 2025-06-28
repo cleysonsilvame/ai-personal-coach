@@ -5,6 +5,7 @@ import { GoalEmbedding } from "../entities/goal-embedding";
 import { GoalRepository } from "../repositories/goal";
 import { GoalEmbeddingRepository } from "../repositories/goal-embedding";
 import { EmbeddingService } from "../services/embedding";
+import { GoalCacheService } from "../services/cache";
 
 interface CreateGoalFromMessageInput {
 	messageId: string;
@@ -21,6 +22,8 @@ export class CreateGoalFromMessageUseCase {
 		private readonly embeddingService: EmbeddingService,
 		@inject(GoalEmbeddingRepository)
 		private readonly goalEmbeddingRepository: GoalEmbeddingRepository,
+		@inject(GoalCacheService)
+		private readonly goalCacheService: GoalCacheService,
 	) {}
 
 	async execute({ messageId }: CreateGoalFromMessageInput) {
@@ -50,7 +53,7 @@ export class CreateGoalFromMessageUseCase {
 
 		// TODO: make transaction
 
-		const markdown = this.generateMarkdown(createdGoal);
+		const markdown = createdGoal.toMarkdown();
 
 		const embeddings =
 			await this.embeddingService.createEmbeddingsFromMarkdown(markdown);
@@ -63,35 +66,7 @@ export class CreateGoalFromMessageUseCase {
 				}),
 			),
 		);
-	}
 
-	private generateMarkdown(goal: Goal) {
-		return `# ${goal.title}
-
-**Descrição:**
-${goal.description}
-
-**Tempo Estimado:**
-${goal.estimated_time}
-
-## Etapas de Ação
-${goal.action_steps && goal.action_steps.length > 0 ? goal.action_steps.map((step) => `- ${step}`).join("\n") : "Nenhuma"}
-
-## Indicadores de Progresso
-${goal.progress_indicators && goal.progress_indicators.length > 0 ? goal.progress_indicators.map((ind) => `- ${ind}`).join("\n") : "Nenhum"}
-
-## Hábitos Sugeridos
-${goal.suggested_habits && goal.suggested_habits.length > 0 ? goal.suggested_habits.map((habit) => `- ${habit}`).join("\n") : "Nenhum"}
-
-## Estratégias de Motivação
-${
-	goal.motivation_strategies
-		? goal.motivation_strategies
-				.split("\n")
-				.map((strat) => `- ${strat}`)
-				.join("\n")
-		: "Nenhuma"
-}
-		`;
+		await this.goalCacheService.invalidateAllSimilarGoals();
 	}
 }

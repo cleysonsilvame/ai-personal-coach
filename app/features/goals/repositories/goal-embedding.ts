@@ -3,6 +3,7 @@ import type { SimilarGoal } from "../entities/similar-goal";
 
 export abstract class GoalEmbeddingRepository {
 	abstract createMany(embeddings: GoalEmbedding[]): Promise<void>;
+	abstract deleteByGoalId(goalId: string): Promise<void>;
 	abstract findSimilar(
 		embedding: number[],
 		excludeGoalId: string,

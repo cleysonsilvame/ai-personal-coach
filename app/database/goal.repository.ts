@@ -74,9 +74,11 @@ export class PrismaGoalRepository extends GoalRepository {
 	}
 
 	async updateById(id: string, data: UpdateGoalInput) {
-		await this.prisma.client.goal.update({
+		const goal = await this.prisma.client.goal.update({
 			where: { id },
 			data: GoalsMapper.toUpdatePrisma(data),
 		});
+
+		return GoalsMapper.toDomain(goal);
 	}
 }

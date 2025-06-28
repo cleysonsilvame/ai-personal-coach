@@ -47,6 +47,44 @@ export class Goal {
 		this._chat_message_id = null;
 	}
 
+	toMarkdown() {
+		return `# ${this.title}
+
+**Descrição:**
+${this.description}
+
+**Tempo Estimado:**
+${this.estimated_time}
+
+## Etapas de Ação
+${this.action_steps && this.action_steps.length > 0 ? this.action_steps.map((step) => `- ${step}`).join("\n") : "Nenhuma"}
+
+## Indicadores de Progresso
+${
+	this.progress_indicators && this.progress_indicators.length > 0
+		? this.progress_indicators.map((ind) => `- ${ind}`).join("\n")
+		: "Nenhum"
+}
+
+## Hábitos Sugeridos
+${
+	this.suggested_habits && this.suggested_habits.length > 0
+		? this.suggested_habits.map((habit) => `- ${habit}`).join("\n")
+		: "Nenhum"
+}
+
+## Estratégias de Motivação
+${
+	this.motivation_strategies
+		? this.motivation_strategies
+				.split("\n")
+				.map((strat) => `- ${strat}`)
+				.join("\n")
+		: "Nenhuma"
+}
+		`;
+	}
+
 	static create(props: Omit<GoalProps, "id" | "created_at" | "updated_at">) {
 		return new Goal({
 			...props,

@@ -22,6 +22,12 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 		}
 	}
 
+	async deleteByGoalId(goalId: string): Promise<void> {
+		await this.prismaClient.client.$executeRaw`
+			DELETE FROM goal_embeddings WHERE goal_id = ${goalId};
+		`;
+	}
+
 	async findSimilar(
 		embedding: number[],
 		excludeGoalId: string,

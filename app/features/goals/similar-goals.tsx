@@ -17,7 +17,7 @@ interface Props {
 
 export function SimilarGoals({ similarGoals }: Props) {
 	return (
-		<Card className="bg-muted/40 flex-1/3">
+		<Card className="bg-muted/40 flex-1/3 max-w-md">
 			<CardHeader>
 				<CardTitle className="text-lg">Tarefas Similares</CardTitle>
 				<CardDescription>

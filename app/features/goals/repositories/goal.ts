@@ -31,5 +31,5 @@ export abstract class GoalRepository {
 
 	abstract deleteById(id: string): Promise<void>;
 
-	abstract updateById(id: string, data: UpdateGoalInput): Promise<void>;
+	abstract updateById(id: string, data: UpdateGoalInput): Promise<Goal>;
 }
