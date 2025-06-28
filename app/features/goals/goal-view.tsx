@@ -22,7 +22,7 @@ interface Props {
 
 export function GoalView({ goal }: Props) {
 	return (
-		<Card>
+		<Card className="flex-1/2">
 			<CardHeader className="flex flex-row items-center justify-between gap-4">
 				<div>
 					<CardTitle className="text-2xl mb-1">{goal.title}</CardTitle>
