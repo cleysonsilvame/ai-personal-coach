@@ -46,4 +46,12 @@ export class GeminiEmbeddingService extends EmbeddingService {
 		});
 		return splitter.createDocuments([markdown]);
 	}
+
+	async createEmbeddingFromTitle(title: string): Promise<number[]> {
+		const response = await this.geminiClient.embeddings.create({
+			model: "text-embedding-3-large",
+			input: title,
+		});
+		return response.data[0].embedding;
+	}
 }
