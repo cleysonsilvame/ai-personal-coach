@@ -49,7 +49,7 @@ export class GeminiEmbeddingService extends EmbeddingService {
 
 	async createEmbeddingFromTitle(title: string): Promise<number[]> {
 		const response = await this.geminiClient.embeddings.create({
-			model: "text-embedding-3-large",
+			model: this.config.env.GEMINI_EMBEDDING_MODEL,
 			input: title,
 		});
 		return response.data[0].embedding;
