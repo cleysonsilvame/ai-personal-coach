@@ -1,12 +1,16 @@
 import { Container } from "inversify";
 import { PrismaChatMessageRepository } from "~/database/chat-message.repository";
 import { PrismaChatRepository } from "~/database/chat.repository";
+import { PrismaGoalEmbeddingRepository } from "~/database/goal-embedding.repository";
 import { PrismaGoalRepository } from "~/database/goal.repository";
 import { ChatRepository } from "~/features/chats/repositories/chat";
 import { ChatMessageRepository } from "~/features/chats/repositories/chat-message";
 import { ChatService } from "~/features/chats/services/chat";
 import { GoalRepository } from "~/features/goals/repositories/goal";
+import { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
+import { EmbeddingService } from "~/features/goals/services/embedding";
 import { OpenRouterChatService } from "~/services/chat.server";
+import { GeminiEmbeddingService } from "~/services/embedding.server";
 
 export const container = new Container({
 	autobind: true,
@@ -19,3 +23,8 @@ container
 	.bind(ChatMessageRepository)
 	.to(PrismaChatMessageRepository)
 	.inSingletonScope();
+container
+	.bind(GoalEmbeddingRepository)
+	.to(PrismaGoalEmbeddingRepository)
+	.inSingletonScope();
+container.bind(EmbeddingService).to(GeminiEmbeddingService).inSingletonScope();
