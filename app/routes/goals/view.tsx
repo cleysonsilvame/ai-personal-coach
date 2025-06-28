@@ -17,13 +17,12 @@ import { SimilarGoals } from "~/features/goals/similar-goals";
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const getGoalByIdUseCase = container.get(GetGoalByIdUseCase);
-	const goal = await getGoalByIdUseCase.execute(params.id);
+	const { goal, similarGoals } = await getGoalByIdUseCase.execute(
+		params.id,
+		true,
+	);
 
-	if (!goal) {
-		return redirect("/goals");
-	}
-
-	return { goal: GoalsMapper.toHtml(goal), similarGoals: null };
+	return { goal: GoalsMapper.toHtml(goal), similarGoals };
 }
 
 export default function ({ loaderData }: Route.ComponentProps) {
@@ -44,7 +43,7 @@ export default function ({ loaderData }: Route.ComponentProps) {
 			</Breadcrumb>
 			<section className="flex gap-6">
 				<GoalView goal={goal} />
-				{/* <SimilarGoals similarGoals={similarGoals} /> */}
+				{similarGoals && <SimilarGoals similarGoals={similarGoals} />}
 			</section>
 		</ScrollArea>
 	);

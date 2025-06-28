@@ -49,11 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const getGoalByIdUseCase = container.get(GetGoalByIdUseCase);
-	const goal = await getGoalByIdUseCase.execute(params.id);
-
-	if (!goal) {
-		return redirect("/goals");
-	}
+	const { goal } = await getGoalByIdUseCase.execute(params.id);
 
 	return { goal: GoalsMapper.toHtml(goal) };
 }
