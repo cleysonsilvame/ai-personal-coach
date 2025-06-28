@@ -23,7 +23,7 @@ export function GoalContent() {
 	}
 
 	return (
-		<section className="min-w-[300px]">
+		<section className="min-w-[300px] flex-1">
 			<ScrollArea className="h-[calc(100vh-150px)] pb-4">
 				<div className="space-y-6">
 					<Card>
@@ -106,25 +106,26 @@ export function GoalContent() {
 				action="/api/goals/new"
 				className="flex justify-between"
 			>
+				<div />
 				<input type="hidden" name="message_id" value={message_id} />
+
 				{goal_id ? (
 					<Button type="button">
 						<Link to={`/goals/view/${goal_id}`}>Detalhes do Objetivo</Link>
 					</Button>
 				) : (
-					<div>&nbsp;</div>
+					<Button
+						type="submit"
+						disabled={fetcher.state !== "idle"}
+						className="cursor-pointer"
+					>
+						{fetcher.state !== "idle" ? (
+							<Loader2 className="animate-spin" />
+						) : (
+							"Salvar Objetivo"
+						)}
+					</Button>
 				)}
-				<Button
-					type="submit"
-					disabled={fetcher.state !== "idle"}
-					className="cursor-pointer"
-				>
-					{fetcher.state === "submitting" ? (
-						<Loader2 className="animate-spin" />
-					) : (
-						"Salvar Objetivo"
-					)}
-				</Button>
 			</fetcher.Form>
 		</section>
 	);
