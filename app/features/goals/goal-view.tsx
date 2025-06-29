@@ -13,12 +13,12 @@ import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
 import type { GoalsMapper } from "./mappers/goals";
 import type { Goal } from "./entities/goal";
-import type { GoalAggregate } from "./aggregates/goal-aggregate";
-import type { ChatMessage } from "../chats/entities/chat-message";
 
 interface Props {
 	goal: ReturnType<typeof GoalsMapper.toHtml<Goal>>;
 }
+
+// TODO: adicionar botão de editar e deletar
 
 export function GoalView({ goal }: Props) {
 	return (
