@@ -97,3 +97,9 @@ docker run -p 3000:3000 ai-personal-goals-coach
 - **Estratégias de Motivação:** Marcos mensais, parceiro de estudos, grupos de conversação...
 
 ---
+# A fazer (TODO:)
+
+- [ ] Verificar a melhor forma de fazer a validação de dados sem ficar fazer o mapper toda hora. Não sei se é melhor ficar dentro do domain ou infra. No caso usando zod.
+- [ ] Melhorar a estrutura de pastas para representar o que é domain, infra e core.
+- [ ] No database, fixar uma pasta para o prisma e implementar o drizzle.
+- [ ] Adicionar testes?
