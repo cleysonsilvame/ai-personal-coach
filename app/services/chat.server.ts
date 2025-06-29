@@ -97,6 +97,7 @@ const GoalDataSchema = z.object({
 
 const AIResponseSchema = z.object({
 	message: z.string().min(1, "Message cannot be empty"),
+	short_title: z.string().optional().default("Sem título"),
 	data: GoalDataSchema.optional()
 		.nullable()
 		.or(z.object({}))

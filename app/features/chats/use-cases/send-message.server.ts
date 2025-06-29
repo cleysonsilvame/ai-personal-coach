@@ -49,6 +49,12 @@ export class SendMessageUseCase {
 			userMessage,
 		]);
 
+		if (assistantMessage.content.short_title && chat.title === "Sem título") {
+			await this.chatRepository.updateById(chat.id, {
+				title: assistantMessage.content.short_title,
+			});
+		}
+
 		await this.chatRepository.createChatMessages(
 			chat.id,
 			userMessage,

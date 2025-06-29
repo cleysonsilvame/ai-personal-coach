@@ -33,7 +33,7 @@ export abstract class ChatRepository {
 
 	abstract create(): Promise<Chat>;
 
-	abstract update(id: string, title: string): Promise<void>;
+	abstract updateById(id: string, data: { title?: string }): Promise<Chat>;
 
 	abstract createChatMessages(
 		chatId: string,

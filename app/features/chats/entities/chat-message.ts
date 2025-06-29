@@ -2,6 +2,7 @@ import type { ChatMessageRole } from "generated/prisma";
 
 export interface ChatMessageContent {
 	message: string;
+	short_title?: string;
 	data?: {
 		title: string;
 		description: string;

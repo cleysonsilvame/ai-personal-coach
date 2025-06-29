@@ -57,6 +57,7 @@ O sistema envia a descrição do objetivo juntamente com o contexto de desenvolv
 ```json
 {
   "message": "string - mensagem amigável resumindo a resposta",
+  "short_title": "string - um título curto de 3 a 5 palavras para o chat",
   "data": {
     "title": "string - título do objetivo refinado",
     "description": "string - descrição detalhada do objetivo",
@@ -89,6 +90,7 @@ O sistema envia a descrição do objetivo juntamente com o contexto de desenvolv
 ```json
 {
   "message": "Refinei seu objetivo de aprender inglês com um plano estruturado. O que acha dessa abordagem?",
+  "short_title": "Plano de Inglês",
   "data": {
     "title": "Desenvolver Fluência em Inglês através de Prática Estruturada",
     "description": "Estabelecer um plano estruturado para alcançar fluência em inglês através de prática diária, imersão cultural e uso de ferramentas variadas de aprendizado.",

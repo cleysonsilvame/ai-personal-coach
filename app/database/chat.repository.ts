@@ -86,11 +86,12 @@ export class PrismaChatRepository extends ChatRepository {
 		return ChatMapper.toDomain(chat);
 	}
 
-	async update(id: string, title: string): Promise<void> {
-		await this.prisma.client.chat.update({
+	async updateById(id: string, data: { title?: string }): Promise<Chat> {
+		const updatedChat = await this.prisma.client.chat.update({
 			where: { id },
-			data: { title },
+			data,
 		});
+		return ChatMapper.toDomain(updatedChat);
 	}
 
 	async createChatMessages(
