@@ -115,7 +115,7 @@ export function ChatInterface() {
 				</div>
 			</ScrollArea>
 
-			{messages.length === 0 && (
+			{messages.length === 0 && !isLoading && (
 				<div className="min-h-[300px] mx-auto">
 					<p className="text-muted-foreground mb-2 font-medium text-center opacity-60">
 						Sugestões do que você pode perguntar ou pedir

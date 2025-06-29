@@ -17,9 +17,7 @@ export class GeminiEmbeddingService extends EmbeddingService {
 		});
 	}
 
-	async createEmbeddingsFromMarkdown(
-		markdown: string,
-	): Promise<{ chunk_content: string; embedding: number[] }[]> {
+	async createEmbeddingsFromMarkdown(markdown: string): Promise<number[][]> {
 		const chunks = await this.chunkMarkdownDocument(markdown);
 
 		const embeddings = await Promise.all(
@@ -29,10 +27,7 @@ export class GeminiEmbeddingService extends EmbeddingService {
 					input: chunk.pageContent,
 				});
 
-				return {
-					chunk_content: chunk.pageContent,
-					embedding: response.data[0].embedding,
-				};
+				return response.data[0].embedding;
 			}),
 		);
 

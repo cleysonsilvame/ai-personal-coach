@@ -59,10 +59,10 @@ export class CreateGoalFromMessageUseCase {
 			await this.embeddingService.createEmbeddingsFromMarkdown(markdown);
 
 		await this.goalEmbeddingRepository.createMany(
-			embeddings.map((e) =>
+			embeddings.map((embedding) =>
 				GoalEmbedding.create({
 					goal_id: createdGoal.id,
-					embedding: e.embedding,
+					embedding,
 				}),
 			),
 		);

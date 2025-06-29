@@ -14,7 +14,7 @@ export type GoalPayload<T extends FindAllInclude> = T extends {
 
 export type UpdateGoalInput = Omit<
 	Goal,
-	"id" | "created_at" | "chat_message_id" | "removeMessageLink"
+	"id" | "created_at" | "chat_message_id" | "removeMessageLink" | "toMarkdown"
 >;
 
 export abstract class GoalRepository {
