@@ -1,18 +1,17 @@
-import { inject } from "inversify";
+import type { Prisma } from "generated/prisma";
 import { ChatAggregate } from "~/features/chats/aggregates/chat-aggregate";
 import { ChatMessageAggregate } from "~/features/chats/aggregates/chat-message-aggregate";
 import type { Chat } from "~/features/chats/entities/chat";
 import type { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatMapper } from "~/features/chats/mappers/chat";
 import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
-import {
-	type ChatPayload,
+import type {
 	ChatRepository,
-	type FindByIdInclude,
+	FindByIdInclude,
 } from "~/features/chats/repositories/chat";
 import type { Goal } from "~/features/goals/entities/goal";
 import { GoalsMapper } from "~/features/goals/mappers/goals";
-import { PrismaClient } from "~/lib/prisma-client";
+import { BasePrismaRepository } from "./base.repository";
 
 type IncludeMessages = { include: { messages: boolean } };
 type IncludeMessagesWithGoal = {
@@ -23,9 +22,12 @@ type FindUniqueArgs = {
 	where: { id: string };
 } & (IncludeMessages | IncludeMessagesWithGoal);
 
-export class PrismaChatRepository extends ChatRepository {
-	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
-		super();
+export class PrismaChatRepository
+	extends BasePrismaRepository
+	implements ChatRepository
+{
+	setTransaction(tx: Prisma.TransactionClient): ChatRepository {
+		return new PrismaChatRepository(tx);
 	}
 
 	async findById<T extends FindByIdInclude>(

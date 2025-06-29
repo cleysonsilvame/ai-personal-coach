@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { ChatMessageRepository } from "~/features/chats/repositories/chat-message";
-import { UnitOfWork } from "~/services/unit-of-work.server";
+import { UnitOfWork } from "~/features/core/services/unit-of-work";
 import { Goal } from "../entities/goal";
 import { GoalEmbedding } from "../entities/goal-embedding";
 import { GoalRepository } from "../repositories/goal";

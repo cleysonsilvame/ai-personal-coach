@@ -4,14 +4,12 @@ import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
 import { GoalAggregate } from "~/features/goals/aggregates/goal-aggregate";
 import type { Goal } from "~/features/goals/entities/goal";
 import { GoalsMapper } from "~/features/goals/mappers/goals";
-import { container } from "~/lib/container";
-import { PrismaClient } from "~/lib/prisma-client";
-import {
-	type FindAllInclude,
+import type {
+	FindAllInclude,
 	GoalRepository,
-	type UpdateGoalInput,
+	UpdateGoalInput,
 } from "../features/goals/repositories/goal";
-import { unmanaged } from "inversify";
+import { BasePrismaRepository } from "./base.repository";
 
 type PrismaFindManyInclude =
 	| {
@@ -21,18 +19,10 @@ type PrismaFindManyInclude =
 			include: undefined;
 	  };
 
-export class PrismaGoalRepository extends GoalRepository {
-	private readonly prisma: PrismaClient | { client: Prisma.TransactionClient };
-
-	constructor(@unmanaged() tx?: Prisma.TransactionClient) {
-		super();
-		if (tx) {
-			this.prisma = { client: tx };
-		} else {
-			this.prisma = container.get(PrismaClient);
-		}
-	}
-
+export class PrismaGoalRepository
+	extends BasePrismaRepository
+	implements GoalRepository
+{
 	setTransaction(tx: Prisma.TransactionClient): GoalRepository {
 		return new PrismaGoalRepository(tx);
 	}

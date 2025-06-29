@@ -1,18 +1,21 @@
-import type { Prisma } from "generated/prisma";
 import { inject, injectable } from "inversify";
+import type { Transaction } from "~/features/core/services/transaction";
+import { UnitOfWork } from "~/features/core/services/unit-of-work";
 import { PrismaClient } from "~/lib/prisma-client";
 
 @injectable()
-export class UnitOfWork {
+export class PrismaUnitOfWork extends UnitOfWork {
 	constructor(
 		@inject(PrismaClient)
 		private readonly prisma: PrismaClient,
-	) {}
+	) {
+		super();
+	}
 
-	public execute<T>(
-		fn: (tx: Prisma.TransactionClient) => Promise<T>,
+	execute<T>(
+		fn: (tx: Transaction) => Promise<T>,
 		options?: { timeout: number; maxWait?: number },
 	): Promise<T> {
-		return this.prisma.client.$transaction(fn, options);
+		return this.prisma.client.$transaction((tx) => fn(tx), options);
 	}
 }

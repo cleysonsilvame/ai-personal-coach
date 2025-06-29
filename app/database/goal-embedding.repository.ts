@@ -1,25 +1,17 @@
 import type { Prisma } from "generated/prisma";
-import { injectable, unmanaged } from "inversify";
+import { injectable } from "inversify";
 import type { GoalEmbedding } from "~/features/goals/entities/goal-embedding";
 import type { SimilarGoal } from "~/features/goals/entities/similar-goal";
 import { GoalEmbeddingMapper } from "~/features/goals/mappers/goal-embedding";
-import { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
-import { container } from "~/lib/container";
-import { PrismaClient } from "~/lib/prisma-client";
+import type { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
+import { BasePrismaRepository } from "./base.repository";
 
 @injectable()
-export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
-	private readonly prisma: PrismaClient | { client: Prisma.TransactionClient };
-	constructor(@unmanaged() tx?: Prisma.TransactionClient) {
-		super();
-		if (tx) {
-			this.prisma = { client: tx };
-		} else {
-			this.prisma = container.get(PrismaClient);
-		}
-	}
-
-	setTransaction(tx: Prisma.TransactionClient): GoalEmbeddingRepository {
+export class PrismaGoalEmbeddingRepository
+	extends BasePrismaRepository
+	implements GoalEmbeddingRepository
+{
+	setTransaction(tx: Prisma.TransactionClient) {
 		return new PrismaGoalEmbeddingRepository(tx);
 	}
 

@@ -12,8 +12,9 @@ import { GoalCacheService } from "~/features/goals/services/cache";
 import { EmbeddingService } from "~/features/goals/services/embedding";
 import { RedisGoalCacheService } from "~/services/cache.server";
 import { OpenRouterChatService } from "~/services/chat.server";
-import { UnitOfWork } from "~/services/unit-of-work.server";
+import { PrismaUnitOfWork } from "~/services/unit-of-work.server";
 import { GeminiEmbeddingService } from "~/services/embedding.server";
+import { UnitOfWork } from "~/features/core/services/unit-of-work";
 
 export const container = new Container({
 	autobind: true,
@@ -30,7 +31,7 @@ container
 	.to(PrismaGoalEmbeddingRepository)
 	.inTransientScope();
 
-container.bind(UnitOfWork).to(UnitOfWork).inSingletonScope();
+container.bind(UnitOfWork).to(PrismaUnitOfWork).inSingletonScope();
 
 container.bind(ChatService).to(OpenRouterChatService).inSingletonScope();
 container.bind(EmbeddingService).to(GeminiEmbeddingService).inSingletonScope();

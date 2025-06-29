@@ -14,6 +14,7 @@ const deleteSchema = z.object({
 	chat_id: z.string().uuid(),
 });
 
+// TODO: Refatorar para usar o use-case
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();
 	switch (request.method) {
@@ -28,7 +29,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 			try {
 				const chatRepository = container.get(ChatRepository);
-				await chatRepository.update(data.chat_id, data.title);
+				await chatRepository.updateById(data.chat_id, { title: data.title });
 				return { success: true };
 			} catch (error) {
 				return { success: false, error: "Erro ao atualizar chat" };
