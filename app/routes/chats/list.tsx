@@ -1,9 +1,10 @@
-import { ChatRepository } from "~/features/chats/repositories/chat";
 import { ChatsList } from "~/features/chats/views/chats-list";
 import { container } from "~/lib/container";
 import type { Route } from "./+types/list";
 import { z } from "zod";
 import { GetChatsListUseCase } from "~/features/chats/use-cases/get-chats-list.server";
+import { UpdateChatUseCase } from "~/features/chats/use-cases/update-chat.server";
+import { DeleteChatUseCase } from "~/features/chats/use-cases/delete-chat.server";
 
 const patchSchema = z.object({
 	chat_id: z.string().uuid(),
@@ -14,7 +15,6 @@ const deleteSchema = z.object({
 	chat_id: z.string().uuid(),
 });
 
-// TODO: Refatorar para usar o use-case
 export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();
 	switch (request.method) {
@@ -28,8 +28,8 @@ export async function action({ request }: Route.ActionArgs) {
 			}
 
 			try {
-				const chatRepository = container.get(ChatRepository);
-				await chatRepository.updateById(data.chat_id, { title: data.title });
+				const updateChatUseCase = container.get(UpdateChatUseCase);
+				await updateChatUseCase.execute({ chatId: data.chat_id, title: data.title });
 				return { success: true };
 			} catch (error) {
 				return { success: false, error: "Erro ao atualizar chat" };
@@ -46,8 +46,8 @@ export async function action({ request }: Route.ActionArgs) {
 			}
 
 			try {
-				const chatRepository = container.get(ChatRepository);
-				await chatRepository.deleteChat(data.chat_id);
+				const deleteChatUseCase = container.get(DeleteChatUseCase);
+				await deleteChatUseCase.execute({ chatId: data.chat_id });
 				return { success: true };
 			} catch (error) {
 				return { success: false, error: "Erro ao deletar chat" };
