@@ -1,6 +1,7 @@
 import type { ChatMessage } from "~/features/chats/entities/chat-message";
 import type { GoalAggregate } from "../aggregates/goal-aggregate";
 import type { Goal } from "../entities/goal";
+import type { Prisma } from "generated/prisma";
 
 export type FindAllInclude = {
 	chatMessage: boolean;
@@ -18,6 +19,8 @@ export type UpdateGoalInput = Omit<
 >;
 
 export abstract class GoalRepository {
+	abstract setTransaction(tx: Prisma.TransactionClient): GoalRepository;
+
 	abstract createGoal(goal: Goal): Promise<Goal>;
 
 	abstract findById(id: string): Promise<Goal | null>;

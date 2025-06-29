@@ -10,5 +10,6 @@ export class DeleteGoalUseCase {
 
 	async execute(goalId: string): Promise<void> {
 		await this.goalRepository.deleteById(goalId);
+		// TODO: delete cache
 	}
 }

@@ -1,21 +1,31 @@
-import { inject, injectable } from "inversify";
+import type { Prisma } from "generated/prisma";
+import { injectable, unmanaged } from "inversify";
 import type { GoalEmbedding } from "~/features/goals/entities/goal-embedding";
 import type { SimilarGoal } from "~/features/goals/entities/similar-goal";
-import { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
-import { PrismaClient } from "~/lib/prisma-client";
 import { GoalEmbeddingMapper } from "~/features/goals/mappers/goal-embedding";
+import { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
+import { container } from "~/lib/container";
+import { PrismaClient } from "~/lib/prisma-client";
 
 @injectable()
 export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
-	constructor(
-		@inject(PrismaClient) private readonly prismaClient: PrismaClient,
-	) {
+	private readonly prisma: PrismaClient | { client: Prisma.TransactionClient };
+	constructor(@unmanaged() tx?: Prisma.TransactionClient) {
 		super();
+		if (tx) {
+			this.prisma = { client: tx };
+		} else {
+			this.prisma = container.get(PrismaClient);
+		}
+	}
+
+	setTransaction(tx: Prisma.TransactionClient): GoalEmbeddingRepository {
+		return new PrismaGoalEmbeddingRepository(tx);
 	}
 
 	async createMany(embeddings: GoalEmbedding[]): Promise<void> {
 		for (const e of embeddings) {
-			await this.prismaClient.client.$executeRaw`
+			await this.prisma.client.$executeRaw`
 				INSERT INTO goal_embeddings (id, embedding, goal_id, created_at, updated_at)
 				VALUES (${e.id}, ${JSON.stringify(e.embedding)}, ${e.goal_id}, ${e.created_at}, ${e.updated_at});
 			`;
@@ -23,7 +33,7 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 	}
 
 	async deleteByGoalId(goalId: string): Promise<void> {
-		await this.prismaClient.client.$executeRaw`
+		await this.prisma.client.$executeRaw`
 			DELETE FROM goal_embeddings WHERE goal_id = ${goalId};
 		`;
 	}
@@ -34,7 +44,7 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 		limit = 3,
 		cutOff = 0.65,
 	): Promise<SimilarGoal[]> {
-		const results = await this.prismaClient.client.$queryRaw<unknown[]>`
+		const results = await this.prisma.client.$queryRaw<unknown[]>`
 			SELECT
 				g.id,
 				g.title,

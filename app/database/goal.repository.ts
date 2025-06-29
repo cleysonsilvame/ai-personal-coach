@@ -1,15 +1,17 @@
-import { inject } from "inversify";
+import type { Prisma } from "generated/prisma";
+import type { ChatMessage } from "~/features/chats/entities/chat-message";
+import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
+import { GoalAggregate } from "~/features/goals/aggregates/goal-aggregate";
 import type { Goal } from "~/features/goals/entities/goal";
 import { GoalsMapper } from "~/features/goals/mappers/goals";
+import { container } from "~/lib/container";
 import { PrismaClient } from "~/lib/prisma-client";
 import {
-	GoalRepository,
 	type FindAllInclude,
+	GoalRepository,
 	type UpdateGoalInput,
 } from "../features/goals/repositories/goal";
-import { GoalAggregate } from "~/features/goals/aggregates/goal-aggregate";
-import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
-import type { ChatMessage } from "~/features/chats/entities/chat-message";
+import { unmanaged } from "inversify";
 
 type PrismaFindManyInclude =
 	| {
@@ -20,8 +22,19 @@ type PrismaFindManyInclude =
 	  };
 
 export class PrismaGoalRepository extends GoalRepository {
-	constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
+	private readonly prisma: PrismaClient | { client: Prisma.TransactionClient };
+
+	constructor(@unmanaged() tx?: Prisma.TransactionClient) {
 		super();
+		if (tx) {
+			this.prisma = { client: tx };
+		} else {
+			this.prisma = container.get(PrismaClient);
+		}
+	}
+
+	setTransaction(tx: Prisma.TransactionClient): GoalRepository {
+		return new PrismaGoalRepository(tx);
 	}
 
 	async createGoal(goal: Goal): Promise<Goal> {
