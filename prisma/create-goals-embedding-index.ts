@@ -12,7 +12,7 @@ await prisma.client.$executeRaw`
         goal_id TEXT UNIQUE NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        FOREIGN KEY (goal_id) REFERENCES goals(id)
+        FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE ON UPDATE CASCADE
       );
     `;
 
