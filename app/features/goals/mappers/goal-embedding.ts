@@ -5,6 +5,7 @@ const similarGoalSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	description: z.string(),
+	estimated_time: z.string(),
 	similarity: z.number(),
 });
 

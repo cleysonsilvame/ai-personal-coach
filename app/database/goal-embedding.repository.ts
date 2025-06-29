@@ -39,6 +39,7 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 				g.id,
 				g.title,
 				g.description,
+				g.estimated_time,
 				(1 - vector_distance_cos(e.embedding, vector32(${JSON.stringify(embedding)}))) as similarity
 			FROM goal_embeddings e
 			JOIN goals g ON g.id = e.goal_id

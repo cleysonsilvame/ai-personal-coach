@@ -53,8 +53,7 @@ export function SimilarGoals({ similarGoals }: Props) {
 										variant="secondary"
 										className="flex items-center gap-1 px-2 py-1 ml-2"
 									>
-										{/* <span>{t.estimated_time}</span> */}{" "}
-										{/* TODO: add estimated time */}
+										<span>{t.estimated_time}</span>
 										<ArrowRight className="w-4 h-4 text-primary ml-1" />
 									</Badge>
 								</a>
