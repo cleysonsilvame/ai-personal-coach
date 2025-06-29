@@ -19,6 +19,7 @@ export class UpdateGoalUseCase {
 	) {}
 
 	async execute(goalId: string, goal: Omit<UpdateGoalInput, "updated_at">) {
+		// TODO: adicionar transaction
 		const updatedGoal = await this.goalRepository.updateById(goalId, {
 			...goal,
 			updated_at: new Date(),
