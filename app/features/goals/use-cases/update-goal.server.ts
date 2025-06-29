@@ -4,6 +4,7 @@ import { GoalRepository, type UpdateGoalInput } from "../repositories/goal";
 import { GoalEmbeddingRepository } from "../repositories/goal-embedding";
 import { EmbeddingService } from "../services/embedding";
 import { GoalCacheService } from "../services/cache";
+import { UnitOfWork } from "~/features/core/services/unit-of-work";
 
 @injectable()
 export class UpdateGoalUseCase {
@@ -16,33 +17,38 @@ export class UpdateGoalUseCase {
 		private readonly embeddingService: EmbeddingService,
 		@inject(GoalCacheService)
 		private readonly goalCacheService: GoalCacheService,
+		@inject(UnitOfWork)
+		private readonly uow: UnitOfWork,
 	) {}
 
 	async execute(goalId: string, goal: Omit<UpdateGoalInput, "updated_at">) {
-		// TODO: adicionar transaction
-		const updatedGoal = await this.goalRepository.updateById(goalId, {
-			...goal,
-			updated_at: new Date(),
+		await this.uow.execute(async (tx) => {
+			const transactionalGoalRepo = this.goalRepository.setTransaction(tx);
+			const transactionalEmbeddingRepo =
+				this.goalEmbeddingRepository.setTransaction(tx);
+
+			const updatedGoal = await transactionalGoalRepo.updateById(goalId, {
+				...goal,
+				updated_at: new Date(),
+			});
+
+			await transactionalEmbeddingRepo.deleteByGoalId(goalId);
+
+			const markdown = updatedGoal.toMarkdown();
+
+			const embeddings =
+				await this.embeddingService.createEmbeddingsFromMarkdown(markdown);
+
+			await transactionalEmbeddingRepo.createMany(
+				embeddings.map((embedding) =>
+					GoalEmbedding.create({
+						goal_id: updatedGoal.id,
+						embedding,
+					}),
+				),
+			);
+
+			await this.goalCacheService.invalidateAllSimilarGoals();
 		});
-
-		await this.goalEmbeddingRepository.deleteByGoalId(goalId);
-
-		const markdown = updatedGoal.toMarkdown();
-
-		const embeddings =
-			await this.embeddingService.createEmbeddingsFromMarkdown(markdown);
-
-		await this.goalEmbeddingRepository.createMany(
-			embeddings.map((embedding) =>
-				GoalEmbedding.create({
-					goal_id: updatedGoal.id,
-					embedding,
-				}),
-			),
-		);
-
-		await this.goalCacheService.invalidateAllSimilarGoals();
-
-		return updatedGoal;
 	}
 }
