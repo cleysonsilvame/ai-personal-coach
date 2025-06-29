@@ -8,25 +8,62 @@ import {
 } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
+import { Pencil, Trash2 } from "lucide-react";
+import { Link, useFetcher, useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import type { GoalsMapper } from "./mappers/goals";
 import type { Goal } from "./entities/goal";
+import type { GoalsMapper } from "./mappers/goals";
 
 interface Props {
 	goal: ReturnType<typeof GoalsMapper.toHtml<Goal>>;
 }
 
-// TODO: adicionar botão de editar e deletar
-
 export function GoalView({ goal }: Props) {
+	const { Form: DeleteGoalForm, ...fetcher } = useFetcher();
+	const navigate = useNavigate();
+
+	function onDeleteGoal() {
+		navigate("/goals");
+	}
+
 	return (
 		<Card className="flex-1/2">
 			<CardHeader className="flex flex-row items-center justify-between gap-4">
 				<div>
 					<CardTitle className="text-2xl mb-1">{goal.title}</CardTitle>
 					<CardDescription>ID: {goal.id}</CardDescription>
+				</div>
+				<div className="flex gap-2 items-center">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8"
+						title="Editar objetivo"
+						asChild
+					>
+						<Link to={`/goals/edit/${goal.id}`}>
+							<Pencil className="h-4 w-4" />
+						</Link>
+					</Button>
+					<DeleteGoalForm
+						action="/goals"
+						method="DELETE"
+						onSubmit={onDeleteGoal}
+					>
+						<Button
+							type="submit"
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
+							title="Deletar objetivo"
+						>
+							<input type="hidden" name="goal_id" value={goal.id} />
+							<Trash2 className="h-4 w-4" />
+						</Button>
+					</DeleteGoalForm>
 				</div>
 				<Badge variant="secondary">{goal.estimated_time}</Badge>
 			</CardHeader>
