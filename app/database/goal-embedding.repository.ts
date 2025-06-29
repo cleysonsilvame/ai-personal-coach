@@ -32,7 +32,7 @@ export class PrismaGoalEmbeddingRepository extends GoalEmbeddingRepository {
 		embedding: number[],
 		excludeGoalId: string,
 		limit = 3,
-		cutOff = 0.7,
+		cutOff = 0.65,
 	): Promise<SimilarGoal[]> {
 		const results = await this.prismaClient.client.$queryRaw<unknown[]>`
 			SELECT

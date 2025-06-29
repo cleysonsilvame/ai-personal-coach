@@ -38,14 +38,14 @@ export class GetGoalByIdUseCase {
 		let similarGoals = await this.goalsCacheService.getSimilarGoals(goalId);
 
 		if (!similarGoals) {
-			const embedding = await this.embeddingsService.createEmbeddingFromTitle(
-				goal.title,
+			const embedding = await this.embeddingsService.createEmbeddingFromText(
+				`${goal.title}: ${goal.description}`,
 			);
 
 			similarGoals = await this.goalsEmbeddingRepository.findSimilar(
 				embedding,
 				goalId,
-				4,
+				5,
 			);
 
 			await this.goalsCacheService.setSimilarGoals(goalId, similarGoals);
