@@ -1,8 +1,7 @@
-import type { Prisma, Goal as PrismaGoal } from "generated/prisma";
-import type { GoalGetPayload } from "generated/prisma/models";
-import { Goal } from "../entities/goal";
-import type { GoalAggregate } from "../aggregates/goal-aggregate";
+import type { goalsTable } from "drizzle/schema";
 import type { ChatMessage } from "~/features/chats/entities/chat-message";
+import type { GoalAggregate } from "../aggregates/goal-aggregate";
+import { Goal } from "../entities/goal";
 import type { UpdateGoalInput } from "../repositories/goal";
 
 export const GoalsMapper = {
@@ -21,7 +20,7 @@ export const GoalsMapper = {
 			updated_at: goal.updated_at.toLocaleString("pt-BR"),
 		};
 	},
-	toDomain(goal: PrismaGoal): Goal {
+	toDomain(goal: typeof goalsTable.$inferSelect): Goal {
 		return new Goal({
 			id: goal.id,
 			title: goal.title,
@@ -36,7 +35,7 @@ export const GoalsMapper = {
 			updated_at: goal.updated_at,
 		});
 	},
-	toPrisma(goal: Goal): Prisma.GoalCreateInput {
+	toPersistence(goal: Goal): typeof goalsTable.$inferInsert {
 		return {
 			id: goal.id,
 			title: goal.title,
@@ -46,14 +45,14 @@ export const GoalsMapper = {
 			progress_indicators: goal.progress_indicators,
 			suggested_habits: goal.suggested_habits,
 			motivation_strategies: goal.motivation_strategies,
-			chat_message: goal.chat_message_id
-				? { connect: { id: goal.chat_message_id } }
-				: undefined,
+			chat_message_id: goal.chat_message_id,
 			created_at: goal.created_at,
 			updated_at: goal.updated_at,
 		};
 	},
-	toUpdatePrisma(goal: UpdateGoalInput): Prisma.GoalUpdateInput {
+	toUpdatePersistence(
+		goal: UpdateGoalInput,
+	): Partial<typeof goalsTable.$inferInsert> {
 		return {
 			title: goal.title,
 			description: goal.description,
@@ -62,8 +61,8 @@ export const GoalsMapper = {
 			progress_indicators: goal.progress_indicators,
 			suggested_habits: goal.suggested_habits,
 			motivation_strategies: goal.motivation_strategies,
-			chat_message: { disconnect: true },
-			updated_at: new Date(),
+			chat_message_id: goal.chat_message_id,
+			updated_at: goal.updated_at,
 		};
 	},
 };

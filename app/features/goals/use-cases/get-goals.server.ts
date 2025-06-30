@@ -1,4 +1,3 @@
-import type { GoalGetPayload } from "generated/prisma/models";
 import { inject, injectable } from "inversify";
 import { GoalRepository } from "../repositories/goal";
 import type { GoalAggregate } from "../aggregates/goal-aggregate";

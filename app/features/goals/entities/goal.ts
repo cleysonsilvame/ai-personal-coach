@@ -11,7 +11,7 @@ interface GoalProps {
 	created_at: Date;
 	updated_at: Date;
 }
-
+// TODO: camelCase or snake_case?
 export class Goal {
 	readonly id: string;
 	readonly title: string;

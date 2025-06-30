@@ -1,10 +1,10 @@
 import { inject, injectable } from "inversify";
-import { GoalRepository } from "../repositories/goal";
 import type { Goal } from "../entities/goal";
-import { GoalCacheService } from "../services/cache";
 import type { SimilarGoal } from "../entities/similar-goal";
-import { EmbeddingService } from "../services/embedding";
+import { GoalRepository } from "../repositories/goal";
 import { GoalEmbeddingRepository } from "../repositories/goal-embedding";
+import { GoalCacheService } from "../services/cache";
+import { EmbeddingService } from "../services/embedding";
 
 interface GetGoalsByIdOutput {
 	goal: Goal;
