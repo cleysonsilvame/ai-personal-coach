@@ -1,10 +1,10 @@
 import { inject, injectable } from "inversify";
+import { UnitOfWork } from "~/features/core/services/unit-of-work";
 import { GoalEmbedding } from "../entities/goal-embedding";
 import { GoalRepository, type UpdateGoalInput } from "../repositories/goal";
 import { GoalEmbeddingRepository } from "../repositories/goal-embedding";
-import { EmbeddingService } from "../services/embedding";
 import { GoalCacheService } from "../services/cache";
-import { UnitOfWork } from "~/features/core/services/unit-of-work";
+import { EmbeddingService } from "../services/embedding";
 
 @injectable()
 export class UpdateGoalUseCase {
@@ -21,7 +21,10 @@ export class UpdateGoalUseCase {
 		private readonly uow: UnitOfWork,
 	) {}
 
-	async execute(goalId: string, goal: Omit<UpdateGoalInput, "updated_at">) {
+	async execute(
+		goalId: string,
+		goal: Omit<UpdateGoalInput, "updated_at" | "chat_message_id">,
+	) {
 		await this.uow.execute(async (tx) => {
 			const transactionalGoalRepo = this.goalRepository.setTransaction(tx);
 			const transactionalEmbeddingRepo =
@@ -29,6 +32,7 @@ export class UpdateGoalUseCase {
 
 			const updatedGoal = await transactionalGoalRepo.updateById(goalId, {
 				...goal,
+				chat_message_id: null,
 				updated_at: new Date(),
 			});
 

@@ -1,17 +1,18 @@
-import { useFetcher, useLoaderData } from "react-router";
+import { useFetcher, useLoaderData, useNavigate } from "react-router";
 
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import type { action, loader } from "~/routes/goals/edit";
-import { toast } from "sonner";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
 
 export function GoalForm() {
 	const { goal } = useLoaderData<typeof loader>();
 	const { Form: GoalForm, ...fetcher } = useFetcher<typeof action>();
+	const navigate = useNavigate();
 
 	const arrayToString = (arr: string[]) => arr.join("\n");
 
@@ -20,6 +21,7 @@ export function GoalForm() {
 
 		if (fetcher.data?.success) {
 			toast.success("Objetivo atualizado com sucesso");
+			navigate("/goals");
 			return;
 		}
 
