@@ -8,7 +8,7 @@ import type {
 	FindAllInclude,
 	GoalRepository,
 	UpdateGoalInput,
-} from "../features/goals/repositories/goal";
+} from "../../features/goals/repositories/goal";
 import { BasePrismaRepository } from "./base.repository";
 
 type PrismaFindManyInclude =

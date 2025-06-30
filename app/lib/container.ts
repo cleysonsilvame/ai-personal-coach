@@ -1,8 +1,8 @@
 import { Container } from "inversify";
-import { PrismaChatMessageRepository } from "~/database/chat-message.repository";
-import { PrismaChatRepository } from "~/database/chat.repository";
-import { PrismaGoalEmbeddingRepository } from "~/database/goal-embedding.repository";
-import { PrismaGoalRepository } from "~/database/goal.repository";
+import { PrismaChatMessageRepository } from "~/database/prisma/chat-message.repository";
+import { PrismaChatRepository } from "~/database/prisma/chat.repository";
+import { PrismaGoalEmbeddingRepository } from "~/database/prisma/goal-embedding.repository";
+import { PrismaGoalRepository } from "~/database/prisma/goal.repository";
 import { ChatRepository } from "~/features/chats/repositories/chat";
 import { ChatMessageRepository } from "~/features/chats/repositories/chat-message";
 import { ChatService } from "~/features/chats/services/chat";
