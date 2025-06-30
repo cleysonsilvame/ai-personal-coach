@@ -1,4 +1,5 @@
-import type { Prisma } from "generated/prisma";
+import { eq, sql } from "drizzle-orm";
+import { chatMessagesTable, chatsTable, goalsTable } from "drizzle/schema";
 import { ChatAggregate } from "~/features/chats/aggregates/chat-aggregate";
 import { ChatMessageAggregate } from "~/features/chats/aggregates/chat-message-aggregate";
 import type { Chat } from "~/features/chats/entities/chat";
@@ -11,29 +12,16 @@ import type {
 } from "~/features/chats/repositories/chat";
 import type { Goal } from "~/features/goals/entities/goal";
 import { GoalsMapper } from "~/features/goals/mappers/goals";
-import { BaseDrizzleRepository } from "./base.repository";
-import type { SQLiteTransaction } from "drizzle-orm/sqlite-core";
-import type { TablesRelationalConfig } from "drizzle-orm";
 import {
-	chatsTable,
-	chatMessagesTable,
-	goalsTable,
-	goalEmbeddingsTable,
-} from "drizzle/schema";
-import { eq, sql } from "drizzle-orm";
+	BaseDrizzleRepository,
+	type DrizzleTransaction,
+} from "./base.repository";
 
 export class DrizzleChatRepository
 	extends BaseDrizzleRepository
 	implements ChatRepository
 {
-	setTransaction(
-		tx: SQLiteTransaction<
-			"async",
-			unknown,
-			Record<string, unknown>,
-			TablesRelationalConfig
-		>,
-	): ChatRepository {
+	setTransaction(tx: DrizzleTransaction): ChatRepository {
 		return new DrizzleChatRepository(tx);
 	}
 
@@ -71,7 +59,7 @@ export class DrizzleChatRepository
 			if (includeMessagesGoal) {
 				baseQuery = baseQuery.leftJoin(
 					goalsTable,
-					eq(goalsTable.id, chatMessagesTable.goal_id),
+					eq(goalsTable.chat_message_id, chatMessagesTable.id),
 				);
 			}
 		}
@@ -116,6 +104,7 @@ export class DrizzleChatRepository
 		return ChatMapper.toDomain(updatedChat[0]);
 	}
 
+	// TODO: colocar no chat-message-repository
 	async createChatMessages(
 		chatId: string,
 		chatMessage: ChatMessage,
