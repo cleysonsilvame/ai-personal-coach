@@ -116,7 +116,7 @@ export function ChatInterface() {
 			</ScrollArea>
 
 			{messages.length === 0 && !isLoading && (
-				<div className="min-h-[300px] mx-auto">
+				<div className="min-h-[300px] mx-auto h-full flex flex-col items-center justify-center">
 					<p className="text-muted-foreground mb-2 font-medium text-center opacity-60">
 						Sugestões do que você pode perguntar ou pedir
 					</p>
