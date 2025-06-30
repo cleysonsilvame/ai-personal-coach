@@ -1,10 +1,4 @@
 import { redirect } from "react-router";
-import { GoalView } from "~/features/goals/goal-view";
-import { GetGoalByIdUseCase } from "~/features/goals/use-cases/get-goal-by-id.server";
-import { container } from "~/lib/container";
-import type { Route } from "./+types/view";
-import { GoalsMapper } from "~/features/goals/mappers/goals";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -13,7 +7,14 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { GoalView } from "~/features/goals/goal-view";
+import { GoalsMapper } from "~/features/goals/mappers/goals";
 import { SimilarGoals } from "~/features/goals/similar-goals";
+import { GetGoalByIdUseCase } from "~/features/goals/use-cases/get-goal-by-id.server";
+import { container } from "~/lib/container";
+import type { Route } from "./+types/view";
 
 export async function loader({ params }: Route.LoaderArgs) {
 	const getGoalByIdUseCase = container.get(GetGoalByIdUseCase);
@@ -41,7 +42,23 @@ export default function ({ loaderData }: Route.ComponentProps) {
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
-			<section className="flex gap-6">
+			<div className="block md:hidden">
+				<Tabs defaultValue="goal" className="w-full">
+					<TabsList className="w-full">
+						<TabsTrigger value="goal">Detalhes</TabsTrigger>
+						<TabsTrigger value="similar" disabled={!similarGoals}>
+							Similares
+						</TabsTrigger>
+					</TabsList>
+					<TabsContent value="goal">
+						<GoalView goal={goal} />
+					</TabsContent>
+					<TabsContent value="similar">
+						{similarGoals && <SimilarGoals similarGoals={similarGoals} />}
+					</TabsContent>
+				</Tabs>
+			</div>
+			<section className="hidden md:flex gap-6">
 				<GoalView goal={goal} />
 				{similarGoals && <SimilarGoals similarGoals={similarGoals} />}
 			</section>

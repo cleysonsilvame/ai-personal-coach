@@ -38,7 +38,7 @@ export function GoalForm() {
 				<Input id="title" name="title" defaultValue={goal.title} />
 			</div>
 
-			<div className="grid grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="description">Descrição</Label>
 					<Textarea
@@ -70,7 +70,7 @@ export function GoalForm() {
 				/>
 			</div>
 
-			<div className="grid grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="action_steps">Ações</Label>
 					<Textarea
@@ -94,7 +94,7 @@ export function GoalForm() {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 				<div className="space-y-2">
 					<Label htmlFor="suggested_habits">Hábitos Sugeridos</Label>
 					<Textarea

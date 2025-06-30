@@ -30,13 +30,15 @@ export function GoalView({ goal }: Props) {
 	}
 
 	return (
-		<Card className="flex-1/2">
-			<CardHeader className="flex flex-row items-center justify-between gap-4">
-				<div>
-					<CardTitle className="text-2xl mb-1">{goal.title}</CardTitle>
+		<Card className="flex-1">
+			<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+				<div className="min-w-0 flex-1">
+					<CardTitle className="text-2xl mb-1 break-words line-clamp-3">
+						{goal.title}
+					</CardTitle>
 					<CardDescription>ID: {goal.id}</CardDescription>
 				</div>
-				<div className="flex gap-2 items-center">
+				<div className="flex gap-2 items-center flex-shrink-0 mt-2 sm:mt-0">
 					<Button
 						variant="ghost"
 						size="icon"
@@ -64,8 +66,10 @@ export function GoalView({ goal }: Props) {
 							<Trash2 className="h-4 w-4" />
 						</Button>
 					</DeleteGoalForm>
+					<Badge variant="secondary" className="whitespace-nowrap">
+						{goal.estimated_time}
+					</Badge>
 				</div>
-				<Badge variant="secondary">{goal.estimated_time}</Badge>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-6">
 				<div>
@@ -83,7 +87,34 @@ export function GoalView({ goal }: Props) {
 
 				<Separator />
 				<Tabs defaultValue="action_steps" className="w-full">
-					<TabsList>
+					{/* Mobile: cada tab em um TabsList separado */}
+					<div className="flex flex-col gap-2 md:hidden">
+						<TabsList>
+							<TabsTrigger
+								value="action_steps"
+								className="cursor-pointer w-full justify-start"
+							>
+								Passos de Ação
+							</TabsTrigger>
+						</TabsList>
+						<TabsList>
+							<TabsTrigger
+								value="progress_indicators"
+								className="cursor-pointer w-full justify-start"
+							>
+								Indicadores de Progresso
+							</TabsTrigger>
+						</TabsList>
+						<TabsList>
+							<TabsTrigger
+								value="suggested_habits"
+								className="cursor-pointer w-full justify-start"
+							>
+								Hábitos Sugeridos
+							</TabsTrigger>
+						</TabsList>
+					</div>
+					<TabsList className="hidden md:flex">
 						<TabsTrigger value="action_steps" className="cursor-pointer">
 							Passos de Ação
 						</TabsTrigger>

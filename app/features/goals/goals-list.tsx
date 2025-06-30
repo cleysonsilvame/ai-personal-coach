@@ -31,68 +31,124 @@ export function GoalsList() {
 
 	return (
 		<div className="p-6">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead className="w-[300px]">Título</TableHead>
-						<TableHead className="w-[100px]">Estimativa</TableHead>
-						<TableHead className="w-[1%] text-center">Ações</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{goals.map((goal) => (
-						<TableRow key={goal.id}>
-							<TableCell className="font-medium">
-								<Link
-									to={`/goals/view/${goal.id}`}
-									className="decoration-dotted underline underline-offset-4"
-								>
-									{goal.title}
-								</Link>
-							</TableCell>
-							<TableCell>{goal.estimated_time}</TableCell>
-							<TableCell>
-								<div className="flex items-center gap-2">
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8"
-										title="Chat do objetivo"
-										disabled={!goal.chat_id}
+			<div className="hidden md:block">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead className="w-[300px]">Título</TableHead>
+							<TableHead className="w-[100px]">Estimativa</TableHead>
+							<TableHead className="w-[1%] text-center">Ações</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{goals.map((goal) => (
+							<TableRow key={goal.id}>
+								<TableCell className="font-medium">
+									<Link
+										to={`/goals/view/${goal.id}`}
+										className="decoration-dotted underline underline-offset-4"
 									>
-										<Link to={`/chats/new?chat=${goal.chat_id}`}>
-											<MessageCircle className="h-4 w-4" />
-										</Link>
-									</Button>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8"
-										title="Editar objetivo"
-										asChild
-									>
-										<Link to={`/goals/edit/${goal.id}`}>
-											<Pencil className="h-4 w-4" />
-										</Link>
-									</Button>
-									<DeleteGoalForm method="DELETE" onSubmit={handleDelete}>
+										{goal.title}
+									</Link>
+								</TableCell>
+								<TableCell>{goal.estimated_time}</TableCell>
+								<TableCell>
+									<div className="flex items-center gap-2">
 										<Button
-											type="submit"
 											variant="ghost"
 											size="icon"
-											className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
-											title="Deletar objetivo"
+											className="h-8 w-8"
+											title="Chat do objetivo"
+											disabled={!goal.chat_id}
 										>
-											<input type="hidden" name="goal_id" value={goal.id} />
-											<Trash2 className="h-4 w-4" />
+											<Link to={`/chats/new?chat=${goal.chat_id}`}>
+												<MessageCircle className="h-4 w-4" />
+											</Link>
 										</Button>
-									</DeleteGoalForm>
-								</div>
-							</TableCell>
-						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8"
+											title="Editar objetivo"
+											asChild
+										>
+											<Link to={`/goals/edit/${goal.id}`}>
+												<Pencil className="h-4 w-4" />
+											</Link>
+										</Button>
+										<DeleteGoalForm method="DELETE" onSubmit={handleDelete}>
+											<Button
+												type="submit"
+												variant="ghost"
+												size="icon"
+												className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
+												title="Deletar objetivo"
+											>
+												<input type="hidden" name="goal_id" value={goal.id} />
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</DeleteGoalForm>
+									</div>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
+
+			<div className="md:hidden space-y-4">
+				{goals.map((goal) => (
+					<div key={goal.id} className="border rounded-lg p-4 shadow-sm">
+						<h3 className="font-bold text-lg mb-2">
+							<Link
+								to={`/goals/view/${goal.id}`}
+								className="decoration-dotted underline underline-offset-4"
+							>
+								{goal.title}
+							</Link>
+						</h3>
+						<p className="text-sm text-muted-foreground mb-4">
+							Estimativa: {goal.estimated_time}
+						</p>
+						<div className="flex items-center gap-2">
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								title="Chat do objetivo"
+								disabled={!goal.chat_id}
+							>
+								<Link to={`/chats/new?chat=${goal.chat_id}`}>
+									<MessageCircle className="h-4 w-4" />
+								</Link>
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								title="Editar objetivo"
+								asChild
+							>
+								<Link to={`/goals/edit/${goal.id}`}>
+									<Pencil className="h-4 w-4" />
+								</Link>
+							</Button>
+							<DeleteGoalForm method="DELETE" onSubmit={handleDelete}>
+								<Button
+									type="submit"
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 text-destructive hover:text-destructive cursor-pointer"
+									title="Deletar objetivo"
+								>
+									<input type="hidden" name="goal_id" value={goal.id} />
+									<Trash2 className="h-4 w-4" />
+								</Button>
+							</DeleteGoalForm>
+						</div>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }
