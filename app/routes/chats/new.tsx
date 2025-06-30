@@ -6,6 +6,7 @@ import { container } from "../../lib/container";
 import type { Route } from "./+types/new";
 import { SendMessageUseCase } from "~/features/chats/use-cases/send-message.server";
 import { GetChatMessagesUseCase } from "~/features/chats/use-cases/get-chat-messages.server";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 
 const actionSchema = z.object({
 	message: z.string().trim().min(1),
@@ -39,9 +40,25 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function () {
 	return (
-		<div className="p-6 flex gap-6">
-			<ChatInterface />
-			<GoalContent />
-		</div>
+		<>
+			<div className="flex flex-col lg:hidden p-6 gap-6">
+				<Tabs defaultValue="chat" className="w-full">
+					<TabsList className="w-full">
+						<TabsTrigger value="chat">Chat</TabsTrigger>
+						<TabsTrigger value="goal">Objetivo</TabsTrigger>
+					</TabsList>
+					<TabsContent value="chat">
+						<ChatInterface />
+					</TabsContent>
+					<TabsContent value="goal">
+						<GoalContent />
+					</TabsContent>
+				</Tabs>
+			</div>
+			<div className="hidden lg:flex p-6 gap-6">
+				<ChatInterface />
+				<GoalContent />
+			</div>
+		</>
 	);
 }
