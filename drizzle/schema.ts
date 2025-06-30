@@ -1,11 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import {
-	text,
-	sqliteTable,
-	integer,
 	customType,
+	integer,
+	sqliteTable,
+	text,
 } from "drizzle-orm/sqlite-core";
-import { randomUUID } from "node:crypto";
 
 const chatMessageRoleEnum = text({
 	enum: ["user", "assistant", "system"],
@@ -49,8 +49,9 @@ export const chatMessagesTable = sqliteTable("chat_messages", {
 	}>(),
 	role: chatMessageRoleEnum.notNull().default("user"),
 	...timestamps,
-	chat_id: text("chat_id").notNull(),
-	goal_id: text("goal_id"),
+	chat_id: text("chat_id")
+		.notNull()
+		.references(() => chatsTable.id),
 });
 
 export const goalsTable = sqliteTable("goals", {
@@ -66,7 +67,11 @@ export const goalsTable = sqliteTable("goals", {
 	suggested_habits: text({ mode: "json" }).notNull().$type<string[]>(),
 	motivation_strategies: text("motivation_strategies").notNull(),
 	...timestamps,
-	chat_message_id: text("chat_message_id").unique(),
+	chat_message_id: text("chat_message_id")
+		.unique()
+		.references(() => chatMessagesTable.id, {
+			onDelete: "set null",
+		}),
 });
 
 const float32Array = customType<{
@@ -94,6 +99,6 @@ export const goalEmbeddingsTable = sqliteTable("goal_embeddings", {
 	embedding: float32Array("embedding", { dimensions: 768 }).notNull(),
 	goal_id: text("goal_id")
 		.notNull()
-		.references(() => goalsTable.id),
+		.references(() => goalsTable.id, { onDelete: "cascade" }),
 	...timestamps,
 });

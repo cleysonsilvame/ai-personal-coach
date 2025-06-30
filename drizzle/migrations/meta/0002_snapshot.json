@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c8e12ad4-8de8-4671-bc30-9b7aece67498",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "f9e2f736-514f-4af0-a76c-aff77c372a25",
+  "prevId": "2b44e5ef-b4d9-446a-a936-ad23436cb934",
   "tables": {
     "chat_messages": {
       "name": "chat_messages",
@@ -166,7 +166,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -277,7 +277,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

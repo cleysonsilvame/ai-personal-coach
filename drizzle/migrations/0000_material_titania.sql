@@ -5,7 +5,7 @@ CREATE TABLE `chat_messages` (
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`chat_id` text NOT NULL,
-	`goal_id` text
+	FOREIGN KEY (`chat_id`) REFERENCES `chats`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `chats` (
@@ -35,7 +35,8 @@ CREATE TABLE `goals` (
 	`motivation_strategies` text NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
-	`chat_message_id` text
+	`chat_message_id` text,
+	FOREIGN KEY (`chat_message_id`) REFERENCES `chat_messages`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `goals_chat_message_id_unique` ON `goals` (`chat_message_id`);

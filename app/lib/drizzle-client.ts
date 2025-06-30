@@ -13,7 +13,7 @@ export class DrizzleClient {
 			authToken: this.config.env.TURSO_AUTH_TOKEN,
 		});
 		this.client = drizzle(turso, {
-			logger: true,
+			logger: this.config.env.DRIZZLE_LOGGER,
 		});
 	}
 }

@@ -16,11 +16,10 @@ const envSchema = z.object({
 	TURSO_DATABASE_URL: z.string(),
 	TURSO_AUTH_TOKEN: z.string(),
 
-	PRISMA_LOG_LEVEL: z
-		.string()
-		.optional()
-		.transform((val) => val?.split(",") ?? [])
-		.pipe(z.array(z.enum(["query", "info", "warn", "error"]))),
+	DRIZZLE_LOGGER: z
+		.enum(["true", "false"])
+		.default("false")
+		.transform((val) => val === "true"),
 });
 
 export type Env = z.infer<typeof envSchema>;
