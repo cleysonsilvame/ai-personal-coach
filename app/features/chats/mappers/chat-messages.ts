@@ -1,10 +1,9 @@
 import createDOMPurify from "dompurify";
-import type { ChatMessage as PrismaChatMessage } from "generated/prisma";
+import type { chatMessagesTable } from "drizzle/schema";
 import { JSDOM } from "jsdom";
 import { marked } from "marked";
 import { z } from "zod";
-import { ChatMessage, type ChatMessageProps } from "../entities/chat-message";
-import type { chatMessagesTable } from "drizzle/schema";
+import { ChatMessage } from "../entities/chat-message";
 
 const window = new JSDOM("").window;
 const purify = createDOMPurify(window);
