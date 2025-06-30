@@ -1,4 +1,3 @@
-import { ChatMessageRole } from "generated/prisma";
 import type { ChatMessage } from "../entities/chat-message";
 
 const SYSTEM_PROMPT = `
@@ -54,7 +53,7 @@ LEMBRE-SE: Sua resposta deve ser UM JSON VÁLIDO e nada mais.
 
 export abstract class ChatService {
 	readonly SYSTEM_MESSAGE = {
-		role: ChatMessageRole.system,
+		role: "system" as const,
 		content: SYSTEM_PROMPT,
 	};
 

@@ -1,4 +1,3 @@
-import { ChatMessageRole } from "generated/prisma";
 import { inject, injectable } from "inversify";
 import { ChatMessagesMapper } from "../../chats/mappers/chat-messages";
 import { ChatRepository } from "../../chats/repositories/chat";
@@ -36,7 +35,7 @@ export class GetChatMessagesUseCase {
 
 		const lastMessage = messages[messages.length - 1];
 
-		if (lastMessage?.role !== ChatMessageRole.assistant)
+		if (lastMessage?.role !== "assistant")
 			throw new Error("Last message is not an assistant message");
 
 		return {

@@ -1,4 +1,4 @@
-import type { ChatMessageRole } from "generated/prisma";
+export type ChatMessageRole = "user" | "assistant" | "system";
 
 export interface ChatMessageContent {
 	message: string;

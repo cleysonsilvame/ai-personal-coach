@@ -1,7 +1,6 @@
-import { ChatMessageRole } from "generated/prisma";
 import { inject } from "inversify";
-import OpenAI from "openai";
 import { z } from "zod";
+import OpenAI from "openai";
 import { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatService } from "~/features/chats/services/chat";
 import { Config } from "~/lib/config";
@@ -71,7 +70,7 @@ export class OpenRouterChatService extends ChatService {
 
 		return ChatMessage.create({
 			content: assistantMessage.data,
-			role: ChatMessageRole.assistant,
+			role: "assistant",
 			chatId: messages[0].chatId,
 		});
 	}

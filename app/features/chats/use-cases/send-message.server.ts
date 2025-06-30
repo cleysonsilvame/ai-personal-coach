@@ -1,4 +1,3 @@
-import { ChatMessageRole } from "generated/prisma";
 import { inject, injectable } from "inversify";
 import { ChatRepository } from "../../chats/repositories/chat";
 import { ChatService } from "../../chats/services/chat";
@@ -40,7 +39,7 @@ export class SendMessageUseCase {
 
 		const userMessage = ChatMessage.create({
 			content: { message },
-			role: ChatMessageRole.user,
+			role: "user",
 			chatId: chat.id,
 		});
 
