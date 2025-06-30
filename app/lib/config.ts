@@ -13,6 +13,9 @@ const envSchema = z.object({
 
 	UPSTASH_REDIS_HOST: z.string(),
 
+	TURSO_DATABASE_URL: z.string(),
+	TURSO_AUTH_TOKEN: z.string(),
+
 	PRISMA_LOG_LEVEL: z
 		.string()
 		.optional()
