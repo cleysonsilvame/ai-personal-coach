@@ -7,6 +7,7 @@ import {
 } from "~/components/ui/card";
 
 import { ArrowRight } from "lucide-react";
+import React from "react";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import type { SimilarGoal } from "./entities/similar-goal";
@@ -29,9 +30,8 @@ export function SimilarGoals({ similarGoals }: Props) {
 					similarGoals.map((t, i) => {
 						const similarityPercent = Math.round((t.similarity ?? 0) * 100);
 						return (
-							<>
+							<React.Fragment key={t.id}>
 								<a
-									key={t.id}
 									href={`/goals/view/${t.id}`}
 									className="flex items-center gap-4 px-6 py-4 group hover:bg-muted/60 transition rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
 									title={`Ver objetivo: ${t.title}`}
@@ -58,7 +58,7 @@ export function SimilarGoals({ similarGoals }: Props) {
 									</Badge>
 								</a>
 								{i < similarGoals.length - 1 && <Separator className="mx-6" />}
-							</>
+							</React.Fragment>
 						);
 					})
 				) : (
