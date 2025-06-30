@@ -14,7 +14,7 @@ export interface ChatMessageContent {
 	};
 }
 
-interface ChatMessageProps {
+export interface ChatMessageProps {
 	id: string;
 	content: ChatMessageContent;
 	role: ChatMessageRole;

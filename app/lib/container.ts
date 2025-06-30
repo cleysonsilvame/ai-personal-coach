@@ -12,26 +12,31 @@ import { GoalCacheService } from "~/features/goals/services/cache";
 import { EmbeddingService } from "~/features/goals/services/embedding";
 import { RedisGoalCacheService } from "~/services/cache.server";
 import { OpenRouterChatService } from "~/services/chat.server";
-import { PrismaUnitOfWork } from "~/services/unit-of-work.server";
+import { PrismaUnitOfWork } from "~/database/prisma/unit-of-work.server";
 import { GeminiEmbeddingService } from "~/services/embedding.server";
 import { UnitOfWork } from "~/features/core/services/unit-of-work";
+import { DrizzleChatRepository } from "~/database/drizzle/chat.repository";
 
 export const container = new Container({
 	autobind: true,
 });
 
-container.bind(ChatRepository).to(PrismaChatRepository).inTransientScope();
-container.bind(GoalRepository).to(PrismaGoalRepository).inTransientScope();
-container
-	.bind(ChatMessageRepository)
-	.to(PrismaChatMessageRepository)
-	.inTransientScope();
-container
-	.bind(GoalEmbeddingRepository)
-	.to(PrismaGoalEmbeddingRepository)
-	.inTransientScope();
+// Prisma
+// container.bind(ChatRepository).to(PrismaChatRepository).inTransientScope();
+// container.bind(GoalRepository).to(PrismaGoalRepository).inTransientScope();
+// container
+// 	.bind(ChatMessageRepository)
+// 	.to(PrismaChatMessageRepository)
+// 	.inTransientScope();
+// container
+// 	.bind(GoalEmbeddingRepository)
+// 	.to(PrismaGoalEmbeddingRepository)
+// 	.inTransientScope();
 
-container.bind(UnitOfWork).to(PrismaUnitOfWork).inSingletonScope();
+// container.bind(UnitOfWork).to(PrismaUnitOfWork).inSingletonScope();
+
+// Drizzle
+container.bind(ChatRepository).to(DrizzleChatRepository).inTransientScope();
 
 container.bind(ChatService).to(OpenRouterChatService).inSingletonScope();
 container.bind(EmbeddingService).to(GeminiEmbeddingService).inSingletonScope();

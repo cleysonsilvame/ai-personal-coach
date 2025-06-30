@@ -12,6 +12,8 @@ export class DrizzleClient {
 			url: this.config.env.TURSO_DATABASE_URL,
 			authToken: this.config.env.TURSO_AUTH_TOKEN,
 		});
-		this.client = drizzle(turso);
+		this.client = drizzle(turso, {
+			logger: true,
+		});
 	}
 }

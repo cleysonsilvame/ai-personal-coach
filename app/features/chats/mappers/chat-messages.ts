@@ -3,7 +3,8 @@ import type { ChatMessage as PrismaChatMessage } from "generated/prisma";
 import { JSDOM } from "jsdom";
 import { marked } from "marked";
 import { z } from "zod";
-import { ChatMessage } from "../entities/chat-message";
+import { ChatMessage, type ChatMessageProps } from "../entities/chat-message";
+import type { chatMessagesTable } from "drizzle/schema";
 
 const window = new JSDOM("").window;
 const purify = createDOMPurify(window);
@@ -35,12 +36,11 @@ export const ChatMessagesMapper = {
 
 		return chatMessage;
 	},
-	toDomain<T extends PrismaChatMessage>(chatMessage: T) {
+	toDomain<T extends typeof chatMessagesTable.$inferSelect>(chatMessage: T) {
+		// TODO: check if chatMessageTable have been validated content
 		return new ChatMessage({
 			id: chatMessage.id,
-			content: ChatMessageContentSchema.parse(
-				JSON.parse(String(chatMessage.content)),
-			),
+			content: ChatMessageContentSchema.parse(chatMessage.content),
 			role: chatMessage.role,
 			createdAt: chatMessage.created_at,
 			updatedAt: chatMessage.updated_at,
