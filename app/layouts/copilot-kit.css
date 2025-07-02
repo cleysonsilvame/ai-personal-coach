@@ -8,8 +8,11 @@
 	margin-bottom: 0;
 	left: 0.9rem;
 	bottom: 0.9rem;
+	border-radius: 0.5rem;
+	overflow: hidden;
 }
 
 a.copilotKitMarkdownElement {
-	@apply decoration-dotted underline underline-offset-4 text-inherit my-1;
+	margin-block: 0.5rem;
+	@apply decoration-dotted underline underline-offset-4 text-inherit;
 }

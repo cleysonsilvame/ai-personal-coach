@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import { Outlet } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
+import { CopilotHeader } from "./copilot-header";
 import "./copilot-kit.css";
 
 export default function () {
@@ -35,6 +36,7 @@ export default function () {
 					title: "Assitente de objetivos",
 					initial: "Faça uma pergunta sobre os objetivos",
 				}}
+				Header={CopilotHeader}
 			/>
 		</CopilotKit>
 	);
