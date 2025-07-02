@@ -8,7 +8,7 @@ export abstract class GoalEmbeddingRepository {
 	abstract deleteByGoalId(goalId: string): Promise<void>;
 	abstract findSimilar(
 		embedding: number[],
-		excludeGoalId: string,
+		excludeGoalId?: string,
 		limit?: number,
 		cutOff?: number,
 	): Promise<SimilarGoal[]>;

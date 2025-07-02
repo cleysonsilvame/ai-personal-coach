@@ -20,6 +20,8 @@ const envSchema = z.object({
 		.enum(["true", "false"])
 		.default("false")
 		.transform((val) => val === "true"),
+
+	VERCEL_URL: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

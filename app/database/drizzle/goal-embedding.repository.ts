@@ -37,7 +37,7 @@ export class DrizzleGoalEmbeddingRepository
 
 	async findSimilar(
 		embedding: number[],
-		excludeGoalId: string,
+		excludeGoalId?: string,
 		limit = 3,
 		cutOff = 0.65,
 	): Promise<SimilarGoal[]> {
@@ -53,7 +53,11 @@ export class DrizzleGoalEmbeddingRepository
 			})
 			.from(goalEmbeddingsTable)
 			.innerJoin(goalsTable, eq(goalsTable.id, goalEmbeddingsTable.goal_id))
-			.where(and(ne(goalsTable.id, excludeGoalId), gt(similarity, cutOff)))
+			.where(
+				excludeGoalId
+					? and(ne(goalsTable.id, excludeGoalId), gt(similarity, cutOff))
+					: gt(similarity, cutOff),
+			)
 			.orderBy(desc(similarity))
 			.limit(limit);
 

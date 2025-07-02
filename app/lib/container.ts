@@ -12,6 +12,7 @@ import { GoalRepository } from "~/features/goals/repositories/goal";
 import { GoalEmbeddingRepository } from "~/features/goals/repositories/goal-embedding";
 import { GoalCacheService } from "~/features/goals/services/cache";
 import { EmbeddingService } from "~/features/goals/services/embedding";
+import { SearchGoalsBySimilarityUseCase } from "~/features/goals/use-cases/search-goals-by-similarity.server";
 import { RedisGoalCacheService } from "~/services/cache.server";
 import { OpenRouterChatService } from "~/services/chat.server";
 import { GeminiEmbeddingService } from "~/services/embedding.server";
