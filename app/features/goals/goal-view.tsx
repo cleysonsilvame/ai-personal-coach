@@ -30,7 +30,7 @@ export function GoalView({ goal }: Props) {
 	}
 
 	return (
-		<Card className="flex-1">
+		<Card className="flex-1/4">
 			<CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
 				<div className="min-w-0 flex-1">
 					<CardTitle className="text-2xl mb-1 break-words line-clamp-3">

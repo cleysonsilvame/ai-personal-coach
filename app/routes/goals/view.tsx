@@ -43,7 +43,7 @@ export default function ({ loaderData }: Route.ComponentProps) {
 				</BreadcrumbList>
 			</Breadcrumb>
 			<div className="block md:hidden">
-				<Tabs defaultValue="goal" className="w-full">
+				<Tabs defaultValue="goal" className="w-full ">
 					<TabsList className="w-full">
 						<TabsTrigger value="goal">Detalhes</TabsTrigger>
 						<TabsTrigger value="similar" disabled={!similarGoals}>
