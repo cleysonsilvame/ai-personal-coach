@@ -1,0 +1,15 @@
+.copilotKitPopup {
+	right: initial;
+	left: 1rem;
+}
+
+.copilotKitWindow {
+	right: initial;
+	margin-bottom: 0;
+	left: 0.9rem;
+	bottom: 0.9rem;
+}
+
+a.copilotKitMarkdownElement {
+	@apply decoration-dotted underline underline-offset-4 text-inherit my-1;
+}

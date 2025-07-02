@@ -11,7 +11,7 @@ function getDescription(vercelUrl: string) {
 -	Retorne os dados completos e o link do objetivo.
 
 Use o seguinte template em markdown para apresentar os resultados:
-### [title](${urlTemplate})
+**[title](${urlTemplate})**
 > description
 **Tempo estimado**: estimated_time
 `;

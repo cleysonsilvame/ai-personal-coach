@@ -1,11 +1,12 @@
-import "@copilotkit/react-ui/styles.css";
 import { CopilotKit } from "@copilotkit/react-core";
-import { CopilotSidebar } from "@copilotkit/react-ui";
+import { CopilotPopup } from "@copilotkit/react-ui";
+import "@copilotkit/react-ui/styles.css";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 
 import { Outlet } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
+import "./copilot-kit.css";
 
 export default function () {
 	return (
@@ -29,7 +30,7 @@ export default function () {
 				</SidebarInset>
 			</SidebarProvider>
 
-			<CopilotSidebar
+			<CopilotPopup
 				labels={{
 					title: "Assitente de objetivos",
 					initial: "Faça uma pergunta sobre os objetivos",
