@@ -113,6 +113,52 @@ docker run -p 3000:3000 ai-personal-goals-coach
 
 - Veja o arquivo `.github/instructions/domain.instructions.md` para detalhes do produto, objetivos, estrutura de dados e exemplos de uso do sistema de refinamento de objetivos pessoais.
 
+### Diagrama ERD do Banco de Dados
+
+O diagrama abaixo representa as principais tabelas e relacionamentos do banco de dados, conforme definido em `drizzle/schema.ts`.
+
+```mermaid
+erDiagram
+  chats {
+    id text PK
+    title text
+    created_at integer
+    updated_at integer
+  }
+  chat_messages {
+    id text PK
+    content json
+    role text
+    created_at integer
+    updated_at integer
+    chat_id text FK
+  }
+  goals {
+    id text PK
+    title text
+    description text
+    estimated_time text
+    action_steps json
+    progress_indicators json
+    suggested_habits json
+    motivation_strategies text
+    created_at integer
+    updated_at integer
+    chat_message_id text FK
+  }
+  goal_embeddings {
+    id text PK
+    embedding F31_BLOB(768)
+    goal_id text FK
+    created_at integer
+    updated_at integer
+  }
+  chats ||--o{ chat_messages : has
+  chat_messages |o--|| goals : generates
+  goals ||--o{ goal_embeddings : has
+```
+
+
 ## :memo: Licença
 
 Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
