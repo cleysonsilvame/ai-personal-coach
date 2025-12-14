@@ -1,21 +1,19 @@
 import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotPopup } from "@copilotkit/react-ui";
-import CopilotHeader from "./copilot-header";
+import { CopilotHeader } from "./copilot-header";
 
 import "@copilotkit/react-ui/styles.css";
 import "./copilot-kit.css";
 
 interface CopilotKitWrapperProps {
-	children: React.ReactNode;
+	children?: React.ReactNode;
 }
 
 export default function CopilotKitWrapper({
-	children,
+	children: _,
 }: CopilotKitWrapperProps) {
 	return (
 		<CopilotKit runtimeUrl="/api/copilotkit">
-			{children}
-
 			<CopilotPopup
 				labels={{
 					title: "Assitente de objetivos",

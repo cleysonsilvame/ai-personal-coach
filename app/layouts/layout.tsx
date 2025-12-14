@@ -1,9 +1,8 @@
-import { Suspense } from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "~/components/app-sidebar";
 import { SiteHeader } from "~/components/site-header";
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
-import CopilotKitWrapper from "./.client/copilot-kit-wrapper";
+import { CopilotWrapper } from "./copilot-wrapper";
 
 export default function () {
 	return (
@@ -25,9 +24,7 @@ export default function () {
 				</div>
 			</SidebarInset>
 
-			<Suspense fallback={null}>
-				<CopilotKitWrapper>{null}</CopilotKitWrapper>
-			</Suspense>
+			<CopilotWrapper />
 		</SidebarProvider>
 	);
 }
