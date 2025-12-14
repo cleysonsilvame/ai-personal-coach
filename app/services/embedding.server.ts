@@ -1,6 +1,6 @@
+import type { Document } from "@langchain/core/documents";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { inject, injectable } from "inversify";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import type { Document } from "langchain/document";
 import OpenAI from "openai";
 import { EmbeddingService } from "~/features/goals/services/embedding";
 import { Config } from "~/lib/config";

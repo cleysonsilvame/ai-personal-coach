@@ -96,7 +96,7 @@ export const goalEmbeddingsTable = sqliteTable("goal_embeddings", {
 		.primaryKey()
 		.notNull()
 		.$defaultFn(() => randomUUID()),
-	embedding: float32Array("embedding", { dimensions: 768 }).notNull(),
+	embedding: float32Array("embedding", { dimensions: 3072 }).notNull(),
 	goal_id: text("goal_id")
 		.notNull()
 		.references(() => goalsTable.id, { onDelete: "cascade" }),
