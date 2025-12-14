@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatService } from "~/features/chats/services/chat";
 import { Config } from "~/lib/config";
+import { ProviderSelectionService } from "./provider-selection.server";
 
 export class OpenRouterChatService extends ChatService {
 	private readonly DEFAULT_MESSAGE_CONTENT = {
@@ -12,7 +13,11 @@ export class OpenRouterChatService extends ChatService {
 
 	private readonly openRouterClient: OpenAI;
 
-	constructor(@inject(Config) private readonly config: Config) {
+	constructor(
+		@inject(Config) private readonly config: Config,
+		@inject(ProviderSelectionService)
+		private readonly providerSelection: ProviderSelectionService,
+	) {
 		super();
 		this.openRouterClient = new OpenAI({
 			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
@@ -21,18 +26,48 @@ export class OpenRouterChatService extends ChatService {
 	}
 
 	async getCompletions(messages: ChatMessage[]): Promise<ChatMessage> {
-		const completion = await this.openRouterClient.chat.completions.create({
-			model: this.config.env.OPEN_ROUTER_MODEL,
-			messages: [
-				this.SYSTEM_MESSAGE,
-				...messages.map((message) => ({
-					role: message.role,
-					content: message.content.message,
-				})),
-			],
-			response_format: { type: "json_object" },
-			temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
-		});
+		const models = this.providerSelection.getModelsForUseCase("chat");
+		let lastError: Error | null = null;
+
+		// Try each model in order of preference
+		for (const model of models) {
+			try {
+				const completion = await this.openRouterClient.chat.completions.create({
+					model,
+					messages: [
+						this.SYSTEM_MESSAGE,
+						...messages.map((message) => ({
+							role: message.role,
+							content: message.content.message,
+						})),
+					],
+					response_format: { type: "json_object" },
+					temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
+				});
+
+				return this.processCompletion(completion, messages[0].chatId);
+			} catch (error: unknown) {
+				lastError = error as Error;
+
+				// If model is unavailable, try the next one
+				if (this.providerSelection.isModelUnavailableError(error)) {
+					console.warn(`Model ${model} is unavailable, trying fallback...`);
+					continue;
+				}
+
+				// For other errors, throw immediately
+				throw error;
+			}
+		}
+
+		// If all models failed, throw the last error
+		throw lastError || new Error("All models failed");
+	}
+
+	private processCompletion(
+		completion: OpenAI.Chat.Completions.ChatCompletion,
+		chatId: string,
+	): ChatMessage {
 
 		const choice = completion.choices[0];
 
@@ -71,7 +106,7 @@ export class OpenRouterChatService extends ChatService {
 		return ChatMessage.create({
 			content: assistantMessage.data,
 			role: "assistant",
-			chatId: messages[0].chatId,
+			chatId: chatId,
 		});
 	}
 }
