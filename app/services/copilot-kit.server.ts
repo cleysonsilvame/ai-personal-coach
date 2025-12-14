@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import OpenAI from "openai";
 import { SearchGoalsBySimilarityUseCase } from "~/features/goals/use-cases/search-goals-by-similarity.server";
 import { Config } from "~/lib/config";
+import { ProviderSelectionService } from "./provider-selection.server";
 
 function getDescription(vercelUrl: string) {
 	const urlTemplate = `${vercelUrl}/goals/view/<id>`;
@@ -25,7 +26,9 @@ export class CopilotKitService {
 	private readonly serviceAdapter: OpenAIAdapter;
 
 	constructor(
-		@inject(Config) config: Config,
+		@inject(Config) private readonly config: Config,
+		@inject(ProviderSelectionService)
+		private readonly providerSelection: ProviderSelectionService,
 		@inject(SearchGoalsBySimilarityUseCase)
 		private readonly searchGoalsBySimilarityUseCase: SearchGoalsBySimilarityUseCase,
 	) {
@@ -34,9 +37,13 @@ export class CopilotKitService {
 			baseURL: config.env.OPEN_ROUTER_BASE_URL,
 		});
 
+		// Use primary copilot model
+		// Note: CopilotKit doesn't support dynamic model switching per request
+		// so we use the primary model. Fallback would require more complex implementation
+		const models = this.providerSelection.getModelsForUseCase("copilot");
 		this.serviceAdapter = new OpenAIAdapter({
 			openai: openRouterClient,
-			model: config.env.OPEN_ROUTER_MODEL,
+			model: models[0],
 		});
 
 		this.runtime = new CopilotRuntime({
