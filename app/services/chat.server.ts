@@ -62,7 +62,7 @@ export class OpenRouterChatService extends ChatService {
 		}
 
 		// If all models failed, throw the last error
-		throw lastError || new Error("All models failed");
+		throw lastError || new Error("Todos os modelos falharam ao processar a mensagem. Tente novamente mais tarde.");
 	}
 
 	private processCompletion(

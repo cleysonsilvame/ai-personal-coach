@@ -17,6 +17,13 @@ export class ProviderSelectionService {
 	/**
 	 * Get the primary and fallback models for a specific use case
 	 * Returns an array of models to try in order of preference
+	 * 
+	 * Note: The fallback mechanism uses the other model type as a backup
+	 * (chat falls back to copilot model and vice versa). This provides
+	 * resilience when a model is unavailable. While models may be optimized
+	 * for different purposes, OpenRouter models are generally capable of
+	 * handling various tasks. If you need strict separation, configure both
+	 * models to the same value or implement custom fallback logic.
 	 */
 	getModelsForUseCase(useCase: "chat" | "copilot"): string[] {
 		const primaryModel =
@@ -70,7 +77,8 @@ export class ProviderSelectionService {
 		if (!error) return false;
 
 		const errorMessage = (error as Error)?.message?.toLowerCase() || "";
-		const errorStatus = (error as any)?.status;
+		// Check both direct status and response.status for different error types
+		const errorStatus = (error as any)?.status || (error as any)?.response?.status;
 
 		return (
 			errorStatus === 404 ||
