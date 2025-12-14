@@ -1,4 +1,4 @@
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { z } from "zod";
 import OpenAI from "openai";
 import { ChatMessage } from "~/features/chats/entities/chat-message";
@@ -6,6 +6,7 @@ import { ChatService } from "~/features/chats/services/chat";
 import { Config } from "~/lib/config";
 import { ProviderSelectionService } from "./provider-selection.server";
 
+@injectable()
 export class OpenRouterChatService extends ChatService {
 	private readonly DEFAULT_MESSAGE_CONTENT = {
 		message: "Não foi possível processar a mensagem. Tente novamente.",

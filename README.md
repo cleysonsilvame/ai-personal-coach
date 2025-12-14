@@ -97,6 +97,50 @@ docker run -p 3000:3000 ai-personal-goals-coach
 - `npm start` — Sobe o servidor em modo produção
 - `npx drizzle-kit studio` — Interface visual para o banco de dados
 
+## ⚙️ Configuração Avançada
+
+### Modelos Separados para Chat e CopilotKit
+
+A aplicação suporta o uso de modelos diferentes para cada caso de uso:
+
+- **Chat Service**: Usado para refinar objetivos pessoais com coaching especializado
+- **CopilotKit Service**: Usado para buscas vetoriais e consultas sobre objetivos
+
+#### Configuração
+
+No arquivo `.env`, você pode configurar modelos específicos:
+
+```bash
+# Modelo padrão (usado como fallback)
+OPEN_ROUTER_MODEL="deepseek/deepseek-chat-v3-0324:free"
+
+# Modelo específico para chat coaching (opcional)
+OPEN_ROUTER_CHAT_MODEL="anthropic/claude-3-opus"
+
+# Modelo específico para copilotkit (opcional)
+OPEN_ROUTER_COPILOT_MODEL="openai/gpt-4"
+```
+
+#### Comportamento de Fallback
+
+O sistema implementa fallback automático quando um modelo está indisponível:
+
+1. Tenta usar o modelo primário configurado para o caso de uso
+2. Se falhar (404, 503, offline), tenta o modelo alternativo
+3. Registra avisos no console quando usa fallback
+4. Garante resiliência em caso de indisponibilidade de modelos
+
+**Exemplo de log:**
+```
+Model anthropic/claude-3-opus is unavailable, trying fallback...
+```
+
+#### Compatibilidade
+
+- Se nenhum modelo específico for configurado, usa `OPEN_ROUTER_MODEL`
+- Mantém 100% de compatibilidade com configurações existentes
+- Ideal para otimizar custos ou performance por caso de uso
+
 ## 🎯 Exemplos de Uso
 
 **Entrada do usuário:**
