@@ -6,7 +6,7 @@ import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
 import CopilotKitWrapper from "./.client/copilot-kit-wrapper";
 
 export default function () {
-	const content = (
+	return (
 		<SidebarProvider
 			style={
 				{
@@ -24,8 +24,10 @@ export default function () {
 					</div>
 				</div>
 			</SidebarInset>
+
+			<Suspense fallback={null}>
+				<CopilotKitWrapper>{null}</CopilotKitWrapper>
+			</Suspense>
 		</SidebarProvider>
 	);
-
-	return content;
 }

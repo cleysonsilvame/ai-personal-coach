@@ -5,7 +5,7 @@ import { SearchGoalsBySimilarityUseCase } from "~/features/goals/use-cases/searc
 import { Config } from "~/lib/config";
 
 function getDescription(vercelUrl: string) {
-	const urlTemplate = `${vercelUrl}/goal/view/<id>`;
+	const urlTemplate = `${vercelUrl}/goals/view/<id>`;
 	return `Quando o usuário perguntar sobre objetivos, realize uma busca vetorial para encontrá-los.
 -	O conteúdo pode não estar no título ou descrição, mas estará no corpo do objetivo.
 -	Retorne os dados completos e o link do objetivo.
