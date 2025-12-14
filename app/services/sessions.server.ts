@@ -11,7 +11,7 @@ const sessionStorage = createCookieSessionStorage({
 		sameSite: "lax",
 		secrets: ["s3cr3t"],
 		// Set domain and secure only if in production
-		...(isProduction ? { domain: process.env.VERCEL_URL, secure: true } : {}),
+		...(isProduction ? { domain: process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL, secure: true } : {}),
 	},
 });
 

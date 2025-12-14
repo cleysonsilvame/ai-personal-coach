@@ -4,8 +4,8 @@ import OpenAI from "openai";
 import { SearchGoalsBySimilarityUseCase } from "~/features/goals/use-cases/search-goals-by-similarity.server";
 import { Config } from "~/lib/config";
 
-function getDescription(vercelUrl: string) {
-	const urlTemplate = `${vercelUrl}/goals/view/<id>`;
+function getDescription() {
+	const urlTemplate = "/goals/view/<id>";
 	return `Quando o usuário perguntar sobre objetivos, realize uma busca vetorial para encontrá-los.
 -	O conteúdo pode não estar no título ou descrição, mas estará no corpo do objetivo.
 -	Retorne os dados completos e o link do objetivo.
@@ -43,7 +43,7 @@ export class CopilotKitService {
 			actions: () => [
 				{
 					name: "get_vector_search_goals",
-					description: getDescription(config.env.VERCEL_URL),
+					description: getDescription(),
 					parameters: [
 						{
 							name: "content",
