@@ -81,6 +81,15 @@ export function ChatsList() {
 		setChats(initialChats);
 	}, [initialChats]);
 
+	const formatDate = (value: Date | string | null | undefined) => {
+		if (!value) return "-";
+		const date = value instanceof Date ? value : new Date(value);
+		return new Intl.DateTimeFormat("pt-BR", {
+			dateStyle: "short",
+			timeZone: "UTC",
+		}).format(date);
+	};
+
 	return (
 		<div className=" p-6">
 			<Table>
@@ -133,7 +142,7 @@ export function ChatsList() {
 									)}
 								</UpdateChatForm>
 							</TableCell>
-							<TableCell>{chat.created_at?.toLocaleDateString()}</TableCell>
+							<TableCell>{formatDate(chat.created_at)}</TableCell>
 							<TableCell>
 								<div className="flex items-center gap-2">
 									<Button

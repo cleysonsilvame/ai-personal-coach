@@ -9,9 +9,9 @@ export default defineConfig(({ command }) => ({
 		alias: {
 			...(command === "serve"
 				? {
-						"@tabler/icons-react":
-							"@tabler/icons-react/dist/esm/icons/index.mjs", // TODO: temp: https://github.com/tabler/tabler-icons/issues/1233#issuecomment-2428245119
-					}
+					"@tabler/icons-react":
+						"@tabler/icons-react/dist/esm/icons/index.mjs", // TODO: temp: https://github.com/tabler/tabler-icons/issues/1233#issuecomment-2428245119
+				}
 				: {}),
 		},
 	},

@@ -3,7 +3,9 @@ import { useChatContext } from "@copilotkit/react-ui";
 import { Trash2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 
-export function CopilotHeader() {
+export default function CopilotHeader() {
+	console.log("Rendering CopilotHeader", typeof window !== "undefined");
+
 	const { setOpen, icons, labels } = useChatContext();
 	const { reset } = useCopilotChat();
 
