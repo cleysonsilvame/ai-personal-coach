@@ -66,11 +66,11 @@ export class ProviderSelectionService {
 	 * Check if an error indicates the model is unavailable
 	 * This can be used to implement retry logic with fallback models
 	 */
-	isModelUnavailableError(error: any): boolean {
+	isModelUnavailableError(error: unknown): boolean {
 		if (!error) return false;
 
-		const errorMessage = error?.message?.toLowerCase() || "";
-		const errorStatus = error?.status;
+		const errorMessage = (error as Error)?.message?.toLowerCase() || "";
+		const errorStatus = (error as any)?.status;
 
 		return (
 			errorStatus === 404 ||

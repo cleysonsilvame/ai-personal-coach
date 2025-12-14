@@ -46,15 +46,15 @@ export class OpenRouterChatService extends ChatService {
 				});
 
 				return this.processCompletion(completion, messages[0].chatId);
-			} catch (error: any) {
-				lastError = error;
-				
+			} catch (error: unknown) {
+				lastError = error as Error;
+
 				// If model is unavailable, try the next one
 				if (this.providerSelection.isModelUnavailableError(error)) {
 					console.warn(`Model ${model} is unavailable, trying fallback...`);
 					continue;
 				}
-				
+
 				// For other errors, throw immediately
 				throw error;
 			}
