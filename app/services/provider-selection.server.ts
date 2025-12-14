@@ -76,7 +76,10 @@ export class ProviderSelectionService {
 	isModelUnavailableError(error: unknown): boolean {
 		if (!error) return false;
 
-		const errorMessage = (error as Error)?.message?.toLowerCase() || "";
+		// Safely extract error message
+		const errorMessage = error instanceof Error 
+			? error.message?.toLowerCase() || ""
+			: "";
 		// Check both direct status and response.status for different error types
 		const errorStatus = (error as any)?.status || (error as any)?.response?.status;
 
