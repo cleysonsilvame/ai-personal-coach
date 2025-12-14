@@ -12,6 +12,9 @@ export class OpenRouterChatService extends ChatService {
 		message: "Não foi possível processar a mensagem. Tente novamente.",
 	};
 
+	private readonly ALL_MODELS_FAILED_ERROR = 
+		"Todos os modelos falharam ao processar a mensagem. Tente novamente mais tarde.";
+
 	private readonly openRouterClient: OpenAI;
 
 	constructor(
@@ -62,7 +65,7 @@ export class OpenRouterChatService extends ChatService {
 		}
 
 		// If all models failed, throw the last error
-		throw lastError || new Error("Todos os modelos falharam ao processar a mensagem. Tente novamente mais tarde.");
+		throw lastError || new Error(this.ALL_MODELS_FAILED_ERROR);
 	}
 
 	private processCompletion(
@@ -107,7 +110,7 @@ export class OpenRouterChatService extends ChatService {
 		return ChatMessage.create({
 			content: assistantMessage.data,
 			role: "assistant",
-			chatId: chatId,
+			chatId,
 		});
 	}
 }
