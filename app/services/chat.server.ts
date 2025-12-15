@@ -30,45 +30,58 @@ export class OpenRouterChatService extends ChatService {
 	}
 
 	async getCompletions(messages: ChatMessage[]): Promise<ChatMessage> {
-		const models = this.providerSelection.getModelsForUseCase("chat");
-		let lastError: Error | null = null;
+		// Get the best model for chat (cached singleton, fetched from OpenRouter API on first call)
+		let model = await this.providerSelection.getChatModel();
+		
+		try {
+			const completion = await this.openRouterClient.chat.completions.create({
+				model,
+				messages: [
+					this.SYSTEM_MESSAGE,
+					...messages.map((message) => ({
+						role: message.role,
+						content: message.content.message,
+					})),
+				],
+				response_format: { type: "json_object" },
+				temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
+			});
 
-		// Try each model in order of preference
-		for (const model of models) {
-			try {
-				const completion = await this.openRouterClient.chat.completions.create({
-					model,
-					messages: [
-						this.SYSTEM_MESSAGE,
-						...messages.map((message) => ({
-							role: message.role,
-							content: message.content.message,
-						})),
-					],
-					response_format: { type: "json_object" },
-					temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
-				});
+			return this.processCompletion(completion, messages[0].chatId);
+		} catch (error: unknown) {
+			// If model is unavailable, reset cache and fetch a new model
+			if (this.providerSelection.isModelUnavailableError(error)) {
+				console.warn(`Chat model ${model} is unavailable, fetching new model...`);
+				this.providerSelection.resetModel("chat");
+				
+				// Try once more with a new model
+				model = await this.providerSelection.getChatModel();
+				console.log(`Retrying with new chat model: ${model}`);
+				
+				try {
+					const completion = await this.openRouterClient.chat.completions.create({
+						model,
+						messages: [
+							this.SYSTEM_MESSAGE,
+							...messages.map((message) => ({
+								role: message.role,
+								content: message.content.message,
+							})),
+						],
+						response_format: { type: "json_object" },
+						temperature: this.config.env.OPEN_ROUTER_TEMPERATURE,
+					});
 
-				return this.processCompletion(completion, messages[0].chatId);
-			} catch (error: unknown) {
-				lastError = error as Error;
-
-				// If model is unavailable, try the next one
-				if (this.providerSelection.isModelUnavailableError(error)) {
-					console.warn(`Model ${model} is unavailable, trying fallback...`);
-					continue;
+					return this.processCompletion(completion, messages[0].chatId);
+				} catch (retryError) {
+					console.error("Retry with new model also failed:", retryError);
+					throw retryError;
 				}
-
-				// For other errors, throw immediately
-				throw error;
 			}
-		}
 
-		// If all models failed, throw the last error with fallback
-		if (lastError) {
-			throw lastError;
+			// For other errors, throw immediately
+			throw error;
 		}
-		throw new Error(this.ALL_MODELS_FAILED_ERROR);
 	}
 
 	private processCompletion(

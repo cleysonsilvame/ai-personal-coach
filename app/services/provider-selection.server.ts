@@ -1,72 +1,159 @@
 import { injectable, inject } from "inversify";
+import OpenAI from "openai";
 import { Config } from "~/lib/config";
 
-export interface ModelProvider {
+interface OpenRouterModel {
+	id: string;
 	name: string;
-	model: string;
+	pricing: {
+		prompt: string;
+		completion: string;
+	};
+	context_length: number;
+	top_provider?: {
+		max_completion_tokens?: number;
+		is_moderated: boolean;
+	};
+	supported_parameters?: string[];
+}
+
+interface OpenRouterModelsResponse {
+	data: OpenRouterModel[];
 }
 
 /**
- * Service to manage model provider selection with fallback support
- * This allows the application to handle offline/unavailable models gracefully
+ * Service to dynamically select the best available model from OpenRouter
+ * Implements singleton pattern - fetches models once and caches until failure
  */
 @injectable("Singleton")
 export class ProviderSelectionService {
-	constructor(@inject(Config) private readonly config: Config) {}
+	private chatModel: string | null = null;
+	private copilotModel: string | null = null;
+	private readonly openRouterClient: OpenAI;
 
-	/**
-	 * Get the primary and fallback models for a specific use case
-	 * Returns an array of models to try in order of preference
-	 * 
-	 * Note: The fallback mechanism uses the other model type as a backup
-	 * (chat falls back to copilot model and vice versa). This provides
-	 * resilience when a model is unavailable. While models may be optimized
-	 * for different purposes, OpenRouter models are generally capable of
-	 * handling various tasks. If you need strict separation, configure both
-	 * models to the same value or implement custom fallback logic.
-	 */
-	getModelsForUseCase(useCase: "chat" | "copilot"): string[] {
-		const primaryModel =
-			useCase === "chat"
-				? this.config.getChatModel()
-				: this.config.getCopilotModel();
-
-		const fallbackModel =
-			useCase === "chat"
-				? this.config.getCopilotModel()
-				: this.config.getChatModel();
-
-		// Return models in order of preference, removing duplicates
-		const models = [primaryModel];
-		if (fallbackModel && fallbackModel !== primaryModel) {
-			models.push(fallbackModel);
-		}
-
-		return models;
+	constructor(@inject(Config) private readonly config: Config) {
+		this.openRouterClient = new OpenAI({
+			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
+		});
 	}
 
 	/**
-	 * Get all configured providers
+	 * Get the best model for chat use case
+	 * Fetches from OpenRouter API on first call or when model becomes unavailable
 	 */
-	getProviders(): ModelProvider[] {
-		const providers: ModelProvider[] = [];
-
-		const chatModel = this.config.getChatModel();
-		const copilotModel = this.config.getCopilotModel();
-
-		providers.push({
-			name: "chat",
-			model: chatModel,
-		});
-
-		if (copilotModel !== chatModel) {
-			providers.push({
-				name: "copilot",
-				model: copilotModel,
-			});
+	async getChatModel(): Promise<string> {
+		if (!this.chatModel) {
+			this.chatModel = await this.fetchBestChatModel();
 		}
+		return this.chatModel;
+	}
 
-		return providers;
+	/**
+	 * Get the best model for copilot use case (requires tool support)
+	 * Fetches from OpenRouter API on first call or when model becomes unavailable
+	 */
+	async getCopilotModel(): Promise<string> {
+		if (!this.copilotModel) {
+			this.copilotModel = await this.fetchBestCopilotModel();
+		}
+		return this.copilotModel;
+	}
+
+	/**
+	 * Reset cached model for a specific use case
+	 * Called when a model becomes unavailable
+	 */
+	resetModel(useCase: "chat" | "copilot"): void {
+		if (useCase === "chat") {
+			console.log(`Resetting chat model cache: ${this.chatModel}`);
+			this.chatModel = null;
+		} else {
+			console.log(`Resetting copilot model cache: ${this.copilotModel}`);
+			this.copilotModel = null;
+		}
+	}
+
+	/**
+	 * Fetch the most popular free model from OpenRouter for chat
+	 */
+	private async fetchBestChatModel(): Promise<string> {
+		try {
+			const models = await this.fetchAvailableModels();
+			
+			// Filter for free models (pricing = "0")
+			const freeModels = models.filter(
+				(model) => model.pricing.prompt === "0" && model.pricing.completion === "0"
+			);
+
+			if (freeModels.length === 0) {
+				console.warn("No free models found, falling back to default");
+				return this.config.env.OPEN_ROUTER_MODEL;
+			}
+
+			// Return the first free model (OpenRouter API returns models sorted by popularity)
+			const bestModel = freeModels[0];
+			console.log(`Selected best free chat model: ${bestModel.id} (${bestModel.name})`);
+			return bestModel.id;
+		} catch (error) {
+			console.error("Error fetching best chat model:", error);
+			return this.config.env.OPEN_ROUTER_MODEL;
+		}
+	}
+
+	/**
+	 * Fetch the most popular free model with tool support from OpenRouter
+	 */
+	private async fetchBestCopilotModel(): Promise<string> {
+		try {
+			const models = await this.fetchAvailableModels();
+			
+			// Filter for free models with tool/function calling support
+			const freeModelsWithTools = models.filter((model) => {
+				const isFree = model.pricing.prompt === "0" && model.pricing.completion === "0";
+				const supportsTools = model.supported_parameters?.includes("tools") || 
+					model.supported_parameters?.includes("functions");
+				return isFree && supportsTools;
+			});
+
+			if (freeModelsWithTools.length === 0) {
+				console.warn("No free models with tool support found, falling back to best free model");
+				return this.fetchBestChatModel();
+			}
+
+			// Return the first free model with tools (sorted by popularity)
+			const bestModel = freeModelsWithTools[0];
+			console.log(`Selected best free copilot model with tools: ${bestModel.id} (${bestModel.name})`);
+			return bestModel.id;
+		} catch (error) {
+			console.error("Error fetching best copilot model:", error);
+			return this.config.env.OPEN_ROUTER_MODEL;
+		}
+	}
+
+	/**
+	 * Fetch available models from OpenRouter API
+	 */
+	private async fetchAvailableModels(): Promise<OpenRouterModel[]> {
+		try {
+			// Use fetch to call the models endpoint
+			const response = await fetch("https://openrouter.ai/api/v1/models", {
+				headers: {
+					"Authorization": `Bearer ${this.config.env.OPEN_ROUTER_API_KEY}`,
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (!response.ok) {
+				throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+			}
+
+			const data = await response.json() as OpenRouterModelsResponse;
+			return data.data || [];
+		} catch (error) {
+			console.error("Error fetching models from OpenRouter:", error);
+			throw error;
+		}
 	}
 
 	/**

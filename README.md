@@ -99,47 +99,60 @@ docker run -p 3000:3000 ai-personal-goals-coach
 
 ## ⚙️ Configuração Avançada
 
-### Modelos Separados para Chat e CopilotKit
+### Seleção Automática de Modelos
 
-A aplicação suporta o uso de modelos diferentes para cada caso de uso:
+A aplicação seleciona automaticamente os melhores modelos gratuitos do OpenRouter para cada caso de uso:
 
-- **Chat Service**: Usado para refinar objetivos pessoais com coaching especializado
-- **CopilotKit Service**: Usado para buscas vetoriais e consultas sobre objetivos
+- **Chat Service**: Modelo free mais utilizado na última semana para refinar objetivos pessoais com coaching especializado
+- **CopilotKit Service**: Modelo free mais utilizado na última semana com suporte a tools para buscas vetoriais e consultas sobre objetivos
 
-#### Configuração
+#### Como Funciona
 
-No arquivo `.env`, você pode configurar modelos específicos:
-
-```bash
-# Modelo padrão (usado como fallback)
-OPEN_ROUTER_MODEL="deepseek/deepseek-chat-v3-0324:free"
-
-# Modelo específico para chat coaching (opcional)
-OPEN_ROUTER_CHAT_MODEL="anthropic/claude-3-opus"
-
-# Modelo específico para copilotkit (opcional)
-OPEN_ROUTER_COPILOT_MODEL="openai/gpt-4"
-```
+1. **Inicialização Singleton**: Na primeira requisição, a aplicação busca a lista de modelos disponíveis do OpenRouter API
+2. **Seleção Inteligente**: 
+   - Para Chat: Seleciona o modelo gratuito mais popular
+   - Para CopilotKit: Seleciona o modelo gratuito mais popular com suporte a tools/functions
+3. **Cache**: O modelo selecionado fica em cache (singleton) e não é buscado novamente
+4. **Fallback Automático**: Se um modelo ficar indisponível, o sistema automaticamente:
+   - Detecta o erro (404, 503, offline)
+   - Reseta o cache
+   - Busca um novo modelo usando os mesmos critérios
+   - Tenta novamente com o novo modelo
 
 #### Comportamento de Fallback
 
-O sistema implementa fallback automático quando um modelo está indisponível:
+**Exemplo de logs:**
+```bash
+# Primeira inicialização
+Selected best free chat model: deepseek/deepseek-chat-v3-0324:free (DeepSeek Chat)
+Selected best free copilot model with tools: anthropic/claude-3-5-haiku:free (Claude 3.5 Haiku)
 
-1. Tenta usar o modelo primário configurado para o caso de uso
-2. Se falhar (404, 503, offline), tenta o modelo alternativo
-3. Registra avisos no console quando usa fallback
-4. Garante resiliência em caso de indisponibilidade de modelos
-
-**Exemplo de log:**
+# Quando modelo fica indisponível
+Chat model deepseek/deepseek-chat-v3-0324:free is unavailable, fetching new model...
+Resetting chat model cache: deepseek/deepseek-chat-v3-0324:free
+Selected best free chat model: google/gemini-flash-1.5:free (Gemini Flash 1.5)
+Retrying with new chat model: google/gemini-flash-1.5:free
 ```
-Model anthropic/claude-3-opus is unavailable, trying fallback...
+
+#### Configuração
+
+Apenas configure a API key do OpenRouter no arquivo `.env`:
+
+```bash
+OPEN_ROUTER_API_KEY="sua-chave-api"
+OPEN_ROUTER_BASE_URL="https://openrouter.ai/api/v1"
+
+# Modelo padrão (usado apenas como fallback em caso de erro na API)
+OPEN_ROUTER_MODEL="deepseek/deepseek-chat-v3-0324:free"
 ```
 
-#### Compatibilidade
+#### Vantagens
 
-- Se nenhum modelo específico for configurado, usa `OPEN_ROUTER_MODEL`
-- Mantém 100% de compatibilidade com configurações existentes
-- Ideal para otimizar custos ou performance por caso de uso
+- ✅ **Sempre gratuito**: Usa apenas modelos free do OpenRouter
+- ✅ **Sempre atualizado**: Seleciona automaticamente os modelos mais populares
+- ✅ **Otimizado**: CopilotKit usa modelo com suporte a tools
+- ✅ **Resiliente**: Troca automaticamente quando modelo fica indisponível
+- ✅ **Zero configuração**: Funciona automaticamente sem precisar configurar modelos específicos
 
 ## 🎯 Exemplos de Uso
 

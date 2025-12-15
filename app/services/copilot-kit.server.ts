@@ -20,10 +20,11 @@ Use o seguinte template em markdown para apresentar os resultados:
 
 @injectable("Singleton")
 export class CopilotKitService {
-	private readonly runtime: CopilotRuntime<
+	private runtime: CopilotRuntime<
 		[{ name: string; type: "string"; description: string }]
-	>;
-	private readonly serviceAdapter: OpenAIAdapter;
+	> | null = null;
+	private serviceAdapter: OpenAIAdapter | null = null;
+	private initPromise: Promise<void> | null = null;
 
 	constructor(
 		@inject(Config) private readonly config: Config,
@@ -31,26 +32,28 @@ export class CopilotKitService {
 		private readonly providerSelection: ProviderSelectionService,
 		@inject(SearchGoalsBySimilarityUseCase)
 		private readonly searchGoalsBySimilarityUseCase: SearchGoalsBySimilarityUseCase,
-	) {
+	) {}
+
+	private async initialize(): Promise<void> {
+		// Get the best copilot model with tool support (cached singleton)
+		const model = await this.providerSelection.getCopilotModel();
+		console.log(`Initializing CopilotKit with model: ${model}`);
+
 		const openRouterClient = new OpenAI({
-			apiKey: config.env.OPEN_ROUTER_API_KEY,
-			baseURL: config.env.OPEN_ROUTER_BASE_URL,
+			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
 		});
 
-		// Use primary copilot model
-		// Note: CopilotKit doesn't support dynamic model switching per request
-		// so we use the primary model. Fallback would require more complex implementation
-		const models = this.providerSelection.getModelsForUseCase("copilot");
 		this.serviceAdapter = new OpenAIAdapter({
 			openai: openRouterClient,
-			model: models[0],
+			model,
 		});
 
 		this.runtime = new CopilotRuntime({
 			actions: () => [
 				{
 					name: "get_vector_search_goals",
-					description: getDescription(config.env.VERCEL_URL),
+					description: getDescription(this.config.env.VERCEL_URL),
 					parameters: [
 						{
 							name: "content",
@@ -70,10 +73,18 @@ export class CopilotKitService {
 		});
 	}
 
-	execute() {
+	async execute() {
+		// Lazy initialization - only initialize once
+		if (!this.runtime || !this.serviceAdapter) {
+			if (!this.initPromise) {
+				this.initPromise = this.initialize();
+			}
+			await this.initPromise;
+		}
+
 		return {
-			runtime: this.runtime,
-			serviceAdapter: this.serviceAdapter,
+			runtime: this.runtime!,
+			serviceAdapter: this.serviceAdapter!,
 		};
 	}
 }

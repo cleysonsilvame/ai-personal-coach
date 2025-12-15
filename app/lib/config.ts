@@ -5,8 +5,6 @@ const envSchema = z.object({
 	OPEN_ROUTER_API_KEY: z.string(),
 	OPEN_ROUTER_BASE_URL: z.string(),
 	OPEN_ROUTER_MODEL: z.string().default("deepseek/deepseek-chat-v3-0324:free"),
-	OPEN_ROUTER_CHAT_MODEL: z.string().optional(),
-	OPEN_ROUTER_COPILOT_MODEL: z.string().optional(),
 	OPEN_ROUTER_TEMPERATURE: z.number().default(0.7),
 
 	GEMINI_API_KEY: z.string(),
@@ -34,13 +32,5 @@ export class Config {
 
 	constructor() {
 		this.env = envSchema.parse(process.env);
-	}
-
-	getChatModel(): string {
-		return this.env.OPEN_ROUTER_CHAT_MODEL || this.env.OPEN_ROUTER_MODEL;
-	}
-
-	getCopilotModel(): string {
-		return this.env.OPEN_ROUTER_COPILOT_MODEL || this.env.OPEN_ROUTER_MODEL;
 	}
 }
