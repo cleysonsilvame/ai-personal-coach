@@ -117,8 +117,22 @@ export class ProviderSelectionService {
 			});
 
 			if (freeModelsWithTools.length === 0) {
-				console.warn("No free models with tool support found, falling back to best free model");
-				return this.fetchBestChatModel();
+				console.warn("No free models with tool support found, falling back to best free model without tools");
+				
+				// Try to find any free model without tool requirement
+				const freeModels = models.filter(
+					(model) => model.pricing.prompt === "0" && model.pricing.completion === "0"
+				);
+				
+				if (freeModels.length > 0) {
+					const fallbackModel = freeModels[0];
+					console.log(`Selected best free copilot model (no tools): ${fallbackModel.id} (${fallbackModel.name})`);
+					return fallbackModel.id;
+				}
+				
+				// Last resort: use configured default
+				console.warn("No free models found at all, using configured default");
+				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
 			// Return the first free model with tools (sorted by popularity)
@@ -136,8 +150,10 @@ export class ProviderSelectionService {
 	 */
 	private async fetchAvailableModels(): Promise<OpenRouterModel[]> {
 		try {
-			// Use fetch to call the models endpoint
-			const response = await fetch("https://openrouter.ai/api/v1/models", {
+			// Build the API endpoint from base URL
+			const modelsUrl = `${this.config.env.OPEN_ROUTER_BASE_URL}/models`;
+			
+			const response = await fetch(modelsUrl, {
 				headers: {
 					"Authorization": `Bearer ${this.config.env.OPEN_ROUTER_API_KEY}`,
 					"Content-Type": "application/json",

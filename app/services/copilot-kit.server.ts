@@ -35,42 +35,47 @@ export class CopilotKitService {
 	) {}
 
 	private async initialize(): Promise<void> {
-		// Get the best copilot model with tool support (cached singleton)
-		const model = await this.providerSelection.getCopilotModel();
-		console.log(`Initializing CopilotKit with model: ${model}`);
+		try {
+			// Get the best copilot model with tool support (cached singleton)
+			const model = await this.providerSelection.getCopilotModel();
+			console.log(`Initializing CopilotKit with model: ${model}`);
 
-		const openRouterClient = new OpenAI({
-			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
-			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
-		});
+			const openRouterClient = new OpenAI({
+				apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+				baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
+			});
 
-		this.serviceAdapter = new OpenAIAdapter({
-			openai: openRouterClient,
-			model,
-		});
+			this.serviceAdapter = new OpenAIAdapter({
+				openai: openRouterClient,
+				model,
+			});
 
-		this.runtime = new CopilotRuntime({
-			actions: () => [
-				{
-					name: "get_vector_search_goals",
-					description: getDescription(this.config.env.VERCEL_URL),
-					parameters: [
-						{
-							name: "content",
-							type: "string",
-							description: "O contexto para se fazer a busca por similaridade",
+			this.runtime = new CopilotRuntime({
+				actions: () => [
+					{
+						name: "get_vector_search_goals",
+						description: getDescription(this.config.env.VERCEL_URL),
+						parameters: [
+							{
+								name: "content",
+								type: "string",
+								description: "O contexto para se fazer a busca por similaridade",
+							},
+						],
+						handler: async ({ content }) => {
+							const goals = await this.searchGoalsBySimilarityUseCase.execute({
+								content,
+							});
+
+							return goals;
 						},
-					],
-					handler: async ({ content }) => {
-						const goals = await this.searchGoalsBySimilarityUseCase.execute({
-							content,
-						});
-
-						return goals;
 					},
-				},
-			],
-		});
+				],
+			});
+		} catch (error) {
+			console.error("Failed to initialize CopilotKit service:", error);
+			throw new Error(`CopilotKit initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+		}
 	}
 
 	async execute() {
