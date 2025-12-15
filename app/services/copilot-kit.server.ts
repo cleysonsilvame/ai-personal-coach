@@ -87,9 +87,17 @@ export class CopilotKitService {
 			await this.initPromise;
 		}
 
+		// Explicit null checks with descriptive errors
+		if (!this.runtime) {
+			throw new Error("CopilotKit runtime not initialized");
+		}
+		if (!this.serviceAdapter) {
+			throw new Error("CopilotKit service adapter not initialized");
+		}
+
 		return {
-			runtime: this.runtime!,
-			serviceAdapter: this.serviceAdapter!,
+			runtime: this.runtime,
+			serviceAdapter: this.serviceAdapter,
 		};
 	}
 }

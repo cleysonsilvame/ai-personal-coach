@@ -1,6 +1,10 @@
 import { injectable, inject } from "inversify";
-import OpenAI from "openai";
 import { Config } from "~/lib/config";
+
+// Constants for model selection criteria
+const FREE_MODEL_PRICING = "0";
+const TOOL_PARAMETER = "tools";
+const FUNCTION_PARAMETER = "functions";
 
 interface OpenRouterModel {
 	id: string;
@@ -29,14 +33,8 @@ interface OpenRouterModelsResponse {
 export class ProviderSelectionService {
 	private chatModel: string | null = null;
 	private copilotModel: string | null = null;
-	private readonly openRouterClient: OpenAI;
 
-	constructor(@inject(Config) private readonly config: Config) {
-		this.openRouterClient = new OpenAI({
-			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
-			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
-		});
-	}
+	constructor(@inject(Config) private readonly config: Config) {}
 
 	/**
 	 * Get the best model for chat use case
@@ -76,14 +74,18 @@ export class ProviderSelectionService {
 
 	/**
 	 * Fetch the most popular free model from OpenRouter for chat
+	 * Note: Assumes OpenRouter API returns models in order of popularity.
+	 * This is based on OpenRouter's documented behavior where models are
+	 * returned sorted by usage/popularity metrics.
 	 */
 	private async fetchBestChatModel(): Promise<string> {
 		try {
 			const models = await this.fetchAvailableModels();
 			
-			// Filter for free models (pricing = "0")
+			// Filter for free models
 			const freeModels = models.filter(
-				(model) => model.pricing.prompt === "0" && model.pricing.completion === "0"
+				(model) => model.pricing.prompt === FREE_MODEL_PRICING && 
+				          model.pricing.completion === FREE_MODEL_PRICING
 			);
 
 			if (freeModels.length === 0) {
@@ -91,7 +93,7 @@ export class ProviderSelectionService {
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			// Return the first free model (OpenRouter API returns models sorted by popularity)
+			// Return the first free model (assuming API returns sorted by popularity)
 			const bestModel = freeModels[0];
 			console.log(`Selected best free chat model: ${bestModel.id} (${bestModel.name})`);
 			return bestModel.id;
@@ -103,6 +105,7 @@ export class ProviderSelectionService {
 
 	/**
 	 * Fetch the most popular free model with tool support from OpenRouter
+	 * Note: Assumes OpenRouter API returns models in order of popularity.
 	 */
 	private async fetchBestCopilotModel(): Promise<string> {
 		try {
@@ -110,9 +113,10 @@ export class ProviderSelectionService {
 			
 			// Filter for free models with tool/function calling support
 			const freeModelsWithTools = models.filter((model) => {
-				const isFree = model.pricing.prompt === "0" && model.pricing.completion === "0";
-				const supportsTools = model.supported_parameters?.includes("tools") || 
-					model.supported_parameters?.includes("functions");
+				const isFree = model.pricing.prompt === FREE_MODEL_PRICING && 
+				              model.pricing.completion === FREE_MODEL_PRICING;
+				const supportsTools = model.supported_parameters?.includes(TOOL_PARAMETER) || 
+					model.supported_parameters?.includes(FUNCTION_PARAMETER);
 				return isFree && supportsTools;
 			});
 
@@ -121,7 +125,8 @@ export class ProviderSelectionService {
 				
 				// Try to find any free model without tool requirement
 				const freeModels = models.filter(
-					(model) => model.pricing.prompt === "0" && model.pricing.completion === "0"
+					(model) => model.pricing.prompt === FREE_MODEL_PRICING && 
+					          model.pricing.completion === FREE_MODEL_PRICING
 				);
 				
 				if (freeModels.length > 0) {
@@ -135,7 +140,7 @@ export class ProviderSelectionService {
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			// Return the first free model with tools (sorted by popularity)
+			// Return the first free model with tools (assuming sorted by popularity)
 			const bestModel = freeModelsWithTools[0];
 			console.log(`Selected best free copilot model with tools: ${bestModel.id} (${bestModel.name})`);
 			return bestModel.id;
