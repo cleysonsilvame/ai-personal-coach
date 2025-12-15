@@ -1,40 +1,35 @@
 import { injectable, inject } from "inversify";
+import { JSDOM } from "jsdom";
+import OpenAI from "openai";
 import { Config } from "~/lib/config";
 
-// Constants for model selection criteria
-const FREE_MODEL_PRICING = "0";
-const TOOL_PARAMETER = "tools";
-const FUNCTION_PARAMETER = "functions";
+// Constants for URLs and blacklist duration
+const CHAT_MODELS_URL = "https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=response_format";
+const COPILOT_MODELS_URL = "https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=tools";
+const BLACKLIST_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
 
-interface OpenRouterModel {
-	id: string;
-	name: string;
-	pricing: {
-		prompt: string;
-		completion: string;
-	};
-	context_length: number;
-	top_provider?: {
-		max_completion_tokens?: number;
-		is_moderated: boolean;
-	};
-	supported_parameters?: string[];
-}
-
-interface OpenRouterModelsResponse {
-	data: OpenRouterModel[];
+interface BlacklistEntry {
+	model: string;
+	expiresAt: number;
 }
 
 /**
  * Service to dynamically select the best available model from OpenRouter
- * Implements singleton pattern - fetches models once and caches until failure
+ * Implements singleton pattern with web scraping and health checks
  */
 @injectable("Singleton")
 export class ProviderSelectionService {
 	private chatModel: string | null = null;
 	private copilotModel: string | null = null;
+	private blacklist: BlacklistEntry[] = [];
+	private readonly openRouterClient: OpenAI;
 
-	constructor(@inject(Config) private readonly config: Config) {}
+	constructor(@inject(Config) private readonly config: Config) {
+		this.openRouterClient = new OpenAI({
+			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
+		});
+	}
 
 	/**
 	 * Get the best model for chat use case
@@ -65,38 +60,75 @@ export class ProviderSelectionService {
 	resetModel(useCase: "chat" | "copilot"): void {
 		if (useCase === "chat") {
 			console.log(`Resetting chat model cache: ${this.chatModel}`);
+			if (this.chatModel) {
+				this.addToBlacklist(this.chatModel);
+			}
 			this.chatModel = null;
 		} else {
 			console.log(`Resetting copilot model cache: ${this.copilotModel}`);
+			if (this.copilotModel) {
+				this.addToBlacklist(this.copilotModel);
+			}
 			this.copilotModel = null;
 		}
 	}
 
 	/**
+	 * Add a model to the blacklist for 8 hours
+	 */
+	private addToBlacklist(model: string): void {
+		const expiresAt = Date.now() + BLACKLIST_DURATION_MS;
+		this.blacklist.push({ model, expiresAt });
+		console.log(`Added ${model} to blacklist until ${new Date(expiresAt).toISOString()}`);
+	}
+
+	/**
+	 * Check if a model is currently blacklisted
+	 */
+	private isBlacklisted(model: string): boolean {
+		// Clean up expired entries
+		const now = Date.now();
+		this.blacklist = this.blacklist.filter(entry => entry.expiresAt > now);
+		
+		return this.blacklist.some(entry => entry.model === model);
+	}
+
+	/**
 	 * Fetch the most popular free model from OpenRouter for chat
-	 * Note: Assumes OpenRouter API returns models in order of popularity.
-	 * This is based on OpenRouter's documented behavior where models are
-	 * returned sorted by usage/popularity metrics.
+	 * Uses web scraping to get models in order of weekly popularity
 	 */
 	private async fetchBestChatModel(): Promise<string> {
 		try {
-			const models = await this.fetchAvailableModels();
+			console.log("Fetching chat models from OpenRouter...");
+			const modelIds = await this.scrapeModelIds(CHAT_MODELS_URL);
 			
-			// Filter for free models
-			const freeModels = models.filter(
-				(model) => model.pricing.prompt === FREE_MODEL_PRICING && 
-				          model.pricing.completion === FREE_MODEL_PRICING
-			);
-
-			if (freeModels.length === 0) {
-				console.warn("No free models found, falling back to default");
+			if (modelIds.length === 0) {
+				console.warn("No chat models found via scraping, falling back to default");
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			// Return the first free model (assuming API returns sorted by popularity)
-			const bestModel = freeModels[0];
-			console.log(`Selected best free chat model: ${bestModel.id} (${bestModel.name})`);
-			return bestModel.id;
+			// Try each model in order until we find one that's not blacklisted and passes health check
+			for (const modelId of modelIds) {
+				if (this.isBlacklisted(modelId)) {
+					console.log(`Skipping blacklisted model: ${modelId}`);
+					continue;
+				}
+
+				console.log(`Testing chat model: ${modelId}`);
+				const isHealthy = await this.healthCheckModel(modelId);
+				
+				if (isHealthy) {
+					console.log(`✓ Selected chat model: ${modelId}`);
+					return modelId;
+				}
+
+				console.warn(`✗ Model ${modelId} failed health check, adding to blacklist`);
+				this.addToBlacklist(modelId);
+			}
+
+			// If all models failed, use default
+			console.warn("All chat models failed health check, using default");
+			return this.config.env.OPEN_ROUTER_MODEL;
 		} catch (error) {
 			console.error("Error fetching best chat model:", error);
 			return this.config.env.OPEN_ROUTER_MODEL;
@@ -105,45 +137,40 @@ export class ProviderSelectionService {
 
 	/**
 	 * Fetch the most popular free model with tool support from OpenRouter
-	 * Note: Assumes OpenRouter API returns models in order of popularity.
+	 * Uses web scraping to get models in order of weekly popularity
 	 */
 	private async fetchBestCopilotModel(): Promise<string> {
 		try {
-			const models = await this.fetchAvailableModels();
+			console.log("Fetching copilot models from OpenRouter...");
+			const modelIds = await this.scrapeModelIds(COPILOT_MODELS_URL);
 			
-			// Filter for free models with tool/function calling support
-			const freeModelsWithTools = models.filter((model) => {
-				const isFree = model.pricing.prompt === FREE_MODEL_PRICING && 
-				              model.pricing.completion === FREE_MODEL_PRICING;
-				const supportsTools = model.supported_parameters?.includes(TOOL_PARAMETER) || 
-					model.supported_parameters?.includes(FUNCTION_PARAMETER);
-				return isFree && supportsTools;
-			});
-
-			if (freeModelsWithTools.length === 0) {
-				console.warn("No free models with tool support found, falling back to best free model without tools");
-				
-				// Try to find any free model without tool requirement
-				const freeModels = models.filter(
-					(model) => model.pricing.prompt === FREE_MODEL_PRICING && 
-					          model.pricing.completion === FREE_MODEL_PRICING
-				);
-				
-				if (freeModels.length > 0) {
-					const fallbackModel = freeModels[0];
-					console.log(`Selected best free copilot model (no tools): ${fallbackModel.id} (${fallbackModel.name})`);
-					return fallbackModel.id;
-				}
-				
-				// Last resort: use configured default
-				console.warn("No free models found at all, using configured default");
+			if (modelIds.length === 0) {
+				console.warn("No copilot models found via scraping, falling back to default");
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			// Return the first free model with tools (assuming sorted by popularity)
-			const bestModel = freeModelsWithTools[0];
-			console.log(`Selected best free copilot model with tools: ${bestModel.id} (${bestModel.name})`);
-			return bestModel.id;
+			// Try each model in order until we find one that's not blacklisted and passes health check
+			for (const modelId of modelIds) {
+				if (this.isBlacklisted(modelId)) {
+					console.log(`Skipping blacklisted model: ${modelId}`);
+					continue;
+				}
+
+				console.log(`Testing copilot model: ${modelId}`);
+				const isHealthy = await this.healthCheckModel(modelId);
+				
+				if (isHealthy) {
+					console.log(`✓ Selected copilot model: ${modelId}`);
+					return modelId;
+				}
+
+				console.warn(`✗ Model ${modelId} failed health check, adding to blacklist`);
+				this.addToBlacklist(modelId);
+			}
+
+			// If all models failed, use default
+			console.warn("All copilot models failed health check, using default");
+			return this.config.env.OPEN_ROUTER_MODEL;
 		} catch (error) {
 			console.error("Error fetching best copilot model:", error);
 			return this.config.env.OPEN_ROUTER_MODEL;
@@ -151,29 +178,68 @@ export class ProviderSelectionService {
 	}
 
 	/**
-	 * Fetch available models from OpenRouter API
+	 * Scrape model IDs from OpenRouter models page
+	 * Models are returned in order of weekly popularity
 	 */
-	private async fetchAvailableModels(): Promise<OpenRouterModel[]> {
+	private async scrapeModelIds(url: string): Promise<string[]> {
 		try {
-			// Build the API endpoint from base URL
-			const modelsUrl = `${this.config.env.OPEN_ROUTER_BASE_URL}/models`;
+			const response = await fetch(url);
 			
-			const response = await fetch(modelsUrl, {
-				headers: {
-					"Authorization": `Bearer ${this.config.env.OPEN_ROUTER_API_KEY}`,
-					"Content-Type": "application/json",
-				},
-			});
-
 			if (!response.ok) {
-				throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+				throw new Error(`Failed to fetch models page: ${response.status} ${response.statusText}`);
 			}
 
-			const data = await response.json() as OpenRouterModelsResponse;
-			return data.data || [];
+			const html = await response.text();
+			const dom = new JSDOM(html);
+			const document = dom.window.document;
+
+			// Find all model links in the table
+			// OpenRouter uses <a> tags with href="/models/{model-id}" for model links
+			const modelLinks = document.querySelectorAll('a[href^="/models/"]');
+			const modelIds: string[] = [];
+
+			for (const link of modelLinks) {
+				const href = link.getAttribute('href');
+				if (href) {
+					// Extract model ID from href: /models/vendor/model-name -> vendor/model-name
+					const modelId = href.replace('/models/', '');
+					if (modelId && !modelIds.includes(modelId)) {
+						modelIds.push(modelId);
+					}
+				}
+			}
+
+			console.log(`Found ${modelIds.length} models from ${url}`);
+			return modelIds;
 		} catch (error) {
-			console.error("Error fetching models from OpenRouter:", error);
-			throw error;
+			console.error(`Error scraping models from ${url}:`, error);
+			return [];
+		}
+	}
+
+	/**
+	 * Perform health check on a model
+	 * Tests if the model is available and responding
+	 */
+	private async healthCheckModel(modelId: string): Promise<boolean> {
+		try {
+			const response = await this.openRouterClient.chat.completions.create({
+				model: modelId,
+				messages: [
+					{
+						role: "system",
+						content: "health check",
+					},
+				],
+				max_tokens: 1,
+				stream: false,
+			});
+
+			// If we get a response, the model is healthy
+			return response.choices && response.choices.length > 0;
+		} catch (error: any) {
+			console.error(`Health check failed for ${modelId}:`, error?.message || error);
+			return false;
 		}
 	}
 
