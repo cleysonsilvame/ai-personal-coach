@@ -75,8 +75,12 @@ export class ProviderSelectionService {
 
 	/**
 	 * Add a model to the blacklist for 8 hours
+	 * Automatically cleans up expired entries to prevent memory leaks
 	 */
 	private addToBlacklist(model: string): void {
+		// Clean up expired entries first
+		this.cleanupBlacklist();
+		
 		const expiresAt = Date.now() + BLACKLIST_DURATION_MS;
 		this.blacklist.push({ model, expiresAt });
 		console.log(`Added ${model} to blacklist until ${new Date(expiresAt).toISOString()}`);
@@ -86,11 +90,20 @@ export class ProviderSelectionService {
 	 * Check if a model is currently blacklisted
 	 */
 	private isBlacklisted(model: string): boolean {
-		// Clean up expired entries
+		return this.blacklist.some(entry => entry.model === model && entry.expiresAt > Date.now());
+	}
+
+	/**
+	 * Clean up expired blacklist entries to prevent memory leaks
+	 */
+	private cleanupBlacklist(): void {
 		const now = Date.now();
+		const beforeCount = this.blacklist.length;
 		this.blacklist = this.blacklist.filter(entry => entry.expiresAt > now);
-		
-		return this.blacklist.some(entry => entry.model === model);
+		const removedCount = beforeCount - this.blacklist.length;
+		if (removedCount > 0) {
+			console.log(`Cleaned up ${removedCount} expired blacklist entries`);
+		}
 	}
 
 	/**
@@ -180,39 +193,71 @@ export class ProviderSelectionService {
 	/**
 	 * Scrape model IDs from OpenRouter models page
 	 * Models are returned in order of weekly popularity
+	 * Note: This relies on OpenRouter's HTML structure. If they change their markup,
+	 * the scraping may fail and fall back to the default model.
 	 */
 	private async scrapeModelIds(url: string): Promise<string[]> {
 		try {
-			const response = await fetch(url);
+			// Fetch with timeout to prevent hanging
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+			const response = await fetch(url, { 
+				signal: controller.signal,
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (compatible; AI-Personal-Coach/1.0)',
+				}
+			});
+			clearTimeout(timeoutId);
 			
 			if (!response.ok) {
 				throw new Error(`Failed to fetch models page: ${response.status} ${response.statusText}`);
 			}
 
 			const html = await response.text();
+			
+			// Parse HTML with JSDOM (content is from trusted source - OpenRouter)
 			const dom = new JSDOM(html);
 			const document = dom.window.document;
 
-			// Find all model links in the table
-			// OpenRouter uses <a> tags with href="/models/{model-id}" for model links
-			const modelLinks = document.querySelectorAll('a[href^="/models/"]');
+			// Find all model links - try multiple selectors for robustness
+			// Primary: links in table with /models/ prefix
+			let modelLinks = document.querySelectorAll('a[href^="/models/"]');
+			
+			// Fallback: try data attributes if structure changes
+			if (modelLinks.length === 0) {
+				modelLinks = document.querySelectorAll('[data-model-id]');
+			}
+
 			const modelIds: string[] = [];
 
 			for (const link of modelLinks) {
-				const href = link.getAttribute('href');
-				if (href) {
-					// Extract model ID from href: /models/vendor/model-name -> vendor/model-name
-					const modelId = href.replace('/models/', '');
-					if (modelId && !modelIds.includes(modelId)) {
-						modelIds.push(modelId);
-					}
+				// Try href attribute first
+				let modelId = link.getAttribute('href')?.replace('/models/', '');
+				
+				// Fallback to data attribute
+				if (!modelId) {
+					modelId = link.getAttribute('data-model-id') || '';
+				}
+				
+				// Validate model ID format (vendor/model-name)
+				if (modelId && modelId.includes('/') && !modelIds.includes(modelId)) {
+					modelIds.push(modelId);
 				}
 			}
 
 			console.log(`Found ${modelIds.length} models from ${url}`);
 			return modelIds;
-		} catch (error) {
-			console.error(`Error scraping models from ${url}:`, error);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				if (error.name === 'AbortError') {
+					console.error(`Timeout scraping models from ${url}`);
+				} else {
+					console.error(`Error scraping models from ${url}:`, error.message);
+				}
+			} else {
+				console.error(`Unknown error scraping models from ${url}`);
+			}
 			return [];
 		}
 	}
@@ -220,25 +265,45 @@ export class ProviderSelectionService {
 	/**
 	 * Perform health check on a model
 	 * Tests if the model is available and responding
+	 * Uses minimal request (1 token) to reduce API quota consumption
 	 */
 	private async healthCheckModel(modelId: string): Promise<boolean> {
 		try {
-			const response = await this.openRouterClient.chat.completions.create({
-				model: modelId,
-				messages: [
-					{
-						role: "system",
-						content: "health check",
-					},
-				],
-				max_tokens: 1,
-				stream: false,
-			});
+			// Set a timeout to prevent hanging
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+			const response = await this.openRouterClient.chat.completions.create(
+				{
+					model: modelId,
+					messages: [
+						{
+							role: "system",
+							content: "health check",
+						},
+					],
+					max_tokens: 1,
+					stream: false,
+				},
+				{
+					signal: controller.signal as any,
+				}
+			);
+
+			clearTimeout(timeoutId);
 
 			// If we get a response, the model is healthy
 			return response.choices && response.choices.length > 0;
-		} catch (error: any) {
-			console.error(`Health check failed for ${modelId}:`, error?.message || error);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				if (error.name === 'AbortError') {
+					console.error(`Health check timeout for ${modelId}`);
+				} else {
+					console.error(`Health check failed for ${modelId}:`, error.message);
+				}
+			} else {
+				console.error(`Unknown health check error for ${modelId}`);
+			}
 			return false;
 		}
 	}
