@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { JSDOM } from "jsdom";
+import { chromium, type Browser, type Page } from "playwright";
 import OpenAI from "openai";
 import { Config } from "~/lib/config";
 
@@ -15,7 +15,7 @@ interface BlacklistEntry {
 
 /**
  * Service to dynamically select the best available model from OpenRouter
- * Implements singleton pattern with web scraping and health checks
+ * Implements singleton pattern with browser-based web scraping and health checks
  */
 @injectable("Singleton")
 export class ProviderSelectionService {
@@ -23,6 +23,7 @@ export class ProviderSelectionService {
 	private copilotModel: string | null = null;
 	private blacklist: BlacklistEntry[] = [];
 	private readonly openRouterClient: OpenAI;
+	private browser: Browser | null = null;
 
 	constructor(@inject(Config) private readonly config: Config) {
 		this.openRouterClient = new OpenAI({
@@ -197,110 +198,147 @@ export class ProviderSelectionService {
 	}
 
 	/**
-	 * Scrape model IDs from OpenRouter models page
+	 * Get or create browser instance
+	 * Reuses browser across scraping operations
+	 */
+	private async getBrowser(): Promise<Browser> {
+		if (!this.browser) {
+			console.log(`[Browser] Launching Chromium...`);
+			this.browser = await chromium.launch({
+				headless: true,
+				args: ['--no-sandbox', '--disable-setuid-sandbox'],
+			});
+		}
+		return this.browser;
+	}
+
+	/**
+	 * Scrape model IDs from OpenRouter models page using real browser
 	 * Models are returned in order of weekly popularity
-	 * Note: This relies on OpenRouter's HTML structure. If they change their markup,
-	 * the scraping may fail and fall back to the default model.
+	 * Uses Playwright to render JavaScript and execute client-side code
 	 */
 	private async scrapeModelIds(url: string): Promise<string[]> {
-		console.log(`[Scraping] Starting scrape from: ${url}`);
+		console.log(`[Scraping] Starting browser-based scrape from: ${url}`);
+		
+		let page: Page | null = null;
 		
 		try {
-			// Fetch with timeout to prevent hanging
-			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-			console.log(`[Scraping] Fetching page...`);
-			const response = await fetch(url, { 
-				signal: controller.signal,
-				headers: {
-					'User-Agent': 'Mozilla/5.0 (compatible; AI-Personal-Coach/1.0)',
-				}
+			const browser = await this.getBrowser();
+			page = await browser.newPage();
+			
+			// Set user agent
+			await page.setExtraHTTPHeaders({
+				'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 			});
-			clearTimeout(timeoutId);
 			
-			console.log(`[Scraping] Response status: ${response.status} ${response.statusText}`);
+			console.log(`[Scraping] Navigating to page...`);
 			
-			if (!response.ok) {
-				throw new Error(`Failed to fetch models page: ${response.status} ${response.statusText}`);
-			}
-
-			const html = await response.text();
-			console.log(`[Scraping] HTML received, length: ${html.length} characters`);
+			// Navigate with timeout
+			const response = await page.goto(url, {
+				timeout: 30000, // 30 second timeout
+				waitUntil: 'networkidle', // Wait for network to be idle
+			});
 			
-			// Parse HTML with JSDOM (content is from trusted source - OpenRouter)
-			const dom = new JSDOM(html);
-			const document = dom.window.document;
-
-			// Find all model links - try multiple selectors for robustness
-			// Primary: links in table with /models/ prefix
-			let modelLinks = document.querySelectorAll('a[href^="/models/"]');
-			console.log(`[Scraping] Found ${modelLinks.length} links with selector 'a[href^="/models/"]'`);
-			
-			// Fallback: try data attributes if structure changes
-			if (modelLinks.length === 0) {
-				modelLinks = document.querySelectorAll('[data-model-id]');
-				console.log(`[Scraping] Fallback selector found ${modelLinks.length} elements with '[data-model-id]'`);
+			if (!response) {
+				throw new Error('No response received from page');
 			}
 			
-			// Additional debugging: try to find any links on the page
-			if (modelLinks.length === 0) {
+			console.log(`[Scraping] Response status: ${response.status()}`);
+			
+			if (!response.ok()) {
+				throw new Error(`Failed to fetch models page: ${response.status()} ${response.statusText()}`);
+			}
+
+			// Wait for page to fully render - look for model links
+			console.log(`[Scraping] Waiting for page to render...`);
+			
+			try {
+				// Wait for either model links or a reasonable timeout
+				await page.waitForSelector('a[href^="/models/"]', { timeout: 10000 });
+				console.log(`[Scraping] Model links found in DOM`);
+			} catch (timeoutError) {
+				console.warn(`[Scraping] Timeout waiting for model links, proceeding anyway...`);
+			}
+			
+			// Give additional time for JavaScript to finish rendering
+			await page.waitForTimeout(2000);
+			
+			// Extract model IDs from the rendered page
+			console.log(`[Scraping] Extracting model IDs...`);
+			
+			const modelData = await page.evaluate(() => {
+				// Find all model links
+				const modelLinks = document.querySelectorAll('a[href^="/models/"]');
 				const allLinks = document.querySelectorAll('a');
-				console.log(`[Scraping] Total links on page: ${allLinks.length}`);
 				
-				// Log first few links for debugging
-				const sampleLinks = Array.from(allLinks).slice(0, 5).map(link => ({
-					href: link.getAttribute('href'),
-					text: link.textContent?.substring(0, 50)
-				}));
-				console.log(`[Scraping] Sample of links found:`, JSON.stringify(sampleLinks, null, 2));
-			}
-
-			const modelIds: string[] = [];
-			let skippedCount = 0;
-
-			for (const link of modelLinks) {
-				// Try href attribute first
-				let modelId = link.getAttribute('href')?.replace('/models/', '');
+				const models: string[] = [];
+				const samples: Array<{ href: string | null; text: string }> = [];
 				
-				// Fallback to data attribute
-				if (!modelId) {
-					modelId = link.getAttribute('data-model-id') || '';
+				// Extract model IDs
+				for (const link of modelLinks) {
+					const href = link.getAttribute('href');
+					if (href) {
+						const modelId = href.replace('/models/', '');
+						// Validate format: vendor/model-name
+						if (modelId && modelId.includes('/') && !models.includes(modelId)) {
+							models.push(modelId);
+						}
+					}
 				}
 				
-				// Validate model ID format (vendor/model-name)
-				if (modelId && modelId.includes('/') && !modelIds.includes(modelId)) {
-					modelIds.push(modelId);
-				} else if (modelId) {
-					skippedCount++;
+				// Get sample of all links for debugging
+				const linkArray = Array.from(allLinks);
+				for (let i = 0; i < Math.min(5, linkArray.length); i++) {
+					const link = linkArray[i];
+					samples.push({
+						href: link.getAttribute('href'),
+						text: (link.textContent || '').substring(0, 50)
+					});
 				}
-			}
+				
+				return {
+					models,
+					totalLinks: allLinks.length,
+					modelLinks: modelLinks.length,
+					samples
+				};
+			});
 
-			console.log(`[Scraping] Extracted ${modelIds.length} valid model IDs (skipped ${skippedCount} invalid)`);
+			console.log(`[Scraping] Found ${modelData.modelLinks} model links in rendered page`);
+			console.log(`[Scraping] Total links on page: ${modelData.totalLinks}`);
+			console.log(`[Scraping] Extracted ${modelData.models.length} valid model IDs`);
 			
-			if (modelIds.length > 0) {
-				console.log(`[Scraping] First 3 models:`, modelIds.slice(0, 3));
+			if (modelData.models.length > 0) {
+				console.log(`[Scraping] First 3 models:`, modelData.models.slice(0, 3));
 			} else {
-				console.warn(`[Scraping] ⚠️  No valid model IDs extracted! Check if OpenRouter changed their HTML structure.`);
+				console.warn(`[Scraping] ⚠️  No valid model IDs extracted!`);
+				console.log(`[Scraping] Sample of links found:`, JSON.stringify(modelData.samples, null, 2));
 				
-				// Save a sample of HTML for debugging
-				const htmlSample = html.substring(0, 1000);
-				console.log(`[Scraping] HTML sample (first 1000 chars):`, htmlSample);
+				// Capture screenshot for debugging
+				try {
+					const screenshot = await page.screenshot({ type: 'png', fullPage: false });
+					console.log(`[Scraping] Screenshot captured, size: ${screenshot.length} bytes`);
+					// In production, you might want to save this or log it differently
+				} catch (screenshotError) {
+					console.error(`[Scraping] Failed to capture screenshot:`, screenshotError);
+				}
 			}
 			
-			return modelIds;
+			return modelData.models;
+			
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				if (error.name === 'AbortError') {
-					console.error(`[Scraping] ❌ Timeout after 10 seconds scraping from ${url}`);
-				} else {
-					console.error(`[Scraping] ❌ Error scraping from ${url}:`, error.message);
-					console.error(`[Scraping] Error stack:`, error.stack);
-				}
+				console.error(`[Scraping] ❌ Error scraping from ${url}:`, error.message);
+				console.error(`[Scraping] Error stack:`, error.stack);
 			} else {
 				console.error(`[Scraping] ❌ Unknown error scraping from ${url}`, error);
 			}
 			return [];
+		} finally {
+			// Close the page but keep browser alive for reuse
+			if (page) {
+				await page.close();
+			}
 		}
 	}
 
