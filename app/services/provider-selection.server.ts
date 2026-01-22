@@ -116,9 +116,12 @@ export class ProviderSelectionService {
 			const modelIds = await this.scrapeModelIds(CHAT_MODELS_URL);
 			
 			if (modelIds.length === 0) {
-				console.warn("No chat models found via scraping, falling back to default");
+				console.warn("⚠️  No chat models found via scraping, falling back to default");
+				console.warn("Reason: Scraping returned 0 models. Check logs above for details (HTTP status, HTML structure, selectors)");
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
+
+			console.log(`Processing ${modelIds.length} chat models...`);
 
 			// Try each model in order until we find one that's not blacklisted and passes health check
 			for (const modelId of modelIds) {
@@ -158,9 +161,12 @@ export class ProviderSelectionService {
 			const modelIds = await this.scrapeModelIds(COPILOT_MODELS_URL);
 			
 			if (modelIds.length === 0) {
-				console.warn("No copilot models found via scraping, falling back to default");
+				console.warn("⚠️  No copilot models found via scraping, falling back to default");
+				console.warn("Reason: Scraping returned 0 models. Check logs above for details (HTTP status, HTML structure, selectors)");
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
+
+			console.log(`Processing ${modelIds.length} copilot models...`);
 
 			// Try each model in order until we find one that's not blacklisted and passes health check
 			for (const modelId of modelIds) {
@@ -197,11 +203,14 @@ export class ProviderSelectionService {
 	 * the scraping may fail and fall back to the default model.
 	 */
 	private async scrapeModelIds(url: string): Promise<string[]> {
+		console.log(`[Scraping] Starting scrape from: ${url}`);
+		
 		try {
 			// Fetch with timeout to prevent hanging
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
+			console.log(`[Scraping] Fetching page...`);
 			const response = await fetch(url, { 
 				signal: controller.signal,
 				headers: {
@@ -210,11 +219,14 @@ export class ProviderSelectionService {
 			});
 			clearTimeout(timeoutId);
 			
+			console.log(`[Scraping] Response status: ${response.status} ${response.statusText}`);
+			
 			if (!response.ok) {
 				throw new Error(`Failed to fetch models page: ${response.status} ${response.statusText}`);
 			}
 
 			const html = await response.text();
+			console.log(`[Scraping] HTML received, length: ${html.length} characters`);
 			
 			// Parse HTML with JSDOM (content is from trusted source - OpenRouter)
 			const dom = new JSDOM(html);
@@ -223,13 +235,29 @@ export class ProviderSelectionService {
 			// Find all model links - try multiple selectors for robustness
 			// Primary: links in table with /models/ prefix
 			let modelLinks = document.querySelectorAll('a[href^="/models/"]');
+			console.log(`[Scraping] Found ${modelLinks.length} links with selector 'a[href^="/models/"]'`);
 			
 			// Fallback: try data attributes if structure changes
 			if (modelLinks.length === 0) {
 				modelLinks = document.querySelectorAll('[data-model-id]');
+				console.log(`[Scraping] Fallback selector found ${modelLinks.length} elements with '[data-model-id]'`);
+			}
+			
+			// Additional debugging: try to find any links on the page
+			if (modelLinks.length === 0) {
+				const allLinks = document.querySelectorAll('a');
+				console.log(`[Scraping] Total links on page: ${allLinks.length}`);
+				
+				// Log first few links for debugging
+				const sampleLinks = Array.from(allLinks).slice(0, 5).map(link => ({
+					href: link.getAttribute('href'),
+					text: link.textContent?.substring(0, 50)
+				}));
+				console.log(`[Scraping] Sample of links found:`, JSON.stringify(sampleLinks, null, 2));
 			}
 
 			const modelIds: string[] = [];
+			let skippedCount = 0;
 
 			for (const link of modelLinks) {
 				// Try href attribute first
@@ -243,20 +271,34 @@ export class ProviderSelectionService {
 				// Validate model ID format (vendor/model-name)
 				if (modelId && modelId.includes('/') && !modelIds.includes(modelId)) {
 					modelIds.push(modelId);
+				} else if (modelId) {
+					skippedCount++;
 				}
 			}
 
-			console.log(`Found ${modelIds.length} models from ${url}`);
+			console.log(`[Scraping] Extracted ${modelIds.length} valid model IDs (skipped ${skippedCount} invalid)`);
+			
+			if (modelIds.length > 0) {
+				console.log(`[Scraping] First 3 models:`, modelIds.slice(0, 3));
+			} else {
+				console.warn(`[Scraping] ⚠️  No valid model IDs extracted! Check if OpenRouter changed their HTML structure.`);
+				
+				// Save a sample of HTML for debugging
+				const htmlSample = html.substring(0, 1000);
+				console.log(`[Scraping] HTML sample (first 1000 chars):`, htmlSample);
+			}
+			
 			return modelIds;
 		} catch (error: unknown) {
 			if (error instanceof Error) {
 				if (error.name === 'AbortError') {
-					console.error(`Timeout scraping models from ${url}`);
+					console.error(`[Scraping] ❌ Timeout after 10 seconds scraping from ${url}`);
 				} else {
-					console.error(`Error scraping models from ${url}:`, error.message);
+					console.error(`[Scraping] ❌ Error scraping from ${url}:`, error.message);
+					console.error(`[Scraping] Error stack:`, error.stack);
 				}
 			} else {
-				console.error(`Unknown error scraping models from ${url}`);
+				console.error(`[Scraping] ❌ Unknown error scraping from ${url}`, error);
 			}
 			return [];
 		}
