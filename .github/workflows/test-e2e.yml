@@ -1,0 +1,102 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+# ---------------------------------------------------------------------------
+# Isolated E2E environment
+# ---------------------------------------------------------------------------
+# Services that need to be SEPARATED from production:
+#
+#  Service         | E2E strategy                           | Secret required?
+#  --------------- | -------------------------------------- | ----------------
+#  Database        | Local SQLite file (file:e2e-test.db)   | No — no Turso account needed
+#  Redis / Cache   | Local Docker container (port 6379)     | No — no Upstash account needed
+#  OpenRouter API  | Real key, free/cheap model        | Yes — E2E_OPEN_ROUTER_API_KEY
+#                  | (no dynamic selection in E2E)     |     — E2E_OPEN_ROUTER_MODEL
+#  Gemini API      | Real key, same model              | Yes — E2E_GEMINI_API_KEY
+#
+# Required GitHub repository secrets:
+#   E2E_OPEN_ROUTER_API_KEY  — OpenRouter API key for E2E (can reuse prod key)
+#   E2E_OPEN_ROUTER_MODEL    — A free model slug, e.g. "google/gemini-2.0-flash-exp:free"
+#   E2E_GEMINI_API_KEY       — Gemini API key for E2E (can reuse prod key)
+# ---------------------------------------------------------------------------
+
+jobs:
+  e2e:
+    name: Playwright E2E Tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # ── Database ──────────────────────────────────────────────────────────
+      # Uses a local embedded SQLite file — no external Turso service needed.
+      TURSO_DATABASE_URL: file:e2e-test.db
+      TURSO_AUTH_TOKEN: ""
+
+      # ── Cache ─────────────────────────────────────────────────────────────
+      # Uses the Redis service container started above.
+      UPSTASH_REDIS_HOST: redis://localhost:6379
+
+      # ── AI services ───────────────────────────────────────────────────────
+      # Configure the three secrets below in repository Settings → Secrets.
+      OPEN_ROUTER_API_KEY: ${{ secrets.E2E_OPEN_ROUTER_API_KEY }}
+      OPEN_ROUTER_BASE_URL: "https://openrouter.ai/api/v1"
+      OPEN_ROUTER_MODEL: ${{ secrets.E2E_OPEN_ROUTER_MODEL }}
+      OPEN_ROUTER_TEMPERATURE: "0.7"
+
+      GEMINI_API_KEY: ${{ secrets.E2E_GEMINI_API_KEY }}
+      GEMINI_BASE_URL: "https://generativelanguage.googleapis.com/v1beta/openai"
+      GEMINI_EMBEDDING_MODEL: "gemini-embedding-001"
+
+      # ── App config ────────────────────────────────────────────────────────
+      DRIZZLE_LOGGER: "false"
+
+      # Disable dynamic model selection and external feature-flag provider.
+      LOCAL_FEATURE_FLAGS: '{"log_level":0,"chat_use_dynamic_model_selection":false,"copilot_use_dynamic_model_selection":false}'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run database migrations
+        run: npm run db:migrate
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
