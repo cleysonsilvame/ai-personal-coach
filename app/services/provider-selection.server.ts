@@ -1,6 +1,7 @@
 import { inject, injectable } from "inversify";
 import OpenAI from "openai";
 import { Config } from "~/lib/config";
+import { FeatureFlags } from "~/lib/feature-flags.server";
 import { Logger } from "~/lib/logger";
 import { RedisModelBlacklistService } from "./model-blacklist.server";
 import { NotificationService } from "./notification.server";
@@ -47,6 +48,7 @@ export class ProviderSelectionService {
 		@inject(NotificationService)
 		private readonly notificationService: NotificationService,
 		@inject(Logger) private readonly logger: Logger,
+		@inject(FeatureFlags) private readonly featureFlags: FeatureFlags,
 		@inject(RedisModelBlacklistService)
 		private readonly blacklistService: RedisModelBlacklistService,
 	) {
@@ -61,6 +63,10 @@ export class ProviderSelectionService {
 	 * Fetches from OpenRouter API on first call or when model becomes unavailable
 	 */
 	async getChatModel(): Promise<string> {
+		if (!(await this.shouldUseDynamicSelection("chat"))) {
+			return this.config.env.OPEN_ROUTER_MODEL;
+		}
+
 		if (!this.chatModel) {
 			this.chatModel = await this.fetchBestChatModel();
 		}
@@ -72,10 +78,31 @@ export class ProviderSelectionService {
 	 * Fetches from OpenRouter API on first call or when model becomes unavailable
 	 */
 	async getCopilotModel(): Promise<string> {
+		if (!(await this.shouldUseDynamicSelection("copilot"))) {
+			return this.config.env.OPEN_ROUTER_MODEL;
+		}
+
 		if (!this.copilotModel) {
 			this.copilotModel = await this.fetchBestCopilotModel();
 		}
 		return this.copilotModel;
+	}
+
+	private async shouldUseDynamicSelection(
+		useCase: "chat" | "copilot",
+	): Promise<boolean> {
+		try {
+			const flags = await this.featureFlags.getFeatureFlags();
+			return useCase === "chat"
+				? flags.chat_use_dynamic_model_selection
+				: flags.copilot_use_dynamic_model_selection;
+		} catch (error) {
+			this.logger.warn(
+				`Feature flags unavailable for ${useCase}; using fixed OPEN_ROUTER_MODEL`,
+				error,
+			);
+			return false;
+		}
 	}
 
 	/**

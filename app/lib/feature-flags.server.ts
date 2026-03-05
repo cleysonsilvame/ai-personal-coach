@@ -16,6 +16,8 @@ import { Config, type Flags, flagsSchema } from "./config";
  * 2. Add EDGE_CONFIG env variable (automatically set by Vercel)
  * 3. Add keys in Edge Config dashboard:
  *    - log_level: number (0-5)
+ *    - chat_use_dynamic_model_selection: boolean
+ *    - copilot_use_dynamic_model_selection: boolean
  */
 
 @injectable("Singleton")
@@ -52,5 +54,4 @@ export class FeatureFlags {
     }
   }
 }
-
 

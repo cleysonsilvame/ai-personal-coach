@@ -36,7 +36,9 @@ Na página do Edge Config, clique em **Edit Items** e adicione:
 ```json
 {
   "flags": {
-    "log_level": 3
+    "log_level": 3,
+    "chat_use_dynamic_model_selection": false,
+    "copilot_use_dynamic_model_selection": false
   }
 }
 ```
@@ -152,6 +154,8 @@ const level = await getLogLevel();
 | Flag | Tipo | Padrão | Descrição |
 |------|------|--------|-----------|
 | `log_level` | `number` | 3 | Nível de log (0-5) |
+| `chat_use_dynamic_model_selection` | `boolean` | `false` | Quando `true`, chat usa detecção dinâmica de modelos; quando `false`, usa `OPEN_ROUTER_MODEL`. |
+| `copilot_use_dynamic_model_selection` | `boolean` | `false` | Quando `true`, copilot usa detecção dinâmica de modelos; quando `false`, usa `OPEN_ROUTER_MODEL`. |
 
 ### Adicionar Novas Flags
 

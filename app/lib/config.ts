@@ -3,6 +3,8 @@ import z from "zod";
 
 export const flagsSchema = z.object({
 	log_level: z.number().min(0).max(5),
+	chat_use_dynamic_model_selection: z.boolean().default(false),
+	copilot_use_dynamic_model_selection: z.boolean().default(false),
 });
 
 export type Flags = z.infer<typeof flagsSchema>;
