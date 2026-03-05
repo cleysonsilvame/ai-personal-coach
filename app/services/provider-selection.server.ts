@@ -1,31 +1,55 @@
-import { injectable, inject } from "inversify";
-import { chromium, type Browser, type Page } from "playwright";
+import { inject, injectable } from "inversify";
 import OpenAI from "openai";
 import { Config } from "~/lib/config";
+import { Logger } from "~/lib/logger";
+import { RedisModelBlacklistService } from "./model-blacklist.server";
+import { NotificationService } from "./notification.server";
 
-// Constants for URLs and blacklist duration
-const CHAT_MODELS_URL = "https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=response_format";
-const COPILOT_MODELS_URL = "https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=tools";
-const BLACKLIST_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
+// Constants for API endpoint
+const OPENROUTER_FRONTEND_API_URL =
+	"https://openrouter.ai/api/frontend/models/find";
 
-interface BlacklistEntry {
-	model: string;
-	expiresAt: number;
+interface OpenRouterFrontendModel {
+	slug: string;
+	name: string;
+	context_length: number;
+	endpoint: {
+		model_variant_slug: string;
+		pricing: {
+			prompt: string;
+			completion: string;
+		};
+		supported_parameters: string[];
+		is_free: boolean;
+	};
+}
+
+interface OpenRouterFrontendResponse {
+	data: {
+		models: OpenRouterFrontendModel[];
+	};
 }
 
 /**
  * Service to dynamically select the best available model from OpenRouter
- * Implements singleton pattern with browser-based web scraping and health checks
+ * Implements singleton pattern with API-based model selection and health checks
+ * Sends notifications when models fail via NotificationService
+ * Uses Redis for distributed blacklist management across multiple instances
  */
 @injectable("Singleton")
 export class ProviderSelectionService {
 	private chatModel: string | null = null;
 	private copilotModel: string | null = null;
-	private blacklist: BlacklistEntry[] = [];
 	private readonly openRouterClient: OpenAI;
-	private browser: Browser | null = null;
 
-	constructor(@inject(Config) private readonly config: Config) {
+	constructor(
+		@inject(Config) private readonly config: Config,
+		@inject(NotificationService)
+		private readonly notificationService: NotificationService,
+		@inject(Logger) private readonly logger: Logger,
+		@inject(RedisModelBlacklistService)
+		private readonly blacklistService: RedisModelBlacklistService,
+	) {
 		this.openRouterClient = new OpenAI({
 			apiKey: this.config.env.OPEN_ROUTER_API_KEY,
 			baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
@@ -58,17 +82,17 @@ export class ProviderSelectionService {
 	 * Reset cached model for a specific use case
 	 * Called when a model becomes unavailable
 	 */
-	resetModel(useCase: "chat" | "copilot"): void {
+	async resetModel(useCase: "chat" | "copilot"): Promise<void> {
 		if (useCase === "chat") {
-			console.log(`Resetting chat model cache: ${this.chatModel}`);
+			this.logger.info(`Resetting chat model cache: ${this.chatModel}`);
 			if (this.chatModel) {
-				this.addToBlacklist(this.chatModel);
+				await this.blacklistService.addToBlacklist(this.chatModel);
 			}
 			this.chatModel = null;
 		} else {
-			console.log(`Resetting copilot model cache: ${this.copilotModel}`);
+			this.logger.info(`Resetting copilot model cache: ${this.copilotModel}`);
 			if (this.copilotModel) {
-				this.addToBlacklist(this.copilotModel);
+				await this.blacklistService.addToBlacklist(this.copilotModel);
 			}
 			this.copilotModel = null;
 		}
@@ -76,269 +100,232 @@ export class ProviderSelectionService {
 
 	/**
 	 * Add a model to the blacklist for 8 hours
-	 * Automatically cleans up expired entries to prevent memory leaks
+	 * Uses Redis for distributed blacklist management
 	 */
-	private addToBlacklist(model: string): void {
-		// Clean up expired entries first
-		this.cleanupBlacklist();
-		
-		const expiresAt = Date.now() + BLACKLIST_DURATION_MS;
-		this.blacklist.push({ model, expiresAt });
-		console.log(`Added ${model} to blacklist until ${new Date(expiresAt).toISOString()}`);
+	private async addToBlacklistInternal(model: string): Promise<void> {
+		await this.blacklistService.addToBlacklist(model);
+		this.logger.debug(
+			`Added ${model} to blacklist for 8 hours (stored in Redis)`,
+		);
 	}
 
 	/**
 	 * Check if a model is currently blacklisted
 	 */
-	private isBlacklisted(model: string): boolean {
-		return this.blacklist.some(entry => entry.model === model && entry.expiresAt > Date.now());
-	}
-
-	/**
-	 * Clean up expired blacklist entries to prevent memory leaks
-	 */
-	private cleanupBlacklist(): void {
-		const now = Date.now();
-		const beforeCount = this.blacklist.length;
-		this.blacklist = this.blacklist.filter(entry => entry.expiresAt > now);
-		const removedCount = beforeCount - this.blacklist.length;
-		if (removedCount > 0) {
-			console.log(`Cleaned up ${removedCount} expired blacklist entries`);
-		}
+	private async isBlacklistedInternal(model: string): Promise<boolean> {
+		return this.blacklistService.isBlacklisted(model);
 	}
 
 	/**
 	 * Fetch the most popular free model from OpenRouter for chat
-	 * Uses web scraping to get models in order of weekly popularity
+	 * Uses OpenRouter API to get models with response_format support
 	 */
 	private async fetchBestChatModel(): Promise<string> {
 		try {
-			console.log("Fetching chat models from OpenRouter...");
-			const modelIds = await this.scrapeModelIds(CHAT_MODELS_URL);
-			
+			this.logger.info("Fetching chat models from OpenRouter API...");
+			const modelIds = await this.fetchModelIds(["response_format"]);
+
 			if (modelIds.length === 0) {
-				console.warn("⚠️  No chat models found via scraping, falling back to default");
-				console.warn("Reason: Scraping returned 0 models. Check logs above for details (HTTP status, HTML structure, selectors)");
+				this.logger.warn(
+					"⚠️  No chat models found via API, falling back to default",
+				);
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			console.log(`Processing ${modelIds.length} chat models...`);
+			this.logger.info(`Processing ${modelIds.length} chat models...`);
 
 			// Try each model in order until we find one that's not blacklisted and passes health check
 			for (const modelId of modelIds) {
-				if (this.isBlacklisted(modelId)) {
-					console.log(`Skipping blacklisted model: ${modelId}`);
+				const isBlacklistedModel = await this.isBlacklistedInternal(modelId);
+				if (isBlacklistedModel) {
+					this.logger.debug(`Skipping blacklisted model: ${modelId}`);
 					continue;
 				}
 
-				console.log(`Testing chat model: ${modelId}`);
+				this.logger.debug(`Testing chat model: ${modelId}`);
 				const isHealthy = await this.healthCheckModel(modelId);
-				
+
 				if (isHealthy) {
-					console.log(`✓ Selected chat model: ${modelId}`);
+					this.logger.info(`✓ Selected chat model: ${modelId}`);
 					return modelId;
 				}
 
-				console.warn(`✗ Model ${modelId} failed health check, adding to blacklist`);
-				this.addToBlacklist(modelId);
+				this.logger.warn(
+					`✗ Model ${modelId} failed health check, adding to blacklist`,
+				);
+				await this.addToBlacklistInternal(modelId);
+
+				// Notify about model failure
+				await this.notificationService.notifyModelError({
+					type: "model_unavailable",
+					modelId,
+					error: "Model failed health check",
+					timestamp: new Date().toISOString(),
+					context: { useCase: "chat" },
+				});
 			}
 
 			// If all models failed, use default
-			console.warn("All chat models failed health check, using default");
+			this.logger.warn("All chat models failed health check, using default");
+
+			// Notify about all models failing
+			await this.notificationService.notifyModelError({
+				type: "all_models_failed",
+				error: "All chat models failed health check, using fallback",
+				timestamp: new Date().toISOString(),
+				context: {
+					useCase: "chat",
+					fallbackModel: this.config.env.OPEN_ROUTER_MODEL,
+					testedModels: modelIds.length,
+				},
+			});
+
 			return this.config.env.OPEN_ROUTER_MODEL;
 		} catch (error) {
-			console.error("Error fetching best chat model:", error);
+			this.logger.error("Error fetching best chat model:", error);
+
+			// Notify about error
+			await this.notificationService.notifyModelError({
+				type: "model_error",
+				error: error instanceof Error ? error.message : "Unknown error",
+				timestamp: new Date().toISOString(),
+				context: { useCase: "chat", phase: "fetching" },
+			});
+
 			return this.config.env.OPEN_ROUTER_MODEL;
 		}
 	}
 
 	/**
 	 * Fetch the most popular free model with tool support from OpenRouter
-	 * Uses web scraping to get models in order of weekly popularity
+	 * Uses OpenRouter API to get models with tools support
 	 */
 	private async fetchBestCopilotModel(): Promise<string> {
 		try {
-			console.log("Fetching copilot models from OpenRouter...");
-			const modelIds = await this.scrapeModelIds(COPILOT_MODELS_URL);
-			
+			this.logger.info("Fetching copilot models from OpenRouter API...");
+			const modelIds = await this.fetchModelIds(["tools"]);
+
 			if (modelIds.length === 0) {
-				console.warn("⚠️  No copilot models found via scraping, falling back to default");
-				console.warn("Reason: Scraping returned 0 models. Check logs above for details (HTTP status, HTML structure, selectors)");
+				this.logger.warn(
+					"⚠️  No copilot models found via API, falling back to default",
+				);
 				return this.config.env.OPEN_ROUTER_MODEL;
 			}
 
-			console.log(`Processing ${modelIds.length} copilot models...`);
+			this.logger.info(`Processing ${modelIds.length} copilot models...`);
 
 			// Try each model in order until we find one that's not blacklisted and passes health check
 			for (const modelId of modelIds) {
-				if (this.isBlacklisted(modelId)) {
-					console.log(`Skipping blacklisted model: ${modelId}`);
+				const isBlacklistedModel = await this.isBlacklistedInternal(modelId);
+				if (isBlacklistedModel) {
+					this.logger.debug(`Skipping blacklisted model: ${modelId}`);
 					continue;
 				}
 
-				console.log(`Testing copilot model: ${modelId}`);
+				this.logger.debug(`Testing copilot model: ${modelId}`);
 				const isHealthy = await this.healthCheckModel(modelId);
-				
+
 				if (isHealthy) {
-					console.log(`✓ Selected copilot model: ${modelId}`);
+					this.logger.info(`✓ Selected copilot model: ${modelId}`);
 					return modelId;
 				}
 
-				console.warn(`✗ Model ${modelId} failed health check, adding to blacklist`);
-				this.addToBlacklist(modelId);
+				this.logger.warn(
+					`✗ Model ${modelId} failed health check, adding to blacklist`,
+				);
+				await this.addToBlacklistInternal(modelId);
+
+				// Notify about model failure
+				await this.notificationService.notifyModelError({
+					type: "model_unavailable",
+					modelId,
+					error: "Model failed health check",
+					timestamp: new Date().toISOString(),
+					context: { useCase: "copilot" },
+				});
 			}
 
 			// If all models failed, use default
-			console.warn("All copilot models failed health check, using default");
+			this.logger.warn("All copilot models failed health check, using default");
+
+			// Notify about all models failing
+			await this.notificationService.notifyModelError({
+				type: "all_models_failed",
+				error: "All copilot models failed health check, using fallback",
+				timestamp: new Date().toISOString(),
+				context: {
+					useCase: "copilot",
+					fallbackModel: this.config.env.OPEN_ROUTER_MODEL,
+					testedModels: modelIds.length,
+				},
+			});
 			return this.config.env.OPEN_ROUTER_MODEL;
 		} catch (error) {
-			console.error("Error fetching best copilot model:", error);
+			this.logger.error("Error fetching best copilot model:", error);
+			// Notify about error
+			await this.notificationService.notifyModelError({
+				type: "model_error",
+				error: error instanceof Error ? error.message : "Unknown error",
+				timestamp: new Date().toISOString(),
+				context: { useCase: "copilot", phase: "fetching" },
+			});
 			return this.config.env.OPEN_ROUTER_MODEL;
 		}
 	}
 
 	/**
-	 * Get or create browser instance
-	 * Reuses browser across scraping operations
+	 * Fetch model IDs from OpenRouter Frontend API
+	 * Returns free models ordered by popularity that support the required parameters
 	 */
-	private async getBrowser(): Promise<Browser> {
-		if (!this.browser) {
-			console.log(`[Browser] Launching Chromium...`);
-			this.browser = await chromium.launch({
-				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox'],
-			});
-		}
-		return this.browser;
-	}
+	private async fetchModelIds(requiredParameters: string[]): Promise<string[]> { // TODO: adicionar cache?
+		this.logger.debug(
+			`[API] Fetching models with parameters: ${requiredParameters.join(", ")}`,
+		);
 
-	/**
-	 * Scrape model IDs from OpenRouter models page using real browser
-	 * Models are returned in order of weekly popularity
-	 * Uses Playwright to render JavaScript and execute client-side code
-	 */
-	private async scrapeModelIds(url: string): Promise<string[]> {
-		console.log(`[Scraping] Starting browser-based scrape from: ${url}`);
-		
-		let page: Page | null = null;
-		
 		try {
-			const browser = await this.getBrowser();
-			page = await browser.newPage();
-			
-			// Set user agent
-			await page.setExtraHTTPHeaders({
-				'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-			});
-			
-			console.log(`[Scraping] Navigating to page...`);
-			
-			// Navigate with timeout
-			const response = await page.goto(url, {
-				timeout: 30000, // 30 second timeout
-				waitUntil: 'networkidle', // Wait for network to be idle
-			});
-			
-			if (!response) {
-				throw new Error('No response received from page');
-			}
-			
-			console.log(`[Scraping] Response status: ${response.status()}`);
-			
-			if (!response.ok()) {
-				throw new Error(`Failed to fetch models page: ${response.status()} ${response.statusText()}`);
-			}
-
-			// Wait for page to fully render - look for model links
-			console.log(`[Scraping] Waiting for page to render...`);
-			
-			try {
-				// Wait for either model links or a reasonable timeout
-				await page.waitForSelector('a[href^="/models/"]', { timeout: 10000 });
-				console.log(`[Scraping] Model links found in DOM`);
-			} catch (timeoutError) {
-				console.warn(`[Scraping] Timeout waiting for model links, proceeding anyway...`);
-			}
-			
-			// Give additional time for JavaScript to finish rendering
-			await page.waitForTimeout(2000);
-			
-			// Extract model IDs from the rendered page
-			console.log(`[Scraping] Extracting model IDs...`);
-			
-			const modelData = await page.evaluate(() => {
-				// Find all model links
-				const modelLinks = document.querySelectorAll('a[href^="/models/"]');
-				const allLinks = document.querySelectorAll('a');
-				
-				const models: string[] = [];
-				const samples: Array<{ href: string | null; text: string }> = [];
-				
-				// Extract model IDs
-				for (const link of modelLinks) {
-					const href = link.getAttribute('href');
-					if (href) {
-						const modelId = href.replace('/models/', '');
-						// Validate format: vendor/model-name
-						if (modelId && modelId.includes('/') && !models.includes(modelId)) {
-							models.push(modelId);
-						}
-					}
-				}
-				
-				// Get sample of all links for debugging
-				const linkArray = Array.from(allLinks);
-				for (let i = 0; i < Math.min(5, linkArray.length); i++) {
-					const link = linkArray[i];
-					samples.push({
-						href: link.getAttribute('href'),
-						text: (link.textContent || '').substring(0, 50)
-					});
-				}
-				
-				return {
-					models,
-					totalLinks: allLinks.length,
-					modelLinks: modelLinks.length,
-					samples
-				};
+			// Build query parameters for the frontend API
+			const params = new URLSearchParams({
+				fmt: "table",
+				max_price: "0",
+				order: "most-popular",
+				supported_parameters: requiredParameters.join(","),
 			});
 
-			console.log(`[Scraping] Found ${modelData.modelLinks} model links in rendered page`);
-			console.log(`[Scraping] Total links on page: ${modelData.totalLinks}`);
-			console.log(`[Scraping] Extracted ${modelData.models.length} valid model IDs`);
-			
-			if (modelData.models.length > 0) {
-				console.log(`[Scraping] First 3 models:`, modelData.models.slice(0, 3));
+			const url = `${OPENROUTER_FRONTEND_API_URL}?${params.toString()}`;
+			const response = await fetch(url);
+
+			if (!response.ok) {
+				throw new Error(
+					`Failed to fetch models: ${response.status} ${response.statusText}`,
+				);
+			}
+
+			this.logger.debug(`[API] Response status: ${response.status}`);
+
+			const result = (await response.json()) as OpenRouterFrontendResponse;
+			const models = result.data.models;
+
+			this.logger.debug(
+				`[API] Received ${models.length} free models ordered by popularity`,
+			);
+
+			// Extract model IDs (already filtered by API for free + required parameters)
+			const modelIds = models.map((model) => model.endpoint.model_variant_slug);
+
+			if (modelIds.length > 0) {
+				this.logger.debug("[API] Top 3 models:", modelIds.slice(0, 3));
 			} else {
-				console.warn(`[Scraping] ⚠️  No valid model IDs extracted!`);
-				console.log(`[Scraping] Sample of links found:`, JSON.stringify(modelData.samples, null, 2));
-				
-				// Capture screenshot for debugging
-				try {
-					const screenshot = await page.screenshot({ type: 'png', fullPage: false });
-					console.log(`[Scraping] Screenshot captured, size: ${screenshot.length} bytes`);
-					// In production, you might want to save this or log it differently
-				} catch (screenshotError) {
-					console.error(`[Scraping] Failed to capture screenshot:`, screenshotError);
-				}
+				this.logger.warn("[API] ⚠️  No matching models found!");
 			}
-			
-			return modelData.models;
-			
+
+			return modelIds;
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				console.error(`[Scraping] ❌ Error scraping from ${url}:`, error.message);
-				console.error(`[Scraping] Error stack:`, error.stack);
+				this.logger.error("[API] ❌ Error fetching models:", error.message);
 			} else {
-				console.error(`[Scraping] ❌ Unknown error scraping from ${url}`, error);
+				this.logger.error("[API] ❌ Unknown error fetching models", error);
 			}
 			return [];
-		} finally {
-			// Close the page but keep browser alive for reuse
-			if (page) {
-				await page.close();
-			}
 		}
 	}
 
@@ -366,8 +353,8 @@ export class ProviderSelectionService {
 					stream: false,
 				},
 				{
-					signal: controller.signal as any,
-				}
+					signal: controller.signal as AbortSignal,
+				},
 			);
 
 			clearTimeout(timeoutId);
@@ -376,10 +363,10 @@ export class ProviderSelectionService {
 			return response.choices && response.choices.length > 0;
 		} catch (error: unknown) {
 			if (error instanceof Error) {
-				if (error.name === 'AbortError') {
-					console.error(`Health check timeout for ${modelId}`);
+				if (error.name === "AbortError") {
+					this.logger.error(`Health check timeout for ${modelId}`);
 				} else {
-					console.error(`Health check failed for ${modelId}:`, error.message);
+					this.logger.error(`Health check failed for ${modelId}:`, error.message);
 				}
 			} else {
 				console.error(`Unknown health check error for ${modelId}`);
@@ -396,11 +383,12 @@ export class ProviderSelectionService {
 		if (!error) return false;
 
 		// Safely extract error message
-		const errorMessage = error instanceof Error 
-			? error.message?.toLowerCase() || ""
-			: "";
+		const errorMessage =
+			error instanceof Error ? error.message?.toLowerCase() || "" : "";
 		// Check both direct status and response.status for different error types
-		const errorStatus = (error as any)?.status || (error as any)?.response?.status;
+		const errorStatus =
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			(error as any)?.status || (error as any)?.response?.status;
 
 		return (
 			errorStatus === 404 ||
