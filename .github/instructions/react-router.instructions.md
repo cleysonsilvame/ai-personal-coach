@@ -1,8 +1,7 @@
 ---
-description:
-globs:
-alwaysApply: true
+applyTo: "**"
 ---
+
 # Diretrizes do Projeto React Router 7
 
 ## Visão Geral do Projeto

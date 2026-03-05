@@ -1,6 +1,6 @@
-<!-- ---
+---
 applyTo: "**/*.ts,**/*.tsx"
---- -->
+---
 
 # 📌 PRD: Funcionalidade de Objetivos Pessoais com Refinamento por Chatbot
 
@@ -28,7 +28,7 @@ Esse recurso utiliza a **API da OpenAI** para refinar objetivos por meio de um m
 
 - **Frontend:** React Router 7 (Modo Framework)
 - **Banco de Dados:** SQLite
-- **ORM:** Prisma ORM
+- **ORM:** Drizzle ORM
 - **API LLM:** OpenAI (para refinamento de objetivos pessoais)
 - **Armazenamento Vetorial:** Solução compatível com SQLite
 

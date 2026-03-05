@@ -1,3 +1,7 @@
+---
+applyTo: "**/*.ts,**/*.tsx"
+---
+
 # 🏗️ Arquitetura em Camadas: Domínio vs Infra
 
 Este documento descreve a separação entre a camada de **Domínio** (regras de negócio) e a camada de **Infraestrutura** (implementações técnicas).
@@ -136,7 +140,6 @@ export class RedisModelBlacklistService {
   constructor(@inject(RedisClient) private redis: RedisClient) {}
 
   async isBlacklisted(model: string): Promise<boolean> {
-    // Implementação técnica usando Redis
     return this.redis.exists(...);
   }
 }
@@ -298,4 +301,3 @@ export class CreateGoalUseCase {
   }
 }
 ```
-
