@@ -32,13 +32,12 @@ test.describe("E2E: Goals Application Flow", () => {
 			)
 			.first();
 
-		if (await goalsLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await goalsLink.click();
-			await page.waitForLoadState("networkidle");
+		await expect(goalsLink).toBeVisible({ timeout: 5000 });
+		await goalsLink.click();
+		await page.waitForLoadState("networkidle");
 
-			const currentUrl = page.url();
-			expect(currentUrl).toContain("goal");
-		}
+		const currentUrl = page.url();
+		expect(currentUrl).toContain("goal");
 	});
 
 	test("should load goals page directly", async () => {
@@ -85,9 +84,7 @@ test.describe("E2E: Goals Application Flow", () => {
 			.locator('form, textarea, [data-testid="chat-interface"]')
 			.first();
 
-		if (await chatSection.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await expect(chatSection).toBeVisible();
-		}
+		await expect(chatSection).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should verify goals page shows navigation back to chats", async () => {

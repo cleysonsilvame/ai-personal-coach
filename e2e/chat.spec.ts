@@ -44,21 +44,18 @@ test.describe("E2E: Chat Application Flow", () => {
 			)
 			.first();
 
-		if (await chatsLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await chatsLink.click();
-			await page.waitForLoadState("networkidle");
+		await expect(chatsLink).toBeVisible({ timeout: 5000 });
+		await chatsLink.click();
+		await page.waitForLoadState("networkidle");
 
-			// Verify we are on the chats page
-			const chatsSection = page
-				.locator(
-					'[data-testid="chats-list"], .chats-list, h1:has-text("Chat"), h1:has-text("Conversa")',
-				)
-				.first();
+		// Verify we are on the chats page
+		const chatsSection = page
+			.locator(
+				'[data-testid="chats-list"], .chats-list, h1:has-text("Chat"), h1:has-text("Conversa")',
+			)
+			.first();
 
-			if (await chatsSection.isVisible({ timeout: 2000 }).catch(() => false)) {
-				await expect(chatsSection).toBeVisible();
-			}
-		}
+		await expect(chatsSection).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should display new chat button", async () => {
@@ -73,9 +70,7 @@ test.describe("E2E: Chat Application Flow", () => {
 			)
 			.first();
 
-		if (await newChatButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await expect(newChatButton).toBeVisible();
-		}
+		await expect(newChatButton).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should navigate to new chat page", async () => {
@@ -90,9 +85,7 @@ test.describe("E2E: Chat Application Flow", () => {
 			)
 			.first();
 
-		if (await chatInterface.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await expect(chatInterface).toBeVisible();
-		}
+		await expect(chatInterface).toBeVisible({ timeout: 5000 });
 	});
 
 	test("should show chat input for sending messages", async () => {
@@ -106,10 +99,8 @@ test.describe("E2E: Chat Application Flow", () => {
 			)
 			.first();
 
-		if (await messageInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await expect(messageInput).toBeVisible();
-			await expect(messageInput).toBeEditable();
-		}
+		await expect(messageInput).toBeVisible({ timeout: 5000 });
+		await expect(messageInput).toBeEditable();
 	});
 
 	test("should navigate between pages without errors", async () => {
