@@ -30,6 +30,10 @@ const envSchema = z.object({
 		.transform((val) => val === "true"),
 
 	ERROR_NOTIFICATION_WEBHOOK_URL: z.string().url().optional(),
+	DISCORD_PUBLIC_KEY: z
+		.string()
+		.regex(/^[a-fA-F0-9]{64}$/)
+		.optional(),
 
 	EDGE_CONFIG: z.string().url().optional(),
 
