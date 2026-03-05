@@ -91,3 +91,11 @@ Timestamp: 2026-01-24T10:30:00.000Z
 ## Desativando Notificações
 
 Para desativar webhooks, simplesmente remova a variável `ERROR_NOTIFICATION_WEBHOOK_URL` das variáveis de ambiente. Os logs estruturados continuarão sendo enviados para a Vercel.
+
+## Administração via Discord Interactions
+
+Além do webhook de saída, a aplicação também expõe `POST /api/interactions` para comandos administrativos via Discord Interactions.
+
+- A validação de segurança usa assinatura Ed25519 (`x-signature-ed25519`) + timestamp (`x-signature-timestamp`) com janela anti-replay de 5 minutos.
+- Configure a chave pública do app Discord em `DISCORD_PUBLIC_KEY`.
+- Comando suportado atualmente: `/blacklist add model:<model-id>`.

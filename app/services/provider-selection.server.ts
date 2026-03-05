@@ -149,6 +149,26 @@ export class ProviderSelectionService {
 	}
 
 	/**
+	 * Invalidates cached model selections if the provided model is currently cached.
+	 * Useful for administrative blacklist operations that must reflect immediately.
+	 */
+	invalidateCachedModel(model: string): void {
+		if (this.chatModel === model) {
+			this.logger.info(
+				`Invalidating chat model cache due to admin blacklist: ${model}`,
+			);
+			this.chatModel = null;
+		}
+
+		if (this.copilotModel === model) {
+			this.logger.info(
+				`Invalidating copilot model cache due to admin blacklist: ${model}`,
+			);
+			this.copilotModel = null;
+		}
+	}
+
+	/**
 	 * Add a model to the blacklist for 8 hours
 	 * Uses Redis for distributed blacklist management
 	 */
