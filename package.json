@@ -5,6 +5,7 @@
 	"scripts": {
 		"build": "react-router build",
 		"dev": "react-router dev",
+		"lint": "biome check .",
 		"start": "react-router-serve ./build/server/**/index.js",
 		"typecheck": "react-router typegen && tsc",
 		"db:generate": "drizzle-kit generate",
