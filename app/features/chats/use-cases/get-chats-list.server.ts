@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
-import { ChatRepository } from "../repositories/chat";
 import type { Chat } from "../entities/chat";
+import { ChatRepository } from "../repositories/chat";
 
 export interface GetChatsListResult {
 	chats: Chat[];

@@ -1,6 +1,14 @@
 import { injectable } from "inversify";
 import z from "zod";
 
+export const flagsSchema = z.object({
+	log_level: z.number().min(0).max(5),
+	chat_use_dynamic_model_selection: z.boolean().default(false),
+	copilot_use_dynamic_model_selection: z.boolean().default(false),
+});
+
+export type Flags = z.infer<typeof flagsSchema>;
+
 const envSchema = z.object({
 	OPEN_ROUTER_API_KEY: z.string(),
 	OPEN_ROUTER_BASE_URL: z.string(),
@@ -20,6 +28,16 @@ const envSchema = z.object({
 		.enum(["true", "false"])
 		.default("false")
 		.transform((val) => val === "true"),
+
+	ERROR_NOTIFICATION_WEBHOOK_URL: z.string().url().optional(),
+
+	EDGE_CONFIG: z.string().url().optional(),
+
+	LOCAL_FEATURE_FLAGS: z
+		.string()
+		.optional()
+		.transform((val) => (val ? JSON.parse(val) : undefined))
+		.pipe(flagsSchema.partial().optional()),
 });
 
 export type Env = z.infer<typeof envSchema>;

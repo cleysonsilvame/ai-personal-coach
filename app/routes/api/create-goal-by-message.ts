@@ -11,7 +11,9 @@ export async function action({ request }: Route.ActionArgs) {
 	const formData = await request.formData();
 	const { message_id } = createGoalSchema.parse(Object.fromEntries(formData));
 
-	const createGoalFromMessageUseCase = container.get(CreateGoalFromMessageUseCase);
+	const createGoalFromMessageUseCase = container.get(
+		CreateGoalFromMessageUseCase,
+	);
 
 	await createGoalFromMessageUseCase.execute({
 		messageId: message_id,

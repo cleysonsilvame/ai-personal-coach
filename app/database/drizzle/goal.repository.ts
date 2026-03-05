@@ -1,3 +1,5 @@
+import { eq, sql } from "drizzle-orm";
+import { chatMessagesTable, goalsTable } from "drizzle/schema";
 import type { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatMessagesMapper } from "~/features/chats/mappers/chat-messages";
 import { GoalAggregate } from "~/features/goals/aggregates/goal-aggregate";
@@ -12,8 +14,6 @@ import {
 	BaseDrizzleRepository,
 	type DrizzleTransaction,
 } from "./base.repository";
-import { chatMessagesTable, goalsTable } from "drizzle/schema";
-import { eq, sql } from "drizzle-orm";
 
 export class DrizzleGoalRepository
 	extends BaseDrizzleRepository

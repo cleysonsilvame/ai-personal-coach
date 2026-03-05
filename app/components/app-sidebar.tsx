@@ -12,9 +12,9 @@ import {
 	SidebarMenuItem,
 } from "~/components/ui/sidebar";
 
+import { Link } from "react-router";
 import { NavMain } from "~/components/nav-main";
 import { NavUser } from "~/components/nav-user";
-import { Link } from "react-router";
 
 const data = {
 	user: {

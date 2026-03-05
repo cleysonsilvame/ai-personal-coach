@@ -3,9 +3,8 @@ import { container } from "~/lib/container";
 import { CopilotKitService } from "~/services/copilot-kit.server";
 
 export async function action({ request }: { request: Request }) {
-	const { runtime, serviceAdapter } = container
-		.get(CopilotKitService)
-		.execute();
+	const copilotKitService = container.get(CopilotKitService);
+	const { runtime, serviceAdapter } = await copilotKitService.execute();
 
 	const handler = copilotRuntimeNodeHttpEndpoint({
 		endpoint: "/api/copilotkit",

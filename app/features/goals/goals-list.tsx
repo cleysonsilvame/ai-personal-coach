@@ -9,9 +9,9 @@ import {
 	TableRow,
 } from "~/components/ui/table";
 
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import type { loader } from "~/routes/goals/list";
-import { useEffect, useState } from "react";
 
 export function GoalsList() {
 	const { goals: initialGoals } = useLoaderData<typeof loader>();

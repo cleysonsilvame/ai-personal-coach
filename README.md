@@ -97,6 +97,82 @@ docker run -p 3000:3000 ai-personal-goals-coach
 - `npm start` — Sobe o servidor em modo produção
 - `npx drizzle-kit studio` — Interface visual para o banco de dados
 
+## ⚙️ Configuração Avançada
+
+### Seleção Automática de Modelos
+
+A aplicação seleciona automaticamente os melhores modelos gratuitos do OpenRouter para cada caso de uso:
+
+- **Chat Service**: Modelo free mais utilizado na última semana para refinar objetivos pessoais com coaching especializado
+- **CopilotKit Service**: Modelo free mais utilizado na última semana com suporte a tools para buscas vetoriais e consultas sobre objetivos
+
+#### Como Funciona
+
+1. **Web Scraping**: Na primeira requisição, a aplicação faz scraping das páginas do OpenRouter com modelos ordenados por popularidade semanal:
+   - Chat: `https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=response_format`
+   - Copilot: `https://openrouter.ai/models?fmt=table&max_price=0&order=top-weekly&supported_parameters=tools`
+
+2. **Health Check**: Antes de selecionar um modelo, a aplicação faz um teste rápido para verificar se ele está disponível:
+   ```bash
+   curl -X POST https://openrouter.ai/api/v1/chat/completions \
+     -H "Authorization: Bearer $API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"messages":[{"role":"system","content":"health check"}],"model":"vendor/model","max_tokens":1}'
+   ```
+
+3. **Blacklist Inteligente**: Modelos que falham no health check são colocados em blacklist por 8 horas
+
+4. **Cache Singleton**: O modelo selecionado fica em cache e não é buscado novamente até falhar
+
+5. **Fallback Automático**: Se um modelo ficar indisponível durante o uso:
+   - Adiciona modelo atual à blacklist (8 horas)
+   - Busca próximo modelo da lista que não esteja na blacklist
+   - Faz health check do novo modelo
+   - Retenta a operação
+
+#### Comportamento de Fallback
+
+**Exemplo de logs:**
+```bash
+# Primeira inicialização
+Fetching chat models from OpenRouter...
+Found 15 models from https://openrouter.ai/models?...
+Testing chat model: deepseek/deepseek-chat-v3-0324:free
+✓ Selected chat model: deepseek/deepseek-chat-v3-0324:free
+
+# Quando modelo fica indisponível
+Chat model deepseek/deepseek-chat-v3-0324:free is unavailable, fetching new model...
+Resetting chat model cache: deepseek/deepseek-chat-v3-0324:free
+Added deepseek/deepseek-chat-v3-0324:free to blacklist until 2025-12-15T14:30:00.000Z
+Fetching chat models from OpenRouter...
+Skipping blacklisted model: deepseek/deepseek-chat-v3-0324:free
+Testing chat model: google/gemini-flash-1.5:free
+✓ Selected chat model: google/gemini-flash-1.5:free
+Retrying with new chat model: google/gemini-flash-1.5:free
+```
+
+#### Configuração
+
+Apenas configure a API key do OpenRouter no arquivo `.env`:
+
+```bash
+OPEN_ROUTER_API_KEY="sua-chave-api"
+OPEN_ROUTER_BASE_URL="https://openrouter.ai/api/v1"
+
+# Modelo padrão (usado apenas como fallback se todos os modelos falharem)
+OPEN_ROUTER_MODEL="deepseek/deepseek-chat-v3-0324:free"
+```
+
+#### Vantagens
+
+- ✅ **Sempre gratuito**: Usa apenas modelos free do OpenRouter
+- ✅ **Sempre atualizado**: Seleciona automaticamente os modelos mais populares da semana
+- ✅ **Otimizado**: CopilotKit usa modelo com suporte a tools
+- ✅ **Validação automática**: Health check garante que modelo está disponível antes de usar
+- ✅ **Resiliente**: Blacklist evita tentar modelos indisponíveis repetidamente
+- ✅ **Fallback inteligente**: Troca automaticamente quando modelo fica indisponível
+- ✅ **Zero configuração**: Funciona automaticamente sem precisar configurar modelos específicos
+
 ## 🎯 Exemplos de Uso
 
 **Entrada do usuário:**

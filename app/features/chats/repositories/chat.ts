@@ -1,9 +1,9 @@
+import type { Transaction } from "~/features/core/services/transaction";
 import type { Goal } from "~/features/goals/entities/goal";
 import type { ChatAggregate } from "../aggregates/chat-aggregate";
 import type { ChatMessageAggregate } from "../aggregates/chat-message-aggregate";
 import type { Chat } from "../entities/chat";
 import type { ChatMessage } from "../entities/chat-message";
-import type { Transaction } from "~/features/core/services/transaction";
 
 export type FindByIdInclude = {
 	messages: boolean | { goal: boolean };

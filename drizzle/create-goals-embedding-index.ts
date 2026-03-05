@@ -1,6 +1,6 @@
-import { DrizzleClient } from "~/lib/drizzle-client";
-import { container } from "~/lib/container";
 import { sql } from "drizzle-orm";
+import { container } from "~/lib/container";
+import { DrizzleClient } from "~/lib/drizzle-client";
 
 const drizzle = container.get(DrizzleClient);
 
