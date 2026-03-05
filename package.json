@@ -7,6 +7,8 @@
 		"dev": "react-router dev",
 		"start": "react-router-serve ./build/server/**/index.js",
 		"typecheck": "react-router typegen && tsc",
+		"lint": "biome check .",
+		"format": "biome format --write .",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",

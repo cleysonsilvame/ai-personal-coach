@@ -1,8 +1,8 @@
 import { inject, injectable } from "inversify";
 import { ChatRepository } from "../../chats/repositories/chat";
 import { ChatService } from "../../chats/services/chat";
-import { ChatMessage } from "../entities/chat-message";
 import { ChatAggregate } from "../aggregates/chat-aggregate";
+import { ChatMessage } from "../entities/chat-message";
 
 interface SendMessageInput {
 	message: string;

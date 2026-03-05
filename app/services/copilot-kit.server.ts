@@ -6,8 +6,8 @@ import { Config } from "~/lib/config";
 import { ProviderSelectionService } from "./provider-selection.server";
 
 function getDescription() {
-const urlTemplate = "/goals/view/<id>";
-return `Quando o usuário perguntar sobre objetivos, realize uma busca vetorial para encontrá-los.
+	const urlTemplate = "/goals/view/<id>";
+	return `Quando o usuário perguntar sobre objetivos, realize uma busca vetorial para encontrá-los.
 -O conteúdo pode não estar no título ou descrição, mas estará no corpo do objetivo.
 -Retorne os dados completos e o link do objetivo.
 
@@ -20,82 +20,83 @@ Use o seguinte template em markdown para apresentar os resultados:
 
 @injectable("Singleton")
 export class CopilotKitService {
-private runtime: CopilotRuntime<
-[{ name: string; type: "string"; description: string }]
-> | null = null;
-private serviceAdapter: OpenAIAdapter | null = null;
-private initPromise: Promise<void> | null = null;
+	private runtime: CopilotRuntime<
+		[{ name: string; type: "string"; description: string }]
+	> | null = null;
+	private serviceAdapter: OpenAIAdapter | null = null;
+	private initPromise: Promise<void> | null = null;
 
-constructor(
-@inject(Config) private readonly config: Config,
-@inject(ProviderSelectionService)
-private readonly providerSelection: ProviderSelectionService,
-@inject(SearchGoalsBySimilarityUseCase)
-private readonly searchGoalsBySimilarityUseCase: SearchGoalsBySimilarityUseCase,
-) {}
+	constructor(
+		@inject(Config) private readonly config: Config,
+		@inject(ProviderSelectionService)
+		private readonly providerSelection: ProviderSelectionService,
+		@inject(SearchGoalsBySimilarityUseCase)
+		private readonly searchGoalsBySimilarityUseCase: SearchGoalsBySimilarityUseCase,
+	) {}
 
-private async initialize(): Promise<void> {
-try {
-const model = await this.providerSelection.getCopilotModel();
+	private async initialize(): Promise<void> {
+		try {
+			const model = await this.providerSelection.getCopilotModel();
 
-const openRouterClient = new OpenAI({
-apiKey: this.config.env.OPEN_ROUTER_API_KEY,
-baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
-});
+			const openRouterClient = new OpenAI({
+				apiKey: this.config.env.OPEN_ROUTER_API_KEY,
+				baseURL: this.config.env.OPEN_ROUTER_BASE_URL,
+			});
 
-this.serviceAdapter = new OpenAIAdapter({
-openai: openRouterClient,
-model,
-});
+			this.serviceAdapter = new OpenAIAdapter({
+				openai: openRouterClient,
+				model,
+			});
 
-this.runtime = new CopilotRuntime({
-actions: () => [
-{
-name: "get_vector_search_goals",
-description: getDescription(),
-parameters: [
-{
-name: "content",
-type: "string",
-description: "O contexto para se fazer a busca por similaridade",
-},
-],
-handler: async ({ content }) => {
-const goals = await this.searchGoalsBySimilarityUseCase.execute({
-content,
-});
+			this.runtime = new CopilotRuntime({
+				actions: () => [
+					{
+						name: "get_vector_search_goals",
+						description: getDescription(),
+						parameters: [
+							{
+								name: "content",
+								type: "string",
+								description:
+									"O contexto para se fazer a busca por similaridade",
+							},
+						],
+						handler: async ({ content }) => {
+							const goals = await this.searchGoalsBySimilarityUseCase.execute({
+								content,
+							});
 
-return goals;
-},
-},
-],
-});
-} catch (error) {
-console.error("Failed to initialize CopilotKit service:", error);
-throw new Error(
-`CopilotKit initialization failed: ${error instanceof Error ? error.message : String(error)}`,
-);
-}
-}
+							return goals;
+						},
+					},
+				],
+			});
+		} catch (error) {
+			console.error("Failed to initialize CopilotKit service:", error);
+			throw new Error(
+				`CopilotKit initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
 
-async execute() {
-if (!this.runtime || !this.serviceAdapter) {
-if (!this.initPromise) {
-this.initPromise = this.initialize();
-}
-await this.initPromise;
-}
+	async execute() {
+		if (!this.runtime || !this.serviceAdapter) {
+			if (!this.initPromise) {
+				this.initPromise = this.initialize();
+			}
+			await this.initPromise;
+		}
 
-if (!this.runtime) {
-throw new Error("CopilotKit runtime not initialized");
-}
-if (!this.serviceAdapter) {
-throw new Error("CopilotKit service adapter not initialized");
-}
+		if (!this.runtime) {
+			throw new Error("CopilotKit runtime not initialized");
+		}
+		if (!this.serviceAdapter) {
+			throw new Error("CopilotKit service adapter not initialized");
+		}
 
-return {
-runtime: this.runtime,
-serviceAdapter: this.serviceAdapter,
-};
-}
+		return {
+			runtime: this.runtime,
+			serviceAdapter: this.serviceAdapter,
+		};
+	}
 }

@@ -1,10 +1,10 @@
-import { GoalsList } from "~/features/goals/goals-list";
-import type { Route } from "./+types/list";
-import { container } from "~/lib/container";
-import { GoalsMapper } from "~/features/goals/mappers/goals";
-import { GetGoalsUseCase } from "~/features/goals/use-cases/get-goals.server";
-import { DeleteGoalUseCase } from "~/features/goals/use-cases/delete-goal.server";
 import { z } from "zod";
+import { GoalsList } from "~/features/goals/goals-list";
+import { GoalsMapper } from "~/features/goals/mappers/goals";
+import { DeleteGoalUseCase } from "~/features/goals/use-cases/delete-goal.server";
+import { GetGoalsUseCase } from "~/features/goals/use-cases/get-goals.server";
+import { container } from "~/lib/container";
+import type { Route } from "./+types/list";
 
 const deleteSchema = z.object({
 	goal_id: z.string().uuid(),

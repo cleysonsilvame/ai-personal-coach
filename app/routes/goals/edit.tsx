@@ -1,11 +1,11 @@
 import { redirect } from "react-router";
-import { GoalForm } from "~/features/goals/goal-form";
-import type { Route } from "./+types/edit";
-import { container } from "~/lib/container";
-import { GetGoalByIdUseCase } from "~/features/goals/use-cases/get-goal-by-id.server";
-import { GoalsMapper } from "~/features/goals/mappers/goals";
 import z from "zod";
+import { GoalForm } from "~/features/goals/goal-form";
+import { GoalsMapper } from "~/features/goals/mappers/goals";
+import { GetGoalByIdUseCase } from "~/features/goals/use-cases/get-goal-by-id.server";
 import { UpdateGoalUseCase } from "~/features/goals/use-cases/update-goal.server";
+import { container } from "~/lib/container";
+import type { Route } from "./+types/edit";
 
 const updateGoalSchema = z.object({
 	goal_id: z.string().uuid(),

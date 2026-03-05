@@ -22,36 +22,35 @@ import { Config, type Flags, flagsSchema } from "./config";
 
 @injectable("Singleton")
 export class FeatureFlags {
-  private client: ReturnType<typeof createClient> | null = null;
+	private client: ReturnType<typeof createClient> | null = null;
 
-  constructor(@inject(Config) private readonly config: Config) {
-    if (this.config.env.EDGE_CONFIG) {
-      this.client = createClient(this.config.env.EDGE_CONFIG);
-    }
-  }
-  /**
-   * Get all feature flags from Edge Config
-   */
-  async getFeatureFlags(): Promise<Flags> {
-    if (!this.client) {
-      if (!this.config.env.EDGE_CONFIG) {
-        throw new Error("EDGE_CONFIG is not configured");
-      }
-      this.client = createClient(this.config.env.EDGE_CONFIG);
-    }
+	constructor(@inject(Config) private readonly config: Config) {
+		if (this.config.env.EDGE_CONFIG) {
+			this.client = createClient(this.config.env.EDGE_CONFIG);
+		}
+	}
+	/**
+	 * Get all feature flags from Edge Config
+	 */
+	async getFeatureFlags(): Promise<Flags> {
+		if (!this.client) {
+			if (!this.config.env.EDGE_CONFIG) {
+				throw new Error("EDGE_CONFIG is not configured");
+			}
+			this.client = createClient(this.config.env.EDGE_CONFIG);
+		}
 
-    try {
-      const flags = flagsSchema.parse((await this.client.get<Flags>("flags")))
+		try {
+			const flags = flagsSchema.parse(await this.client.get<Flags>("flags"));
 
-      if (this.config.env.LOCAL_FEATURE_FLAGS) {
-        Object.assign(flags, this.config.env.LOCAL_FEATURE_FLAGS);
-      }
+			if (this.config.env.LOCAL_FEATURE_FLAGS) {
+				Object.assign(flags, this.config.env.LOCAL_FEATURE_FLAGS);
+			}
 
-      return flags;
-    } catch (error) {
-      console.error("Failed to fetch feature flags:", error);
-      throw error;
-    }
-  }
+			return flags;
+		} catch (error) {
+			console.error("Failed to fetch feature flags:", error);
+			throw error;
+		}
+	}
 }
-

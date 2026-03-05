@@ -1,14 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
 	CheckSquare,
 	ClipboardList,
-	Lightbulb,
-	Timer,
-	Target,
 	Heart,
+	Lightbulb,
 	Loader2,
+	Target,
+	Timer,
 } from "lucide-react";
 import { Link, useFetcher, useLoaderData } from "react-router";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";

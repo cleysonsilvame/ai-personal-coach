@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
-import { GoalRepository } from "../repositories/goal";
-import type { GoalAggregate } from "../aggregates/goal-aggregate";
 import type { ChatMessage } from "~/features/chats/entities/chat-message";
+import type { GoalAggregate } from "../aggregates/goal-aggregate";
+import { GoalRepository } from "../repositories/goal";
 
 @injectable()
 export class GetGoalsUseCase {

@@ -1,4 +1,4 @@
-import { data, type ActionFunctionArgs } from "react-router";
+import { type ActionFunctionArgs, data } from "react-router";
 import { z } from "zod";
 import { userPrefs } from "~/services/cookies.server";
 

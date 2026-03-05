@@ -25,55 +25,55 @@ import { FeatureFlags } from "./feature-flags.server";
 
 @injectable("Singleton")
 export class Logger {
-  private consola: ReturnType<typeof createConsola>;
-  private initialized = false;
-  private initPromise: Promise<void> | null = null;
+	private consola: ReturnType<typeof createConsola>;
+	private initialized = false;
+	private initPromise: Promise<void> | null = null;
 
-  constructor(
-    @inject(FeatureFlags) private readonly featureFlags: FeatureFlags
-  ) {
-    // Initialize with env var or default
-    this.consola = createConsola({
-      level: this.getEnvLogLevel(),
-      formatOptions: {
-        colors: true,
-        date: true,
-      },
-    });
-  }
+	constructor(
+		@inject(FeatureFlags) private readonly featureFlags: FeatureFlags,
+	) {
+		// Initialize with env var or default
+		this.consola = createConsola({
+			level: this.getEnvLogLevel(),
+			formatOptions: {
+				colors: true,
+				date: true,
+			},
+		});
+	}
 
-  /**
-   * Get log level from environment or default
-   */
-  private getEnvLogLevel(): number {
-    const envLevel = process.env.LOG_LEVEL;
-    if (envLevel) {
-      const level = Number.parseInt(envLevel, 10);
-      if (!Number.isNaN(level) && level >= 0 && level <= 5) {
-        return level;
-      }
-    }
+	/**
+	 * Get log level from environment or default
+	 */
+	private getEnvLogLevel(): number {
+		const envLevel = process.env.LOG_LEVEL;
+		if (envLevel) {
+			const level = Number.parseInt(envLevel, 10);
+			if (!Number.isNaN(level) && level >= 0 && level <= 5) {
+				return level;
+			}
+		}
 
-    // Default to WARN (3) in production, INFO (4) otherwise
-    const isProd = process.env.NODE_ENV === "production";
-    return isProd ? 3 : 4;
-  }
+		// Default to WARN (3) in production, INFO (4) otherwise
+		const isProd = process.env.NODE_ENV === "production";
+		return isProd ? 3 : 4;
+	}
 
-  /**
-   * Initialize logger with Edge Config (lazy loading)
-   * Only runs once on first log call (server-side)
-   */
-  private async initialize(): Promise<void> {
-    // Skip if already initialized or if initializing
-    if (this.initialized || this.initPromise) {
-      return this.initPromise || Promise.resolve();
-    }
+	/**
+	 * Initialize logger with Edge Config (lazy loading)
+	 * Only runs once on first log call (server-side)
+	 */
+	private async initialize(): Promise<void> {
+		// Skip if already initialized or if initializing
+		if (this.initialized || this.initPromise) {
+			return this.initPromise || Promise.resolve();
+		}
 
-    // Skip on client-side (Edge Config is server-only)
-    if (typeof window !== "undefined") {
-      this.initialized = true;
-      return;
-    }
+		// Skip on client-side (Edge Config is server-only)
+		if (typeof window !== "undefined") {
+			this.initialized = true;
+			return;
+		}
 
 		this.initPromise = (async () => {
 			try {
@@ -81,56 +81,59 @@ export class Logger {
 				this.consola.level = level;
 				this.initialized = true;
 			} catch (error) {
-        // If feature flags fail, keep env var level
-        this.consola.debug("Failed to load log level from feature flags:", error);
-        this.initialized = true;
-      }
-    })();
+				// If feature flags fail, keep env var level
+				this.consola.debug(
+					"Failed to load log level from feature flags:",
+					error,
+				);
+				this.initialized = true;
+			}
+		})();
 
-    return this.initPromise;
-  }
+		return this.initPromise;
+	}
 
-  /**
-   * Log methods - automatically initialize on first use
-   */
+	/**
+	 * Log methods - automatically initialize on first use
+	 */
 
-  fatal(...args: Parameters<typeof this.consola.fatal>): void {
-    void this.initialize().then(() => this.consola.fatal(...args));
-  }
+	fatal(...args: Parameters<typeof this.consola.fatal>): void {
+		void this.initialize().then(() => this.consola.fatal(...args));
+	}
 
-  error(...args: Parameters<typeof this.consola.error>): void {
-    void this.initialize().then(() => this.consola.error(...args));
-  }
+	error(...args: Parameters<typeof this.consola.error>): void {
+		void this.initialize().then(() => this.consola.error(...args));
+	}
 
-  warn(...args: Parameters<typeof this.consola.warn>): void {
-    void this.initialize().then(() => this.consola.warn(...args));
-  }
+	warn(...args: Parameters<typeof this.consola.warn>): void {
+		void this.initialize().then(() => this.consola.warn(...args));
+	}
 
-  info(...args: Parameters<typeof this.consola.info>): void {
-    void this.initialize().then(() => this.consola.info(...args));
-  }
+	info(...args: Parameters<typeof this.consola.info>): void {
+		void this.initialize().then(() => this.consola.info(...args));
+	}
 
-  debug(...args: Parameters<typeof this.consola.debug>): void {
-    void this.initialize().then(() => this.consola.debug(...args));
-  }
+	debug(...args: Parameters<typeof this.consola.debug>): void {
+		void this.initialize().then(() => this.consola.debug(...args));
+	}
 
-  success(...args: Parameters<typeof this.consola.success>): void {
-    void this.initialize().then(() => this.consola.success(...args));
-  }
+	success(...args: Parameters<typeof this.consola.success>): void {
+		void this.initialize().then(() => this.consola.success(...args));
+	}
 
-  /**
-   * Update log level at runtime
-   */
-  setLevel(level: number): void {
-    if (Number.isInteger(level) && level >= 0 && level <= 5) {
-      this.consola.level = level;
-    }
-  }
+	/**
+	 * Update log level at runtime
+	 */
+	setLevel(level: number): void {
+		if (Number.isInteger(level) && level >= 0 && level <= 5) {
+			this.consola.level = level;
+		}
+	}
 
-  /**
-   * Get current log level
-   */
-  get level(): number {
-    return this.consola.level;
-  }
+	/**
+	 * Get current log level
+	 */
+	get level(): number {
+		return this.consola.level;
+	}
 }

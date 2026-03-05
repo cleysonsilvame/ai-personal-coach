@@ -304,7 +304,8 @@ export class ProviderSelectionService {
 	 * Fetch model IDs from OpenRouter Frontend API
 	 * Returns free models ordered by popularity that support the required parameters
 	 */
-	private async fetchModelIds(requiredParameters: string[]): Promise<string[]> { // TODO: adicionar cache?
+	private async fetchModelIds(requiredParameters: string[]): Promise<string[]> {
+		// TODO: adicionar cache?
 		this.logger.debug(
 			`[API] Fetching models with parameters: ${requiredParameters.join(", ")}`,
 		);
@@ -393,7 +394,10 @@ export class ProviderSelectionService {
 				if (error.name === "AbortError") {
 					this.logger.error(`Health check timeout for ${modelId}`);
 				} else {
-					this.logger.error(`Health check failed for ${modelId}:`, error.message);
+					this.logger.error(
+						`Health check failed for ${modelId}:`,
+						error.message,
+					);
 				}
 			} else {
 				console.error(`Unknown health check error for ${modelId}`);

@@ -8,14 +8,9 @@ type UpdateChatUseCaseInput = {
 
 @injectable()
 export class UpdateChatUseCase {
-	constructor(
-		@inject(ChatRepository) private chatRepository: ChatRepository,
-	) {}
+	constructor(@inject(ChatRepository) private chatRepository: ChatRepository) {}
 
-	async execute({
-		chatId,
-		title,
-	}: UpdateChatUseCaseInput): Promise<void> {
+	async execute({ chatId, title }: UpdateChatUseCaseInput): Promise<void> {
 		await this.chatRepository.updateById(chatId, { title });
 	}
 }
