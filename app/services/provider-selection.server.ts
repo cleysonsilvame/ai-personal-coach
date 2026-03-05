@@ -63,12 +63,21 @@ export class ProviderSelectionService {
 	 * Fetches from OpenRouter API on first call or when model becomes unavailable
 	 */
 	async getChatModel(): Promise<string> {
-		if (!(await this.shouldUseDynamicSelection("chat"))) {
+		const useDynamicSelection = await this.shouldUseDynamicSelection("chat");
+		if (!useDynamicSelection) {
+			this.logger.info(
+				`[ModelSelection] chat using fixed model from env: ${this.config.env.OPEN_ROUTER_MODEL}`,
+			);
 			return this.config.env.OPEN_ROUTER_MODEL;
 		}
 
 		if (!this.chatModel) {
+			this.logger.info("[ModelSelection] chat dynamic mode cache miss");
 			this.chatModel = await this.fetchBestChatModel();
+		} else {
+			this.logger.debug(
+				`[ModelSelection] chat dynamic mode cache hit: ${this.chatModel}`,
+			);
 		}
 		return this.chatModel;
 	}
@@ -78,12 +87,21 @@ export class ProviderSelectionService {
 	 * Fetches from OpenRouter API on first call or when model becomes unavailable
 	 */
 	async getCopilotModel(): Promise<string> {
-		if (!(await this.shouldUseDynamicSelection("copilot"))) {
+		const useDynamicSelection = await this.shouldUseDynamicSelection("copilot");
+		if (!useDynamicSelection) {
+			this.logger.info(
+				`[ModelSelection] copilot using fixed model from env: ${this.config.env.OPEN_ROUTER_MODEL}`,
+			);
 			return this.config.env.OPEN_ROUTER_MODEL;
 		}
 
 		if (!this.copilotModel) {
+			this.logger.info("[ModelSelection] copilot dynamic mode cache miss");
 			this.copilotModel = await this.fetchBestCopilotModel();
+		} else {
+			this.logger.debug(
+				`[ModelSelection] copilot dynamic mode cache hit: ${this.copilotModel}`,
+			);
 		}
 		return this.copilotModel;
 	}
@@ -93,12 +111,17 @@ export class ProviderSelectionService {
 	): Promise<boolean> {
 		try {
 			const flags = await this.featureFlags.getFeatureFlags();
-			return useCase === "chat"
-				? flags.chat_use_dynamic_model_selection
-				: flags.copilot_use_dynamic_model_selection;
+			const useDynamicSelection =
+				useCase === "chat"
+					? flags.chat_use_dynamic_model_selection
+					: flags.copilot_use_dynamic_model_selection;
+			this.logger.debug(
+				`[ModelSelection] ${useCase} mode from feature flags: ${useDynamicSelection ? "dynamic" : "fixed"}`,
+			);
+			return useDynamicSelection;
 		} catch (error) {
 			this.logger.warn(
-				`Feature flags unavailable for ${useCase}; using fixed OPEN_ROUTER_MODEL`,
+				`[ModelSelection] feature flags unavailable for ${useCase}; forcing fixed model`,
 				error,
 			);
 			return false;
@@ -400,7 +423,7 @@ export class ProviderSelectionService {
 					);
 				}
 			} else {
-				console.error(`Unknown health check error for ${modelId}`);
+				this.logger.error(`Unknown health check error for ${modelId}`, error);
 			}
 			return false;
 		}

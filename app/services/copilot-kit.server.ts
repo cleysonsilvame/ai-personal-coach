@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import OpenAI from "openai";
 import { SearchGoalsBySimilarityUseCase } from "~/features/goals/use-cases/search-goals-by-similarity.server";
 import { Config } from "~/lib/config";
+import { Logger } from "~/lib/logger";
 import { ProviderSelectionService } from "./provider-selection.server";
 
 function getDescription() {
@@ -28,6 +29,7 @@ export class CopilotKitService {
 
 	constructor(
 		@inject(Config) private readonly config: Config,
+		@inject(Logger) private readonly logger: Logger,
 		@inject(ProviderSelectionService)
 		private readonly providerSelection: ProviderSelectionService,
 		@inject(SearchGoalsBySimilarityUseCase)
@@ -37,6 +39,9 @@ export class CopilotKitService {
 	private async initialize(): Promise<void> {
 		try {
 			const model = await this.providerSelection.getCopilotModel();
+			this.logger.info(
+				`[CopilotKit] Initializing runtime with model: ${model}`,
+			);
 
 			const openRouterClient = new OpenAI({
 				apiKey: this.config.env.OPEN_ROUTER_API_KEY,
@@ -72,7 +77,7 @@ export class CopilotKitService {
 				],
 			});
 		} catch (error) {
-			console.error("Failed to initialize CopilotKit service:", error);
+			this.logger.error("[CopilotKit] Failed to initialize service", error);
 			throw new Error(
 				`CopilotKit initialization failed: ${error instanceof Error ? error.message : String(error)}`,
 			);

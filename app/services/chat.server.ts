@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ChatMessage } from "~/features/chats/entities/chat-message";
 import { ChatService } from "~/features/chats/services/chat";
 import { Config } from "~/lib/config";
+import { Logger } from "~/lib/logger";
 import { ProviderSelectionService } from "./provider-selection.server";
 
 @injectable()
@@ -19,6 +20,7 @@ export class OpenRouterChatService extends ChatService {
 
 	constructor(
 		@inject(Config) private readonly config: Config,
+		@inject(Logger) private readonly logger: Logger,
 		@inject(ProviderSelectionService)
 		private readonly providerSelection: ProviderSelectionService,
 	) {
@@ -32,6 +34,7 @@ export class OpenRouterChatService extends ChatService {
 	async getCompletions(messages: ChatMessage[]): Promise<ChatMessage> {
 		// Get the best model for chat (cached singleton, fetched from OpenRouter API on first call)
 		let model = await this.providerSelection.getChatModel();
+		this.logger.debug(`[Chat] Using model ${model} for completion request`);
 
 		try {
 			const completion = await this.openRouterClient.chat.completions.create({
@@ -51,14 +54,14 @@ export class OpenRouterChatService extends ChatService {
 		} catch (error: unknown) {
 			// If model is unavailable, reset cache and fetch a new model
 			if (this.providerSelection.isModelUnavailableError(error)) {
-				console.warn(
+				this.logger.warn(
 					`Chat model ${model} is unavailable, fetching new model...`,
 				);
-				this.providerSelection.resetModel("chat");
+				await this.providerSelection.resetModel("chat");
 
 				// Try once more with a new model
 				model = await this.providerSelection.getChatModel();
-				console.log(`Retrying with new chat model: ${model}`);
+				this.logger.info(`[Chat] Retrying with new model: ${model}`);
 
 				try {
 					const completion =
@@ -77,7 +80,10 @@ export class OpenRouterChatService extends ChatService {
 
 					return this.processCompletion(completion, messages[0].chatId);
 				} catch (retryError) {
-					console.error("Retry with new model also failed:", retryError);
+					this.logger.error(
+						"[Chat] Retry with new model also failed",
+						retryError,
+					);
 					throw retryError;
 				}
 			}
@@ -114,14 +120,17 @@ export class OpenRouterChatService extends ChatService {
 
 		try {
 			jsonContent = JSON.parse(content);
-		} catch (error) {
+		} catch {
 			jsonContent = this.DEFAULT_MESSAGE_CONTENT;
 		}
 
 		const assistantMessage = AIResponseSchema.safeParse(jsonContent);
 
 		if (!assistantMessage.success) {
-			console.log(jsonContent);
+			this.logger.debug(
+				"[Chat] Invalid assistant response payload",
+				jsonContent,
+			);
 			throw assistantMessage.error;
 		}
 

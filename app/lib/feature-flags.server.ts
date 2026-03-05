@@ -1,4 +1,5 @@
 import { createClient } from "@vercel/edge-config";
+import { createConsola } from "consola";
 import { inject, injectable } from "inversify";
 import { Config, type Flags, flagsSchema } from "./config";
 
@@ -23,10 +24,12 @@ import { Config, type Flags, flagsSchema } from "./config";
 @injectable("Singleton")
 export class FeatureFlags {
 	private client: ReturnType<typeof createClient> | null = null;
+	private readonly logger = createConsola({ level: 4 });
 
 	constructor(@inject(Config) private readonly config: Config) {
 		if (this.config.env.EDGE_CONFIG) {
 			this.client = createClient(this.config.env.EDGE_CONFIG);
+			this.logger.debug("[FeatureFlags] Edge Config client initialized");
 		}
 	}
 	/**
@@ -35,21 +38,27 @@ export class FeatureFlags {
 	async getFeatureFlags(): Promise<Flags> {
 		if (!this.client) {
 			if (!this.config.env.EDGE_CONFIG) {
+				this.logger.warn(
+					"[FeatureFlags] EDGE_CONFIG is not configured; cannot fetch remote flags",
+				);
 				throw new Error("EDGE_CONFIG is not configured");
 			}
 			this.client = createClient(this.config.env.EDGE_CONFIG);
+			this.logger.debug("[FeatureFlags] Edge Config client lazily initialized");
 		}
 
 		try {
 			const flags = flagsSchema.parse(await this.client.get<Flags>("flags"));
+			this.logger.debug("[FeatureFlags] Remote flags fetched from Edge Config");
 
 			if (this.config.env.LOCAL_FEATURE_FLAGS) {
 				Object.assign(flags, this.config.env.LOCAL_FEATURE_FLAGS);
+				this.logger.info("[FeatureFlags] LOCAL_FEATURE_FLAGS override applied");
 			}
 
 			return flags;
 		} catch (error) {
-			console.error("Failed to fetch feature flags:", error);
+			this.logger.error("[FeatureFlags] Failed to fetch or parse flags", error);
 			throw error;
 		}
 	}
