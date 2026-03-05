@@ -1,8 +1,7 @@
 ---
-description: Toda vez que for mecionado algo como arquitetura ou dominio (DDD). Ou quando for alterado algo arquitetural.
-globs:
-alwaysApply: false
+applyTo: "**/*.ts,**/*.tsx"
 ---
+
 # Arquitetura DDD - Domain-Driven Design
 
 ## Padrão Arquitetural
@@ -34,7 +33,7 @@ Este projeto implementa **Domain-Driven Design (DDD)**, separando claramente dom
 4. **Injeção de dependência**
    - Use `@injectable()` em use cases
    - Use `@inject()` para dependencies
-   - Configure no [container.ts](mdc:app/lib/container.ts)
+   - Configure no `app/lib/container.ts`
 
 ### ❌ NUNCA FAZER:
 
@@ -92,7 +91,7 @@ app/lib/container.ts    # Configuração de injeção de dependência
 
 As entidades representam os conceitos centrais do negócio e encapsulam as regras de domínio.
 
-**Exemplo:** [Goal Entity](mdc:app/features/goals/entities/goal.ts)
+**Exemplo:** `app/features/goals/entities/goal.ts`
 ```typescript
 export class Goal {
   readonly id: string;
@@ -125,7 +124,7 @@ export class Goal {
 
 Abstrações que definem como os dados devem ser acessados, sem especificar a implementação.
 
-**Exemplo:** [GoalRepository Interface](mdc:app/features/goals/repositories/goal.ts)
+**Exemplo:** `app/features/goals/repositories/goal.ts`
 ```typescript
 export abstract class GoalRepository {
   abstract createGoal(goal: Goal): Promise<Goal>;
@@ -145,7 +144,7 @@ export abstract class GoalRepository {
 
 Encapsulam a lógica de negócio e orquestram as operações entre entities e repositories.
 
-**Exemplo:** [CreateGoalFromMessageUseCase](mdc:app/features/goals/use-cases/create-goal-from-message.server.ts)
+**Exemplo:** `app/features/goals/use-cases/create-goal-from-message.server.ts`
 ```typescript
 @injectable()
 export class CreateGoalFromMessageUseCase {
@@ -157,22 +156,18 @@ export class CreateGoalFromMessageUseCase {
   ) {}
 
   async execute({ messageId }: CreateGoalFromMessageInput): Promise<Goal> {
-    // 1. Buscar mensagem
     const message = await this.chatMessageRepository.findById(messageId);
 
-    // 2. Validações de negócio
     if (!message?.content?.data) {
       throw new Error("Conteúdo da mensagem não encontrado");
     }
 
-    // 3. Criar entity do domínio
     const goal = Goal.create({
-      title: content.data.title,
-      description: content.data.description,
+      title: message.content.data.title,
+      description: message.content.data.description,
       // ... outros campos
     });
 
-    // 4. Persistir e retornar entity
     return await this.goalRepository.createGoal(goal);
   }
 }
@@ -188,21 +183,15 @@ export class CreateGoalFromMessageUseCase {
 
 Implementações específicas dos contratos de repository, isoladas da lógica de negócio.
 
-**Exemplo:** [PrismaGoalRepository](mdc:app/database/goal.repository.ts)
+**Exemplo:** `app/database/drizzle/goal.repository.ts`
 ```typescript
-export class PrismaGoalRepository extends GoalRepository {
-  constructor(@inject(PrismaClient) private readonly prisma: PrismaClient) {
-    super();
-  }
-
+export class DrizzleGoalRepository extends GoalRepository {
   async createGoal(goal: Goal): Promise<Goal> {
-    // Mapear para formato do banco
-    const goalData = await this.prisma.client.goal.create({
-      data: GoalsMapper.toPrisma(goal),
-    });
+    const goalData = await this.db.insert(goalsTable).values(
+      GoalsMapper.toPersistence(goal)
+    ).returning();
 
-    // Retornar entity do domínio
-    return GoalsMapper.toDomain(goalData);
+    return GoalsMapper.toDomain(goalData[0]);
   }
 }
 ```
@@ -217,10 +206,10 @@ export class PrismaGoalRepository extends GoalRepository {
 
 Responsáveis pela conversão entre diferentes representações dos dados.
 
-**Exemplo:** [GoalsMapper](mdc:app/features/goals/mappers/goals.ts)
+**Exemplo:** `app/features/goals/mappers/goals.ts`
 ```typescript
 export const GoalsMapper = {
-  toDomain(goal: PrismaGoal): Goal {
+  toDomain(goal: typeof goalsTable.$inferSelect): Goal {
     return new Goal({
       id: goal.id,
       title: goal.title,
@@ -228,7 +217,7 @@ export const GoalsMapper = {
     });
   },
 
-  toPrisma(goal: Goal): Prisma.GoalCreateInput {
+  toPersistence(goal: Goal): typeof goalsTable.$inferInsert {
     return {
       id: goal.id,
       title: goal.title,
@@ -242,11 +231,12 @@ export const GoalsMapper = {
 
 Configura as dependências e resolve as abstrações.
 
-**Exemplo:** [Container](mdc:app/lib/container.ts)
+**Exemplo:** `app/lib/container.ts`
 ```typescript
 export const container = new Container({ autobind: true });
 
-container.bind(GoalRepository).to(PrismaGoalRepository).inSingletonScope();
+container.bind(GoalRepository).to(DrizzleGoalRepository).inTransientScope();
+container.bind(ChatService).to(OpenRouterChatService).inSingletonScope();
 ```
 
 ## 🚀 Fluxo de Execução
@@ -307,13 +297,13 @@ export abstract class TaskRepository {
 
 ### 3. Implementar o Repository
 ```typescript
-// app/database/task.repository.ts
-export class PrismaTaskRepository extends TaskRepository {
+// app/database/drizzle/task.repository.ts
+export class DrizzleTaskRepository extends TaskRepository {
   async create(task: Task): Promise<Task> {
-    const data = await this.prisma.task.create({
-      data: TasksMapper.toPrisma(task)
-    });
-    return TasksMapper.toDomain(data);
+    const data = await this.db.insert(tasksTable)
+      .values(TasksMapper.toPersistence(task))
+      .returning();
+    return TasksMapper.toDomain(data[0]);
   }
 }
 ```
@@ -338,7 +328,7 @@ export class CreateTaskUseCase {
 ### 5. Configurar DI
 ```typescript
 // app/lib/container.ts
-container.bind(TaskRepository).to(PrismaTaskRepository);
+container.bind(TaskRepository).to(DrizzleTaskRepository);
 ```
 
 ## 🔄 Status da Migração
@@ -348,91 +338,3 @@ Este projeto está em processo de migração para este padrão. Alguns use cases
 ### Status Atual:
 - ✅ Goal domain - Seguindo padrão
 - ⚠️ Outros domains - Em refatoração
-
----
-
-**Última atualização:** Janeiro 2025
-
----
-
-## 🧪 Estratégia de Testes
-
-Este projeto utiliza a mesma estratégia de testes do projeto tiny-blockchain, com três camadas:
-
-### 1. Testes Unitários (Vitest)
-
-- **Localização:** Co-localizados com os arquivos de origem (`.spec.ts` no mesmo diretório)
-- **Escopo:** Entidades, Mappers e Use Cases testados isoladamente
-- **Mocking:** Use `vi.fn()` para mockar repositórios e serviços externos
-- **Comando:** `npm test` ou `npx vitest run`
-
-**Estrutura:**
-```
-app/features/[feature]/
-├── entities/goal.spec.ts           # Testa entidades de domínio
-├── mappers/goals.spec.ts           # Testa conversão entre camadas
-├── use-cases/create-goal.spec.ts   # Testa casos de uso com mocks
-└── ...
-```
-
-**Exemplo de teste de use case:**
-```typescript
-import { describe, expect, it, vi } from "vitest";
-import { GetGoalsUseCase } from "./get-goals.server";
-import type { GoalRepository } from "../repositories/goal";
-
-const makeMockGoalRepository = (): GoalRepository => ({
-  setTransaction: vi.fn().mockReturnThis(),
-  createGoal: vi.fn(),
-  findById: vi.fn(),
-  findAll: vi.fn(),
-  deleteById: vi.fn(),
-  updateById: vi.fn(),
-});
-
-describe("GetGoalsUseCase", () => {
-  it("should return all goals from repository", async () => {
-    const goalRepository = makeMockGoalRepository();
-    vi.mocked(goalRepository.findAll).mockResolvedValue([]);
-
-    const useCase = new GetGoalsUseCase(goalRepository);
-    const result = await useCase.execute();
-
-    expect(result).toHaveLength(0);
-    expect(goalRepository.findAll).toHaveBeenCalledWith({ chatMessage: true });
-  });
-});
-```
-
-### 2. Testes de Integração (Vitest)
-
-- **Localização:** `app/features/integration/*.spec.ts`
-- **Escopo:** Múltiplos use cases e repositórios trabalhando juntos
-- **Propósito:** Validar fluxos completos de negócio (ex: criar → buscar → deletar)
-- **Mocking:** Repositórios e serviços externos ainda são mockados
-
-**Exemplo:**
-```typescript
-// app/features/integration/goals.spec.ts
-describe("Integration Tests: Goals Flow", () => {
-  it("should create a goal from message and retrieve it by id", async () => {
-    // 1. Create goal from message
-    await createUseCase.execute({ messageId: "message-id" });
-    // 2. Retrieve goal by id
-    const result = await getGoalByIdUseCase.execute("goal-id", false);
-    expect(result.goal.title).toBeTruthy();
-  });
-});
-```
-
-### 3. Testes E2E (Playwright)
-
-- **Localização:** `e2e/*.spec.ts`
-- **Escopo:** Fluxos completos via UI real no browser
-- **Comando:** `npm run test:e2e`
-
-**Regras para testes:**
-1. Sempre mockar dependências externas (banco de dados, APIs, cache) em testes unitários e de integração
-2. Use `vi.fn()` para criar mocks de repositórios
-3. Instancie use cases diretamente com mocks (sem o container IoC)
-4. Testes E2E devem ser resilientes a ausência de dados (estados vazios)

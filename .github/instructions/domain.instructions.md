@@ -1,6 +1,6 @@
-<!-- ---
+---
 applyTo: "**/*.ts,**/*.tsx"
---- -->
+---
 
 # 📌 PRD: Funcionalidade de Objetivos Pessoais com Refinamento por Chatbot
 
